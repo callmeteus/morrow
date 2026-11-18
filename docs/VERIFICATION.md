@@ -1,37 +1,37 @@
-# Verificação, STT 100% local, sem o servidor de voz do Google
+# Verification, 100% local STT, without Google's voice server
 
-Este documento registra como foi verificado que o reconhecimento de fala funciona
-**inteiramente no dispositivo**, sem qualquer dependência do STT do Google.
+This document records how it was verified that speech recognition works
+**entirely on the device**, without any dependency on Google's STT.
 
-## 1. Por que a pipeline é estruturalmente offline
+## 1. Why the pipeline is structurally offline
 
-- O app **não referencia** `android.speech.SpeechRecognizer`/`RecognitionService`
-  e **não fala** com nenhum serviço de fala do sistema: o caminho completo é
-  `AudioRecord → PCM 16 kHz → libwhisper.so (JNI) → texto` (ver
+- The app **does not reference** `android.speech.SpeechRecognizer`/`RecognitionService`
+  and **does not talk** to any system speech service: the complete path is
+  `AudioRecord → PCM 16 kHz → libwhisper.so (JNI) → text` (see
   `Recorder.java`, `VoiceEngine.java`, `jni/whisper/jni.cpp`).
-- O modelo (`ggml-base.bin`) vem **dentro do APK** (assets) e é copiado para o
-  storage interno no primeiro uso, não há download de "speech-pack" em
-  runtime (diferente do Gboard, cujos packs vêm de `OnDevicePackDownloadWorker`,
-  ver `REA_GBOARD.md`).
-- A lib nativa foi compilada com `WHISPER_CURL=OFF` no host (e sem qualquer
-  cliente de rede no target), não existe caminho de rede no código de STT.
+- The model (`ggml-base.bin`) comes **inside the APK** (assets) and is copied to
+  internal storage on first use, there is no "speech-pack" download at
+  runtime (unlike Gboard, whose packs come from `OnDevicePackDownloadWorker`,
+  see `REA_GBOARD.md`).
+- The native library was compiled with `WHISPER_CURL=OFF` on the host (and without any
+  network client on the target), there is no network path in the STT code.
 
-## 2. Prova funcional no host (mesmo modelo `ggml-base.bin`)
+## 2. Functional proof on the host (same `ggml-base.bin` model)
 
-Ambiente: Windows x86_64, 32 threads, whisper.cpp (clone `ggml-org/whisper.cpp`,
-build `Release`, `ggml-base.bin` 147.951.465 bytes, idêntico ao embutido no
+Environment: Windows x86_64, 32 threads, whisper.cpp (clone of `ggml-org/whisper.cpp`,
+build `Release`, `ggml-base.bin` 147.951.465 bytes, identical to the one embedded in the
 APK).
 
-### Comando
+### Command
 
 ```bash
 whisper-cli.exe -m ggml-base.bin -l pt -nt pt-test.wav
 whisper-cli.exe -m ggml-base.bin -l en -nt jfk.wav
 ```
 
-### Saída capturada (evidence)
+### Captured output (evidence)
 
-- `evidence/jfk-transcript.txt` (áudio real de voz humana, 6,3 s):
+- `evidence/jfk-transcript.txt` (real human voice audio, 6,3 s):
 
   ```
   whisper_print_timings:    total time =  1458.21 ms
@@ -39,8 +39,8 @@ whisper-cli.exe -m ggml-base.bin -l en -nt jfk.wav
    what you can do for your country.
   ```
 
-- `evidence/pt-transcript-espeak.txt` (6,8 s, voz sintética espeak-ng pt-BR ,
-  voz robótica, transcrição esperadamente imperfeita, mas pipeline pt OK):
+- `evidence/pt-transcript-espeak.txt` (6,8 s, espeak-ng pt-BR synthetic voice,
+  robotic voice, expectedly imperfect transcription, but pt pipeline OK):
 
   ```
   whisper_print_timings:    total time =  1557.03 ms
@@ -48,58 +48,58 @@ whisper-cli.exe -m ggml-base.bin -l en -nt jfk.wav
    no apateio.
   ```
 
-  Texto alvo: *"O modelo de voz local funciona sem internet. A ditado por voz
-  roda no aparelho."*, as palavras-chave (modelo, voz, local, ditado,
-  aparelho) foram reconhecidas, confirmando o eixo pt-BR.
+  Target text: *"O modelo de voz local funciona sem internet. A ditado por voz
+  roda no aparelho."*, the keywords (modelo, voz, local, ditado,
+  aparelho) were recognized, confirming the pt-BR axis.
 
-### Latência (medição)
+### Latency (measurement)
 
-| Métrica | Valor |
+| Metric | Value |
 |---|---|
-| Áudio (pt-test) | 6,8 s |
-| Tempo total de inferência | **1,56 s** |
-| Real-time factor (RTF) | **≈ 0,23** (5,3× mais rápido que tempo real) |
+| Audio (pt-test) | 6,8 s |
+| Total inference time | **1,56 s** |
+| Real-time factor (RTF) | **≈ 0,23** (5,3× faster than real time) |
 | Mel + encode + decode (JFK, 6,3 s) | ~1,46 s |
 
-O STT do Google adiciona o round-trip de rede (upload do áudio + resposta do
-servidor): tipicamente 0,8–3 s em 4G/Wi-Fi instável, além da latência de
-processamento. Como RTF ≈ 0,23 < 1, o tempo local cresce linearmente e fica
-**abaixo** do STT do Google para frases de tamanho de ditado (e é ~0 em rede
-ausente, onde o STT do Google simplesmente não funciona).
+Google's STT adds the network round-trip (audio upload + server response):
+typically 0,8–3 s on unstable 4G/Wi-Fi, in addition to processing
+latency. Since RTF ≈ 0,23 < 1, local time grows linearly and stays
+**below** Google's STT for dictation-length phrases (and is ~0 when there
+is no network, where Google's STT simply does not work).
 
-## 3. Camada de dicionário/correção local (offline)
+## 3. Local dictionary/correction layer (offline)
 
-`DictionaryCorrector.java` aplica, **no aparelho**, uma correção pós-ASR
-sobre a transcrição final:
+`DictionaryCorrector.java` applies, **on the device**, a post-ASR correction
+on the final transcription:
 
-- **Dicionário**: 3.000 palavras pt-BR ranqueadas por frequência em corpus
-  real (Dom Casmurro, Wikisource + 30 artigos da Wikipédia pt), embutido no
+- **Dictionary**: 3.000 pt-BR words ranked by frequency in a real corpus
+  (Dom Casmurro, Wikisource + 30 articles from pt Wikipedia), embedded in the
   APK (`assets/dict/pt-br-dictionary.txt`, ~33 KB).
-- **Algoritmo**: cada token desconhecido (≥ 4 letras, comparação sem
-  acentos) é trocado pela palavra do dicionário com menor distância de
-  Levenshtein (≤ 1 para palavras curtas, ≤ 2 para longas), preferindo a de
-  maior frequência; trocas a distância 2 exigem frequência ≥ 100 (evita
-  substituir palavra rara verdadeira por palavra comum).
-- **Validação**: o núcleo Levenshtein foi testado contra uma referência
-  completa em 200.000 pares aleatórios (0 falhas); o comportamento foi
-  validado com um espelho Python: palavras conhecidas preservadas (inclusive
-  com acento e maiúscula, `Dicionario` → `Dicionário`), erros típicos de ASR
-  corrigidos (`intenet` → `internet`, `trabaIhar` → `trabalhar`,
-  `computadpr` → `computador`), ruído preservado (`xkcdzz` → `xkcdzz`).
-- **Sem rede**: o dicionário é um asset do APK; toda a correção roda em
-  memória, no mesmo executor do Whisper.
+- **Algorithm**: each unknown token (≥ 4 letters, comparison without
+  accents) is replaced by the dictionary word with the smallest Levenshtein
+  distance (≤ 1 for short words, ≤ 2 for long ones), preferring the one
+  with the highest frequency; distance-2 replacements require frequency ≥
+  100 (avoids replacing a genuinely rare word with a common one).
+- **Validation**: the Levenshtein core was tested against a complete
+  reference on 200.000 random pairs (0 failures); the behavior was validated
+  with a Python mirror: known words preserved (including with accent and
+  capitalization, `Dicionario` → `Dicionário`), typical ASR errors corrected
+  (`intenet` → `internet`, `trabaIhar` → `trabalhar`,
+  `computadpr` → `computador`), noise preserved (`xkcdzz` → `xkcdzz`).
+- **No network**: the dictionary is an APK asset; all correction runs in
+  memory, on the same executor as Whisper.
 
-## 4. Verificação no aparelho (EMULADOR, EXECUTADO)
+## 4. Verification on the device (EMULATOR, EXECUTED)
 
-Executado no emulador Android 14 (AVD `gtv`, Pixel 5, x86_64, `google_apis`,
-sem aceleração de GPU dedicada). A transcrição em si é feita pela mesma
-`libwhisper.so` + `ggml-base.bin` do APK, através do JNI.
+Executed on the Android 14 emulator (AVD `gtv`, Pixel 5, x86_64, `google_apis`,
+without dedicated GPU acceleration). The transcription itself is done by the
+same `libwhisper.so` + `ggml-base.bin` from the APK, via JNI.
 
-### 4.1 Teste determinístico por WAV (sem microfone)
+### 4.1 Deterministic WAV test (without microphone)
 
-O `SetupActivity` tem um teste por arquivo que exercita exatamente o mesmo
-caminho da ditação (`Wav.to16kMono → VoiceEngine.transcribe → DictionaryCorrector`)
-e é acionável por intent, sem interação de UI:
+`SetupActivity` has a file-based test that exercises exactly the same
+path as dictation (`Wav.to16kMono → VoiceEngine.transcribe → DictionaryCorrector`)
+and is triggerable by intent, without UI interaction:
 
 ```bash
 adb install -r app\build\outputs\apk\debug\app-debug.apk
@@ -110,7 +110,7 @@ adb shell am start -n dev.gti.gboard/.SetupActivity --ez wavtest 1
 adb logcat -d -s SetupActivity,VoiceEngine
 ```
 
-**Saída capturada** (entrada: TTS espeak-ng pt-BR, 6,35 s;
+**Captured output** (input: espeak-ng pt-BR TTS, 6,35 s;
 `evidence/device_selftest_airplane.log`):
 
 ```
@@ -122,34 +122,34 @@ I SetupActivity:  WAV self-test file=pt16.wav audio_s=6.35 infer_ms=155385 rtf=2
                   corrected="O teclado local é conhece a minha voz. O teclado por voz funciona ser inteira-nage."
 ```
 
-Isso prova, no dispositivo: (a) o `libwhisper.so` carrega e cria o contexto;
-(b) o modelo é extraído dos assets e inicializado; (c) o WAV 16 kHz mono é
-transcrito; (d) a camada de dicionário roda sobre a transcrição final.
+This proves, on the device: (a) `libwhisper.so` loads and creates the context;
+(b) the model is extracted from assets and initialized; (c) the 16 kHz mono WAV
+is transcribed; (d) the dictionary layer runs on the final transcription.
 
-> **Nota sobre RTF no emulador:** o `infer_ms≈155 s` (RTF ≈ 24) é artefato do
-> emulador x86_64 via software (CPU fraca, compartilhada, sem instrução
-> AVX/NEON dedicada). **Não** representa o desempenho em aparelho real. A
-> medição em hardware real (host, §2) dá **RTF ≈ 0,23** com o *mesmo* modelo.
+> **Note about RTF on the emulator:** the `infer_ms≈155 s` (RTF ≈ 24) is an artifact of
+> the software-based x86_64 emulator (weak, shared CPU, without dedicated
+> AVX/NEON instruction). It does **not** represent performance on a real device.
+> Measurement on real hardware (host, §2) gives **RTF ≈ 0,23** with the *same* model.
 
-### 4.2 Prova de isolamento, Modo Avião (EXECUTADO)
+### 4.2 Isolation proof, Airplane Mode (EXECUTED)
 
-Com `airplane_mode_on=1` e **nenhuma interface de rede ativa** (apenas
-`lo`), o mesmo teste foi repetido e **produziu a transcrição completa**
-(`infer_ms=155385`, mesmo texto acima). Sem rede, não há como usar o STT do
-Google, a transcrição é 100% local.
+With `airplane_mode_on=1` and **no active network interface** (only `lo`),
+the same test was repeated and **produced the complete transcription**
+(`infer_ms=155385`, same text as above). Without a network, there is no way to
+use Google's STT, the transcription is 100% local.
 
 ```bash
 adb shell settings put global airplane_mode_on 1
 adb shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true
-adb shell "ip -o link show | grep -Ei up | grep -Evi 'lo:|dummy'"   # vazio
-# … relançar o teste 4.1 …
+adb shell "ip -o link show | grep -Ei up | grep -Evi 'lo:|dummy'"   # empty
+# … rerun test 4.1 …
 ```
 
-### 4.3 Registro e ativação do IME (EXECUTADO no emulador)
+### 4.3 IME registration and activation (EXECUTED on the emulator)
 
-O IME precisa declarar a action `android.view.InputMethod` (e não
-`android.view.inputmethod.InputMethod`) no intent-filter do serviço, senão o
-`InputMethodManagerService` não o descobre. Verificado:
+The IME must declare the action `android.view.InputMethod` (and not
+`android.view.inputmethod.InputMethod`) in the service's intent-filter, otherwise
+`InputMethodManagerService` will not discover it. Verified:
 
 ```
 $ adb shell ime list -a | grep gti
@@ -163,25 +163,25 @@ mCurMethodId=dev.gti.gboard/.GboardIme
 mIsInputViewShown=true
 ```
 
-O `VoiceEngine` do processo do teclado inicializa ao focar um campo, e a janela
-`InputMethod` do `dev.gti.gboard` aparece em `dumpsys window windows`.
+The `VoiceEngine` of the keyboard process initializes when a field is focused, and the
+`InputMethod` window of `dev.gti.gboard` appears in `dumpsys window windows`.
 
-### 4.4 Ditação por microfone (aparelho real)
+### 4.4 Microphone dictation (real device)
 
-A ditação por botão (segurar 🎤 → falar → soltar) usa `AudioRecord` em tempo
-real; no emulador não há microfone físico confiável, portanto este item é
-verificado no aparelho físico com:
+Button dictation (hold 🎤 → speak → release) uses real-time `AudioRecord`; the
+emulator has no reliable physical microphone, so this item is verified on a
+physical device with:
 
 1. `adb install -r app\build\outputs\apk\debug\app-debug.apk`
-2. Ativar o teclado em *Configurações → Teclado* e permitir o microfone.
-3. Segurar 🎤, falar ~4 s em pt, soltar → texto commitado no campo.
-4. (Prova de isolamento) ativar *Modo avião* e repetir: continua funcionando.
+2. Enable the keyboard in *Settings → Keyboard* and allow the microphone.
+3. Hold 🎤, speak ~4 s in pt, release → text committed to the field.
+4. (Isolation proof) enable *Airplane mode* and repeat: it keeps working.
 
-## 5. Artefatos
+## 5. Artifacts
 
-| Arquivo | Conteúdo |
+| File | Content |
 |---|---|
-| `app/build/outputs/apk/debug/app-debug.apk` | APK assinado (debug) com `libwhisper.so` (arm64-v8a, armeabi-v7a, x86_64) + `ggml-base.bin` |
-| `evidence/*.txt` | Saídas brutas do whisper-cli (timings + transcrições) |
-| `REA_GBOARD.md` / `REA_VOICE_CURSOR.md` | Artefatos REA |
-| `../README.md` | Build, instalação ADB e configuração |
+| `app/build/outputs/apk/debug/app-debug.apk` | Signed (debug) APK with `libwhisper.so` (arm64-v8a, armeabi-v7a, x86_64) + `ggml-base.bin` |
+| `evidence/*.txt` | Raw outputs from whisper-cli (timings + transcriptions) |
+| `REA_GBOARD.md` / `REA_VOICE_CURSOR.md` | REA artifacts |
+| `../README.md` | Build, ADB installation and configuration |

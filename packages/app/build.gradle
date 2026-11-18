@@ -1,5 +1,6 @@
+// AGP 8.5.2 pairs with Gradle 8.9 and JDK 17.
 plugins {
-    id 'com.android.application'
+    id 'com.android.application' version '8.5.2'
 }
 
 // appcompat/core pull mismatched kotlin-stdlib artifacts transitively. Force a

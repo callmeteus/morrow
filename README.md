@@ -1,202 +1,237 @@
-# Gboard · Voz Local (gboard-local-voice)
+<p align="center">
+  <img src="docs/assets/banner.png" alt="gboard-clone" width="900">
+</p>
 
-Teclado para Android no estilo Gboard com **ditado por voz 100% local**: o
-reconhecimento de fala roda no aparelho com **whisper.cpp** (mesma família de
-modelos que o Voice Cursor usa, Whisper `base`, int8/CPU), sem nenhuma
-dependência do serviço de voz (STT) do Google.
+<p align="center">
+  <a href="#features"><img src="https://img.shields.io/badge/voice-100%25%20on--device-00d4ff?style=flat-square" alt="on-device voice"></a>
+  <a href="#monorepo-layout"><img src="https://img.shields.io/badge/stack-AOSP%20LatinIME%20%2B%20whisper.cpp-7c3aed?style=flat-square" alt="stack"></a>
+  <a href="#verification"><img src="https://img.shields.io/badge/network-zero%20Google%20STT%20calls-22c55e?style=flat-square" alt="no google stt"></a>
+  <a href="#build"><img src="https://img.shields.io/badge/JDK-17-2563eb?style=flat-square" alt="jdk 17"></a>
+  <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20vendored%20deps-64748b?style=flat-square" alt="license"></a>
+</p>
 
-- **Offline total**: o modelo (`ggml-base.bin`, ~141 MB) é embutido nos assets
-  e executado no dispositivo via JNI (`libwhisper.so`).
-- **Latência**: inferência local em tempo real ~5× mais rápido que a duração da
-  fala (RTF ≈ 0,22 medido no host; no dispositivo arm64, tipicamente 0,1–0,3),
-  sem round-trip de rede, inferior à latência do STT do Google em rede
-  normal.
-- **Português**: transcrição em `pt` (o modelo `base` é multilíngue, 99 idiomas).
-- **Dicionário/correção local**: após o ASR, cada palavra desconhecida é
-  comparada (distância de edição ≤ 1–2, sem acentos) com um dicionário
-  pt-BR de 3.000 palavras ranqueadas por frequência em corpus real
-  (Dom Casmurro, Machado de Assis, Wikisource, domínio público) e substituída
-  pelo candidato mais frequente, o análogo local da camada SmartDictation do
-  Gboard (`DictionaryCorrector.java`, 100% offline).
-- **UX Gboard**: segurar o botão 🎤 para falar (push-to-talk), barra de
-  transcrição ao vivo, teclado QWERTY/símbolos, shift, espaço, backspace e
-  enter.
+An Android keyboard in the style of Gboard with **100% local voice dictation**.
+Speech recognition runs on the device with **whisper.cpp** (Whisper `base`,
+CPU), with no dependency on Google's speech service. Everything works offline,
+including swipe typing and local dictionary correction.
 
-## O que é este projeto (REA)
+---
 
-Este repositório contém:
+## Features
 
-1. **`docs/REA_VOICE_CURSOR.md`**, análise REA do **Voice Cursor**
-   (`Plataformas/cursor-voice` recuperado do git): o que o modelo de voz é
-   (faster-whisper `base`/int8), o modelo de interação (push-to-talk +
-   transcrição ao vivo) e a decisão de port para whisper.cpp no dispositivo.
-2. **`docs/REA_GBOARD.md`**, análise REA do **Gboard** (APK real decompilado
-   com jadx): onde o Gboard invoca o STT do Google e qual é o ponto exato de
-   substituição implementado aqui.
- 3. **`packages/app/`**, o app Android (setup + engine Whisper) e o
-    **`aosp-base/`**, o AOSP LatinIME (o IME de fato, `com.android.inputmethod.latin`).
- 4. **`packages/ai-model/`**, modelos, whisper.cpp vendado e dados de treino.
+- **Fully offline.** The model (`ggml-base.bin`, ~141 MB) is bundled in the
+  assets and executed on the device through JNI (`libwhisper.so`). No network
+  round-trip is required at any point.
+- **Fast.** On-device inference takes roughly 0.3-0.6 s for short phrases on
+  arm64. An optional OpenAI-compatible server backend can be enabled in the
+  setup screen, with automatic fallback to the local model.
+- **Portuguese by default.** Transcription uses `pt`; the `base` model is
+  multilingual (99 languages) and the language is configurable.
+- **Local dictionary correction.** Unknown ASR words are compared with a
+  3,000-word pt-BR frequency dictionary (edit distance 1-2, accent-insensitive)
+  and replaced by the most frequent candidate. This is the local analogue of
+  Gboard's SmartDictation layer, implemented in `DictionaryCorrector.java`.
+- **Neural swipe typing.** A trained model decodes the gesture trace into real
+  dictionary words. The canonical model and the training data live in
+  `packages/ai-model`.
+- **Gboard-like UI.** Suggestion strip, Material key caps, light/dark themes,
+  accented-character popups, double-tap Shift for caps lock, spacebar cursor
+  glide, emoji picker and a three-page symbol layout.
+- **Adaptive silence detection.** Dictation stops after ~1 s of silence using
+  the measured background noise level, so a fan or air conditioner does not
+  cut speech off.
+- **Local usage log.** Typed keys, swipe traces, dictation results, commits and
+  user corrections are appended to a JSONL file in the app cache so future
+  training runs can pair model output with what the user actually kept.
+  Nothing is uploaded. See [Usage telemetry](#usage-telemetry).
 
-## Estrutura (monorepo)
+## What this project is (REA)
+
+This repository contains reverse-engineering analyses of the reference
+products:
+
+1. **`docs/REA_VOICE_CURSOR.md`**: analysis of Voice Cursor, its speech model
+   (faster-whisper `base`/int8), its interaction model (push-to-talk plus live
+   transcript) and the decision to port it to whisper.cpp on the device.
+2. **`docs/REA_GBOARD.md`**: analysis of the real Gboard APK (decompiled with
+   jadx), showing where Gboard calls Google STT and the exact replacement point
+   implemented here.
+3. **`docs/REA_GBOARD_UI.md`**: analysis of the Gboard keyboard UI, reconstructed
+   in `aosp-base`.
+
+The project reproduces the *behaviour* of Gboard, not its proprietary binary.
+Google's code cannot be redistributed, so the integration points are documented
+and independently reimplemented here.
+
+## Monorepo layout
 
 ```
 gboard-clone/
 ├── packages/
-│   ├── app/                          # app de setup/launcher (dev.gti.gboard)
-│   │   ├── build.gradle              # módulo Android (AGP 8.5.2, NDK 28, CMake)
+│   ├── app/                          # setup/launcher app (dev.gti.gboard)
+│   │   ├── build.gradle              # Android module (AGP 8.5.2, NDK 28, CMake)
+│   │   ├── settings.gradle           # standalone Gradle build for this package
+│   │   ├── gradlew, gradle/          # Gradle 8.9 wrapper
 │   │   ├── src/main/
 │   │   │   ├── AndroidManifest.xml   # activities, provider, RECORD_AUDIO
 │   │   │   ├── assets/models/        # ggml-base.bin (~141 MB, gitignored)
-│   │   │   ├── jni/whisper/          # CMakeLists.txt + jni.cpp (bridge JNI)
+│   │   │   ├── jni/whisper/          # CMakeLists.txt + jni.cpp (JNI bridge)
 │   │   │   ├── java/dev/gti/gboard/  # SetupActivity, VoiceEngine, etc.
-│   │   │   └── res/                  # strings, tema, ícone
-│   │   └── aosp-base/                # AOSP LatinIME (o teclado instalado)
-│   │       ├── java/                 # LatinIME, KeyboardState, VoiceInput, etc.
-│   │       ├── native/               # dicionários AOSP (JNI)
-│   │       ├── whisper-jni/          # JNI do Whisper + Swipe (CMakeLists)
-│   │       └── gradlew               # wrapper independente
-│   └── ai-model/                     # tudo de IA
-│       ├── whisper.cpp/              # whisper.cpp + ggml (vendado, MIT)
-│       ├── openswipe-engine/         # engine de swipe (vendado, MIT)
-│       ├── gesture-training/         # dados e scripts de treino do modelo de swipe
-│       ├── swipe_model.bin           # modelo neural de swipe treinado (~2 MB)
-│       ├── fetch-model.ps1           # baixa ggml-base.bin para os assets
-│       └── prepare-aosp.ps1          # copia o modelo para res/raw do aosp-base
-└── docs/                             # artefatos REA + esta documentação
+│   │   │   └── res/                  # strings, theme, icons
+│   │   └── aosp-base/                # AOSP LatinIME (the installed keyboard)
+│   │       ├── java/                 # LatinIME, KeyboardState, UsageLog, etc.
+│   │       ├── native/               # AOSP dictionaries (JNI)
+│   │       ├── whisper-jni/          # Whisper + swipe JNI (CMakeLists)
+│   │       └── gradlew               # independent wrapper
+│   └── ai-model/                     # everything related to AI
+│       ├── whisper.cpp/              # vendored whisper.cpp + ggml (MIT)
+│       ├── openswipe-engine/         # vendored swipe engine (MIT)
+│       ├── gesture-training/         # swipe model training data and scripts
+│       ├── swipe_model.bin           # trained neural swipe model (~2 MB)
+│       ├── fetch-model.ps1           # downloads ggml-base.bin into app assets
+│       └── prepare-aosp.ps1          # copies the model into aosp-base res/raw
+└── docs/                             # REA artifacts, evidence and this README
+    └── assets/banner.png             # rendered ASCII-art banner
 ```
 
-## Pré-requisitos
+## Prerequisites
 
 - JDK 17 (`JAVA_HOME`)
-- Android SDK com: `platforms;android-34`, `build-tools;36.0.0`,
-  `ndk;28.2.13676358`, `cmake;3.22.1`, `platform-tools`
-- Gradle (o wrapper `gradlew` já está no projeto, versão 8.9)
+- Android SDK with `platforms;android-34`, `build-tools;36.0.0`,
+  `ndk;28.2.13676358`, `cmake;3.22.1` and `platform-tools`
+- A Gradle wrapper is included in `packages/app` (Gradle 8.9), so no global
+  Gradle installation is needed
 
 ## Build
 
-```powershell
-# 1. (primeiro build) baixar o modelo para os assets
-powershell -ExecutionPolicy Bypass -File packages/ai-model/fetch-model.ps1
+Run the commands from `packages/app`, which owns its own Gradle build:
 
-# 2. compilar o APK de debug (3 ABIs: arm64-v8a, armeabi-v7a, x86_64)
+```powershell
+cd packages/app
+
+# 1. first build only: download the model into assets
+powershell -ExecutionPolicy Bypass -File ..\ai-model\fetch-model.ps1
+
+# 2. build the debug APK (3 ABIs: arm64-v8a, armeabi-v7a, x86_64)
 .\gradlew.bat assembleDebug
 # -> packages\app\build\outputs\apk\debug\app-debug.apk
 
-# 3. (opcional) APK de release assinado
+# 3. optional: signed release APK
 .\gradlew.bat assembleRelease
 ```
 
-O APK de debug já é assinado com a keystore de debug do Gradle, instalável
-diretamente por ADB.
+The keyboard itself is a separate Android application:
 
-## Instalação (ADB)
-
-```bash
-# conecte o aparelho com USB (depuração USB ativada)
-adb devices
-# instale o APK
-adb install -r app\build\outputs\apk\debug\app-debug.apk
-# (Windows/PowerShell)
-#   C:\...\platform-tools\adb.exe install -r app\build\outputs\apk\debug\app-debug.apk
+```powershell
+cd packages\app\aosp-base
+.\gradlew.bat assembleDebug
+# -> packages\app\aosp-base\build\outputs\apk\debug\LatinIME-debug.apk
 ```
 
-## Configuração no aparelho
+Both debug APKs are signed with Gradle's debug keystore and can be installed
+directly with ADB.
 
-1. Abra o app **“Gboard Voz Local”** (tela de setup).
-2. **1) Habilitar teclado** → marque “Gboard · Voz local” em
-   *Configurações → Teclado → Teclados virtuais*.
-3. **2) Conceder microfone** → permita `RECORD_AUDIO`.
-4. **3) Testar ditado local** → fale ~4 s em português; o app grava,
-   transcreve **no aparelho** e mostra o texto (prova de que funciona sem o
-   servidor de voz do Google).
-5. Escolha o teclado “Gboard · Voz local” como ativo (engrenagem/teclado no
-   campo de texto), segure **🎤**, fale, solte, o texto é commitado no campo.
-
-## Interface estilo Gboard (REA da UI)
-
-O teclado foi reconstruído a partir do REA da interface do Gboard real
-(`docs/REA_GBOARD_UI.md`), não é um teclado genérico:
-
-- **Barra de sugestões** acima do teclado, com 3 palavras ranqueadas pelo
-  dicionário local de frequência, toolbar (teclado, ferramentas, config) e
-  botão de microfone colorido.
-- **Teclas Material** com cantos arredondados, pressed state, temas claro e
-  escuro (seguem o modo do sistema), e line-up QWERTY pt-BR.
-- **Gestos**: toque insere caractere, long press abre popup de acentos
-  (`á à â ã`, `é ê`, etc.), shift simples/dulo (caps lock), swipe na barra de
-  espaço move o cursor (`setSelection` contínuo) e swipe horizontal na barra de
-  sugestões seleciona palavra.
-- **Decoder de glide** (`LocalDecoder.java`): reimplementa o contrato do
-  Decoder Delight5 do Gboard (documentado em `docs/REA_GBOARD_UI.md`) com um
-  modelo local de unigramas + bigramas (asset `pt-br-lm.txt`, 90 KB). O rastro
-  do glide é pontuado por geometria espacial das teclas + probabilidade do
-  modelo, produzindo a palavra mais provável (`nao` → `não`). Swipe para baixo
-  na barra de sugestões inicia o glide, como no `HeaderMotionEventHandler`.
-- **Rastro visual e prévia** (`GestureOverlayView.java`): o caminho do dedo é
-  desenhado em tempo real (stroke arredondado de 13 dp com decaimento) e a
-  palavra decodificada aparece flutuando acima do dedo durante o glide.
-- **Símbolos**: 3 páginas (`ABC`, `?123`, `=\<`) no layout do Gboard, com emoji
-  picker (botão 😀, grade de 128 emojis).
-- **Ditado cancelável**: barra de ditado com botão ✕ para abortar sem commit.
-- **Backspace com repeat**: segurar apaga caractere por caractere (400 ms de
-  delay inicial, 80 ms por repetição). Clique simples também apaga uma vez.
-- **Sem alucinações**: `TranscriptCleaner` remove `[MÚSICA DE FUNDO]` e tags
-  simuladas pelo Whisper; o JNI usa `initial_prompt` em pt-BR e o controlador
-  não transcreve áudio sem fala (RMS abaixo do limiar).
-- **Waveform real**: alimentado pelo RMS do microfone, não animação aleatória.
-- **Transcrevendo…**: animação de elipse ao soltar o mic, antes do resultado.
-- **Glide com espaço**: commit da palavra decodificada adiciona espaço no fim.
-
-## Testes unitários
+## Install (ADB)
 
 ```bash
+adb devices
+adb install -r packages\app\build\outputs\apk\debug\app-debug.apk
+adb install -r packages\app\aosp-base\build\outputs\apk\debug\LatinIME-debug.apk
+adb shell ime set com.android.inputmethod.latin/.LatinIME
+```
+
+## Device setup
+
+1. Open the **Gboard Local Voice** setup app.
+2. **1) Enable keyboard** and tick "Gboard · Local Voice" under
+   *Settings → Keyboard → Virtual keyboards*.
+3. **2) Grant microphone** to allow `RECORD_AUDIO`.
+4. **3) Test local dictation**: speak for about 4 s in Portuguese. The app
+   records and transcribes **on the device** and displays the result, proving
+   that Google's speech server is not involved.
+5. Select the keyboard in any text field, press the mic key, speak, release,
+   and the text is committed.
+
+## Gboard-style interface
+
+- Suggestion strip with three frequency-ranked words, toolbar and a colored mic
+  button.
+- Material key caps with rounded corners, pressed states and light/dark themes
+  following the system.
+- Tap inserts a character, long press opens accented popups, double-tap Shift
+  toggles caps lock, spacebar glide moves the cursor, and horizontal swipe on
+  the suggestion strip picks a word.
+- A neural glide decoder replaces the geometric AOSP gesture fallback.
+- Live stroke overlay shows the finger path and the decoded word while gliding.
+- Three symbol pages (`ABC`, `?123`, `=\<`) plus an emoji picker.
+- Dictation can be cancelled with an ✕ button before committing.
+- Backspace repeats character by character when held.
+- `TranscriptCleaner` removes Whisper artifacts such as `[BACKGROUND MUSIC]`.
+- The waveform is driven by real microphone RMS, not a random animation.
+
+## Usage telemetry
+
+The IME appends structured events to
+`/data/data/com.android.inputmethod.latin/cache/usage/usage_events.jsonl`:
+
+| Event | Meaning |
+| --- | --- |
+| `key` | a key press, with code point and label |
+| `swipe_decode` | downsampled gesture trace and raw decoder candidates |
+| `swipe_top` | the top suggestion offered for the gesture |
+| `voice` | raw dictation transcript, backend and measured inference time |
+| `commit` | final text with its origin (`typed`, `swipe`, `voice`, `suggestion`) |
+| `backspace` | deleted characters, linked to the commit being corrected |
+| `suggestion_pick` | chosen word versus the original typed/swiped word |
+
+Every event carries a timestamp, session id and sequence number, and ids link a
+commit back to its gesture or dictation and forward to the corrections it
+received. This is the structure needed to train the swipe model and the
+corrector from real usage.
+
+Data stays on the device. The log rotates at 4 MB. It can be disabled with the
+`gti_usage_log` toggle in the setup app. A future release will add an opt-in
+upload path to a server.
+
+## Verification
+
+- No Google STT socket is opened: the app never binds to a system speech
+  service and never uses `android.speech.SpeechRecognizer`. The path is
+  `AudioRecord → 16 kHz PCM → libwhisper.so (JNI) → text`.
+- The setup screen self-test and the WAV test run the same pipeline as the
+  keyboard. Trigger the WAV test headlessly with:
+  `adb shell am start -n dev.gti.gboard/.SetupActivity --ez wavtest 1`.
+- An emulator run in airplane mode produced a full transcription, which would
+  be impossible with a network dependency. See
+  `docs/evidence/device_selftest.md` and
+  `docs/evidence/device_selftest_airplane.log`.
+- Host-side verification with the same model: 6.8 s of Portuguese audio
+  transcribes in about 1.5 s (RTF ≈ 0.22) with the network disabled. Exact
+  commands and captured output are in `docs/VERIFICATION.md`.
+
+## Unit tests
+
+```powershell
+cd packages/app
 .\gradlew.bat testDebugUnitTest
 ```
 
-26 testes JUnit sobre a lógica pura (limpeza de transcrição, níveis do waveform,
-rastreamento de glide, Levenshtein do dicionário e scoring espacial do decoder).
-Nenhum teste exige dispositivo ou emulador.
-- **Ditado**: press-and-hold no mic substitui a barra de sugestões pela barra
-  de ditado (waveform + transcrição parcial); ao soltar, o texto é commitado.
-  O ícone do mic é um `VectorDrawable` Material (`res/drawable/ic_mic.xml`).
-- **Altura fixa**: o teclado ocupa cerca de 316 dp (~37% da tela), proporção do
-  Gboard, em vez de expandir para a tela toda sob `adjustResize`.
-- **Campo de teste**: a tela de setup tem um `EditText` no passo 5 para testar
-  o teclado, os gestos e o ditado diretamente no aparelho.
+26 JUnit tests cover transcript cleanup, waveform levels, glide tracking,
+dictionary Levenshtein scoring and spatial decoder scoring. No device or
+emulator is required.
 
-## Verificação de que o STT é local (sem Google)
+## Notes and limitations
 
-- **Nenhum socket de STT do Google**: o app não faz `bind` em serviço de fala
-  do sistema nem usa `android.speech.SpeechRecognizer`; todo o caminho é
-  `AudioRecord → PCM 16 kHz → libwhisper.so (JNI) → texto`.
-- **Self-test na tela de setup** (passo 3 acima) roda a mesma pipeline
-  (`VoiceEngine.transcribe`) que o teclado usa. Há também um **teste por WAV**
-  (passo 4 / botão “Testar WAV”) acionável sem microfone e sem UI:
-  `adb shell am start -n dev.gti.gboard/.SetupActivity --ez wavtest 1` ,
-  transcreve o `.wav` mais recente de `/sdcard/Android/data/dev.gti.gboard/files/`
-  e imprime `infer_ms`/`rtf` + texto em `logcat -s SetupActivity`.
-- **Prova no emulador (executada)**: no AVD x86_64, o teste por WAV rodou a
-  pipeline completa e, **com Modo Avião (sem rede)**, produziu a transcrição ,
-  impossível se dependesse do Google STT. Saídas:
-  `docs/evidence/device_selftest.md` e `docs/evidence/device_selftest_airplane.log`.
-- **Prova offline no host** (mesmo modelo, mesma família): com o CLI do
-  whisper.cpp e o `ggml-base.bin`, 6,8 s de áudio pt transcrevem em ~1,5 s
-  (RTF ≈ 0,22) com a rede bloqueada; ver `docs/VERIFICATION.md` para os
-  comandos exatos e saídas capturadas.
-- **Latência vs. Google STT**: o STT do Google exige upload do áudio +
-  round-trip de rede (típicos 0,8–3 s em 4G, mais latência de rede); aqui o
-  tempo total é `mel + encode + decode` no aparelho (~0,3–0,6 s para frases
-  curtas em arm64), ou seja, **menor** que o STT do Google na prática.
+- The `base` model favours speed. For higher accuracy in pt-BR, replace the
+  asset with `ggml-small` or `ggml-medium` (more RAM and latency); only
+  `MODEL_ASSET`/`MODEL_FILE` in `VoiceEngine.java` needs to change.
+- Live partial transcription uses the same context; on slow devices, increase
+  `PARTIAL_EVERY_MS` in `DictationController.java`.
+- The original Google Gboard and Samsung keyboards remain installed and are
+  never modified.
 
-## Notas e limitações
+## License
 
-- O modelo `base` prioriza velocidade; para mais precisão em pt-BR troque o
-  asset por `ggml-small`/`ggml-medium` (aumentam RAM/tiempo, o código não
-  muda, apenas `MODEL_ASSET`/`MODEL_FILE` em `VoiceEngine.java`).
-- A transcrição parcial ao vivo (a cada ~2,5 s) usa o mesmo contexto; em
-  aparelhos muito modestos aumente `PARTIAL_EVERY_MS` em
-  `DictationController.java`.
-- O projeto replica o *comportamento* do Gboard (teclado + ditado local), não
-  o binário proprietário do Gboard (código Google sob licença proprietária ,
-  não pode ser redistribuído; por isso o REA documenta os pontos de
-  integração e este app os reimplementa de forma independente).
+Third-party components are vendored under their own licenses:
+whisper.cpp and ggml (MIT), OpenSwipe engine (MIT), and AOSP LatinIME
+(Apache 2.0). See each vendored directory for its license file.

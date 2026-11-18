@@ -1,20 +1,20 @@
-# Prova no dispositivo (emulador), STT 100% local
+# Proof on the device (emulator), 100% local STT
 
 AVD: `gtv`, Pixel 5, Android 14 (API 34), x86_64, `google_apis`, GPU SwiftShader.
-Modelo e lib idênticos aos embutidos no APK (`ggml-base.bin`, `libwhisper.so`).
-Entrada: `pt16.wav`, TTS espeak-ng pt-BR, 16 kHz mono, 6,35 s
-(texto-alvo: *"O teclado local reconhece a minha voz. O ditado por voz funciona
+Model and library identical to those embedded in the APK (`ggml-base.bin`, `libwhisper.so`).
+Input: `pt16.wav`, espeak-ng pt-BR TTS, 16 kHz mono, 6,35 s
+(target text: *"O teclado local reconhece a minha voz. O ditado por voz funciona
 sem internet."*).
 
-O teste é o self-test por arquivo do `SetupActivity` (caminho idêntico à
-ditação: `Wav → VoiceEngine.transcribe → DictionaryCorrector`), acionado por
-intent sem interação de UI:
+The test is the file-based self-test of `SetupActivity` (path identical to
+dictation: `Wav → VoiceEngine.transcribe → DictionaryCorrector`), triggered by
+intent without UI interaction:
 
 ```
 adb shell am start -n dev.gti.gboard/.SetupActivity --ez wavtest 1
 ```
 
-## Rodada 1, rede disponível
+## Round 1, network available
 
 ```
 I VoiceEngine:    whisper context ready (threads=4)
@@ -25,7 +25,7 @@ I SetupActivity:  WAV self-test file=pt16.wav audio_s=6.35 infer_ms=159443 rtf=2
                   corrected="O teclado local é conhece a minha voz. O teclado por voz funciona ser inteira-nage."
 ```
 
-## Rodada 2, MODO AVIÃO (sem nenhuma interface de rede além de `lo`)
+## Round 2, AIRPLANE MODE (with no network interface other than `lo`)
 
 ```
 I SetupActivity:  WAV-SELFTEST: engine ready (dict_size=2934)
@@ -34,7 +34,7 @@ I SetupActivity:  WAV self-test file=pt16.wav audio_s=6.35 infer_ms=155385 rtf=2
                   corrected="O teclado local é conhece a minha voz. O teclado por voz funciona ser inteira-nage."
 ```
 
-Confirmação de rede (vazio = só loopback ativo):
+Network confirmation (empty = only loopback active):
 
 ```
 $ adb shell "ip -o link show | grep -Ei up | grep -Evi 'lo:|dummy'"
@@ -42,20 +42,20 @@ $ adb shell settings get global airplane_mode_on
 1
 ```
 
-## Leitura dos resultados
+## Reading the results
 
-- **Pipeline completa executou no dispositivo**: lib nativa carregou, modelo
-  inicializou, WAV transcrito, dicionário aplicado. Sem rede (rodada 2), logo
-  não é STT do Google.
-- **Qualidade da transcrição**: o áudio é *sintético* (voz robótica de TTS,
-  150 wpm), o que o Whisper `base` reconhece de forma imperfeita, esperado.
-  As palavras-chave do ditado (teclado, local, voz, funciona) aparecem; o
-  trecho final degrada (`sem internet` → `ser inteira-nage`), típico de
-  ASR em voz sintética + modelo pequeno.
-- **Latência**: `infer_ms≈155 s` (RTF ≈ 24) é artefato do **emulador**
-  x86_64 via software (CPU fraca e compartilhada). Em hardware real, com o
-  **mesmo** modelo, a medição do host dá **RTF ≈ 0,23** (ver
-  `docs/VERIFICATION.md` §2). O emulador serve para provar *funciona offline*,
-  não para medir latência.
+- **Complete pipeline ran on the device**: native library loaded, model
+  initialized, WAV transcribed, dictionary applied. Without a network (round 2), it
+  is therefore not Google's STT.
+- **Transcription quality**: the audio is *synthetic* (robotic TTS voice,
+  150 wpm), which Whisper `base` recognizes imperfectly, as expected. The
+  dictation keywords (teclado, local, voz, funciona) appear; the final
+  segment degrades (`sem internet` → `ser inteira-nage`), typical of ASR on
+  synthetic voice + a small model.
+- **Latency**: `infer_ms≈155 s` (RTF ≈ 24) is an artifact of the software-based
+  x86_64 **emulator** (weak, shared CPU). On real hardware, with the **same**
+  model, the host measurement gives **RTF ≈ 0,23** (see
+  `docs/VERIFICATION.md` §2). The emulator serves to prove *it works offline*,
+  not to measure latency.
 
-Log bruto da rodada 2: `device_selftest_airplane.log`.
+Raw log from round 2: `device_selftest_airplane.log`.
