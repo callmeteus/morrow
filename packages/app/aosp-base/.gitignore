@@ -10,3 +10,4 @@
 /java/res/raw/swipe_model.bin
 # Local build logs
 build_*.log
+aosp_build*.log
