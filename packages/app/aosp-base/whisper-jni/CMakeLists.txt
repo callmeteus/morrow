@@ -8,7 +8,7 @@ set(JNI_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(AOSP_NATIVE_DIR ${JNI_DIR}/../native/jni)
 # whisper.cpp source: gboard-local-voice/third_party/whisper.cpp (two levels up)
 if(NOT DEFINED WHISPER_LIB_DIR OR WHISPER_LIB_DIR STREQUAL "")
-    set(WHISPER_LIB_DIR ${JNI_DIR}/../../third_party/whisper.cpp)
+    set(WHISPER_LIB_DIR ${JNI_DIR}/../../../ai-model/whisper.cpp)
 endif()
 message(STATUS "AOSP native: ${AOSP_NATIVE_DIR}")
 message(STATUS "whisper.cpp: ${WHISPER_LIB_DIR}")
@@ -65,7 +65,7 @@ target_include_directories(whisper PRIVATE
 )
 
 # ---- libswipe: OpenSwipe neural gesture decoder (MIT) + JNI ----
-set(SWIPE_ENGINE_DIR ${JNI_DIR}/../../third_party/openswipe-engine)
+set(SWIPE_ENGINE_DIR ${JNI_DIR}/../../../ai-model/openswipe-engine)
 file(GLOB SWIPE_CORE_SRCS ${SWIPE_ENGINE_DIR}/src/*.cpp)
 add_library(swipe SHARED ${SWIPE_CORE_SRCS} ${JNI_DIR}/SwipeJni.cpp)
 target_include_directories(swipe PRIVATE ${SWIPE_ENGINE_DIR}/include)

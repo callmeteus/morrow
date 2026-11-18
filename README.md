@@ -33,32 +33,35 @@ Este repositório contém:
 2. **`docs/REA_GBOARD.md`**, análise REA do **Gboard** (APK real decompilado
    com jadx): onde o Gboard invoca o STT do Google e qual é o ponto exato de
    substituição implementado aqui.
-3. **`app/`**, o app Android (IME + setup + engine Whisper).
-4. **`third_party/whisper.cpp/`**, whisper.cpp + ggml vendados (MIT).
+ 3. **`packages/app/`**, o app Android (setup + engine Whisper) e o
+    **`aosp-base/`**, o AOSP LatinIME (o IME de fato, `com.android.inputmethod.latin`).
+ 4. **`packages/ai-model/`**, modelos, whisper.cpp vendado e dados de treino.
 
-## Estrutura
+## Estrutura (monorepo)
 
 ```
-gboard-local-voice/
-├── app/
-│   ├── build.gradle                  # módulo Android (AGP 8.5.2, NDK 28, CMake)
-│   └── src/main/
-│       ├── AndroidManifest.xml       # IME service + activities, RECORD_AUDIO
-│       ├── assets/models/ggml-base.bin  # modelo Whisper base (~141 MB, gitignored)
-│       ├── jni/whisper/              # CMakeLists.txt + jni.cpp (bridge JNI)
-│       ├── java/dev/gti/gboard/
-│       │   ├── GboardIme.java        # teclado estilo Gboard (sugestões, temas, gestos, mic)
-│       │   ├── LocalDecoder.java     # decoder de glide (contrato do Delight5, modelo local)
-│       │   ├── SetupActivity.java    # tela de setup + self-test do STT local
-│       │   ├── PermissionActivity.java # pede permissão de microfone (helper)
-│       │   ├── DictionaryCorrector.java # dicionário/correção local (Levenshtein)
-│       │   ├── DictationController.java # máquina de estados do ditado
-│       │   ├── Recorder.java         # captura 16 kHz mono
-│       │   ├── VoiceEngine.java      # wrapper Java do libwhisper.so
-│       │   └── WaveformView.java     # animação "voz ativa"
-│       └── res/                      # strings, tema, ícone
-├── third_party/whisper.cpp/          # whisper.cpp + ggml (vendado)
-├── tools/fetch-model.ps1             # baixa ggml-base.bin para os assets
+gboard-clone/
+├── packages/
+│   ├── app/                          # app de setup/launcher (dev.gti.gboard)
+│   │   ├── build.gradle              # módulo Android (AGP 8.5.2, NDK 28, CMake)
+│   │   ├── src/main/
+│   │   │   ├── AndroidManifest.xml   # activities, provider, RECORD_AUDIO
+│   │   │   ├── assets/models/        # ggml-base.bin (~141 MB, gitignored)
+│   │   │   ├── jni/whisper/          # CMakeLists.txt + jni.cpp (bridge JNI)
+│   │   │   ├── java/dev/gti/gboard/  # SetupActivity, VoiceEngine, etc.
+│   │   │   └── res/                  # strings, tema, ícone
+│   │   └── aosp-base/                # AOSP LatinIME (o teclado instalado)
+│   │       ├── java/                 # LatinIME, KeyboardState, VoiceInput, etc.
+│   │       ├── native/               # dicionários AOSP (JNI)
+│   │       ├── whisper-jni/          # JNI do Whisper + Swipe (CMakeLists)
+│   │       └── gradlew               # wrapper independente
+│   └── ai-model/                     # tudo de IA
+│       ├── whisper.cpp/              # whisper.cpp + ggml (vendado, MIT)
+│       ├── openswipe-engine/         # engine de swipe (vendado, MIT)
+│       ├── gesture-training/         # dados e scripts de treino do modelo de swipe
+│       ├── swipe_model.bin           # modelo neural de swipe treinado (~2 MB)
+│       ├── fetch-model.ps1           # baixa ggml-base.bin para os assets
+│       └── prepare-aosp.ps1          # copia o modelo para res/raw do aosp-base
 └── docs/                             # artefatos REA + esta documentação
 ```
 
@@ -73,11 +76,11 @@ gboard-local-voice/
 
 ```powershell
 # 1. (primeiro build) baixar o modelo para os assets
-powershell -ExecutionPolicy Bypass -File tools/fetch-model.ps1
+powershell -ExecutionPolicy Bypass -File packages/ai-model/fetch-model.ps1
 
 # 2. compilar o APK de debug (3 ABIs: arm64-v8a, armeabi-v7a, x86_64)
 .\gradlew.bat assembleDebug
-# -> app\build\outputs\apk\debug\app-debug.apk
+# -> packages\app\build\outputs\apk\debug\app-debug.apk
 
 # 3. (opcional) APK de release assinado
 .\gradlew.bat assembleRelease

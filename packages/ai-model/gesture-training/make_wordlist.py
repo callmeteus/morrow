@@ -1,7 +1,7 @@
 import json, os
 from collections import Counter
 
-work = r"C:\Users\Gio\Documents\Projetos\gboard-local-voice\gesture-training"
+work = os.path.dirname(os.path.abspath(__file__))
 files = [os.path.join(work, "pt_gestures.jsonl"), os.path.join(work, "futo_dev.jsonl")]
 counts = Counter()
 for f in files:

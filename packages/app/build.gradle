@@ -13,7 +13,7 @@ configurations.all {
 }
 
 // Path to the vendored whisper.cpp source tree (forward slashes for CMake).
-def whisperDir = new File(projectDir, '../third_party/whisper.cpp').canonicalPath.replace('\\', '/')
+def whisperDir = new File(projectDir, '../ai-model/whisper.cpp').canonicalPath.replace('\\', '/')
 
 android {
     namespace 'dev.gti.gboard'

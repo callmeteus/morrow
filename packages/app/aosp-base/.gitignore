@@ -5,7 +5,8 @@
 /local.properties
 *.iml
 /.idea/
-# The Whisper model is copied at build time from the app's assets (no need to duplicate 141MB in git).
+# Models are copied at build time from packages/ai-model (no need to duplicate in git).
 /java/res/raw/ggml_base.bin
+/java/res/raw/swipe_model.bin
 # Local build logs
 build_*.log

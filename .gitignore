@@ -8,10 +8,10 @@ local.properties
 *.iml
 .vscode/
 
-# The on-device model is fetched separately (see tools/fetch-model.*).
-app/src/main/assets/models/*.bin
+# The on-device model is fetched separately (see packages/ai-model/fetch-model.ps1).
+packages/app/src/main/assets/models/*.bin
 
 # Native build intermediates
-app/.externalNativeBuild/
-app/.cxx/
-app/build/
+packages/app/.externalNativeBuild/
+packages/app/.cxx/
+packages/app/build/

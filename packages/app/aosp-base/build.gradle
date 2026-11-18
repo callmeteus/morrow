@@ -41,7 +41,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments "-DWHISPER_LIB_DIR=" + new File(projectDir, '../third_party/whisper.cpp').canonicalPath.replace('\\', '/')
+                arguments "-DWHISPER_LIB_DIR=" + new File(projectDir, '../../ai-model/whisper.cpp').canonicalPath.replace('\\', '/')
             }
         }
 
@@ -122,4 +122,14 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.1.1'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     androidTestImplementation 'androidx.annotation:annotation:1.0.0'
+}
+
+// The canonical trained swipe model lives in packages/ai-model. Copy it into
+// res/raw at build time so R.raw.swipe_model resolves without duplicating it.
+tasks.register('copySwipeModel', Copy) {
+    from new File(projectDir, '../../ai-model/swipe_model.bin')
+    into new File(projectDir, 'java/res/raw')
+}
+tasks.matching { it.name == 'preBuild' }.configureEach {
+    dependsOn 'copySwipeModel'
 }

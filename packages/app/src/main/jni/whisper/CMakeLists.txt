@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Gradle passes an absolute path via -DWHISPER_LIB_DIR=... ; fall back to a
 # path relative to this file (app/src/main/jni/whisper -> repo root).
 if(NOT DEFINED WHISPER_LIB_DIR OR WHISPER_LIB_DIR STREQUAL "")
-    set(WHISPER_LIB_DIR ${CMAKE_SOURCE_DIR}/../../../../../third_party/whisper.cpp)
+    set(WHISPER_LIB_DIR ${CMAKE_SOURCE_DIR}/../../../../../../ai-model/whisper.cpp)
 endif()
 message(STATUS "whisper.cpp source: ${WHISPER_LIB_DIR}")
 

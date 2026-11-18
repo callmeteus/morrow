@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "gboard-local-voice"
-include ':app'
+include ':packages:app'

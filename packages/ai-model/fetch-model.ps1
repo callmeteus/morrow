@@ -1,5 +1,5 @@
 # Download the on-device Whisper model (ggml-base.bin, ~141 MB) into app assets.
-# Run from the repo root:  powershell -ExecutionPolicy Bypass -File tools/fetch-model.ps1
+# Run from the repo root:  powershell -ExecutionPolicy Bypass -File packages/ai-model/fetch-model.ps1
 $ErrorActionPreference = "Stop"
 $asset = Join-Path $PSScriptRoot "..\app\src\main\assets\models\ggml-base.bin"
 $asset = [System.IO.Path]::GetFullPath($asset)
