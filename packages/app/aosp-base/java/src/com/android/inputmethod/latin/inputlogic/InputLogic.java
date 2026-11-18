@@ -44,6 +44,7 @@ import com.android.inputmethod.latin.Suggest;
 import com.android.inputmethod.latin.Suggest.OnGetSuggestedWordsCallback;
 import com.android.inputmethod.latin.SuggestedWords;
 import com.android.inputmethod.latin.SuggestedWords.SuggestedWordInfo;
+import com.android.inputmethod.latin.UsageLog;
 import com.android.inputmethod.latin.WordComposer;
 import com.android.inputmethod.latin.common.Constants;
 import com.android.inputmethod.latin.common.InputPointers;
@@ -287,6 +288,11 @@ public final class InputLogic {
             final int currentKeyboardScriptId, final LatinIME.UIHandler handler) {
         final SuggestedWords suggestedWords = mSuggestedWords;
         final String suggestion = suggestionInfo.mWord;
+        // gti.dev: record the user's choice versus what was typed/swiped before it.
+        final UsageLog usageLogForPick = UsageLog.get();
+        if (usageLogForPick != null) {
+            usageLogForPick.suggestionPicked(suggestion, mWordComposer.getTypedWord());
+        }
         // If this is a punctuation picked from the suggestion strip, pass it to onCodeInput
         if (suggestion.length() == 1 && suggestedWords.isPunctuationSuggestions()) {
             // We still want to log a suggestion click.
@@ -1006,6 +1012,17 @@ public final class InputLogic {
             final int currentKeyboardScriptId) {
         mSpaceState = SpaceState.NONE;
         mDeleteCount++;
+        // gti.dev: record what the user removed, paired with the last commit.
+        final UsageLog usageLogForDelete = UsageLog.get();
+        if (usageLogForDelete != null) {
+            int deleted = 1;
+            if (mConnection.hasSelection()) {
+                deleted = mConnection.getExpectedSelectionEnd()
+                        - mConnection.getExpectedSelectionStart();
+            }
+            usageLogForDelete.backspace(deleted > 0 ? deleted : 1,
+                    mConnection.getTextBeforeCursor(80, 0));
+        }
 
         // In many cases after backspace, we need to update the shift state. Normally we need
         // to do this right away to avoid the shift state being out of date in case the user types
@@ -2064,6 +2081,15 @@ public final class InputLogic {
         if (TextUtils.isEmpty(batchInputText)) {
             return;
         }
+        // gti.dev: what the gesture decoder offered as its final suggestion list.
+        final UsageLog usageLogForSwipe = UsageLog.get();
+        if (usageLogForSwipe != null) {
+            final String[] cands = new String[suggestedWords.size()];
+            for (int i = 0; i < suggestedWords.size(); i++) {
+                cands[i] = suggestedWords.getWord(i);
+            }
+            usageLogForSwipe.swipeTop(batchInputText, cands);
+        }
         mConnection.beginBatchEdit();
         if (SpaceState.PHANTOM == mSpaceState) {
             insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues);
@@ -2207,6 +2233,15 @@ public final class InputLogic {
                     + "Connection.getNgramContextFromNthPreviousWord()");
             Log.d(TAG, "commitChosenWord() : NgramContext = " + ngramContext);
             startTimeMillis = System.currentTimeMillis();
+        }
+        // gti.dev: training signal. Link the final word to its source (swipe, voice is
+        // logged separately) and to the previous commit so later corrections can be paired.
+        final UsageLog usageLog = UsageLog.get();
+        if (usageLog != null) {
+            final String origin = mWordComposer.isBatchMode() ? "swipe"
+                    : (commitType == LastComposedWord.COMMIT_TYPE_MANUAL_PICK
+                            ? "suggestion" : "typed");
+            usageLog.commit(chosenWord, origin);
         }
         mConnection.commitText(chosenWordWithSuggestions, 1);
         if (DebugFlags.DEBUG_ENABLED) {

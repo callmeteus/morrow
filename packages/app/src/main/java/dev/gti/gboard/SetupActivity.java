@@ -196,11 +196,18 @@ public class SetupActivity extends AppCompatActivity {
         diagnostics.setChecked(prefs.getBoolean("gti_swipe_diagnostics", false));
         box.addView(diagnostics);
 
+        final CheckBox usageLog = new CheckBox(this);
+        usageLog.setText("Registrar dados de uso no aparelho (swipe, voz, teclas e correcoes)");
+        usageLog.setChecked(prefs.getBoolean("gti_usage_log", true));
+        box.addView(usageLog);
+
         TextView hint = new TextView(this);
         hint.setText("Compativel com OpenAI / localai / faster-whisper-server / Speaches. "
                 + "O teclado tenta o servidor e, se falhar, volta para o Whisper local.\n\n"
                 + "Diagnostico: salvo apenas no aparelho em "
-                + "/data/data/com.android.inputmethod.latin/files/swipe_diagnostics.jsonl");
+                + "/data/data/com.android.inputmethod.latin/files/swipe_diagnostics.jsonl\n\n"
+                + "Dados de uso: salvos apenas no aparelho em "
+                + "/data/data/com.android.inputmethod.latin/cache/usage/usage_events.jsonl");
         hint.setPadding(0, dp(8), 0, 0);
         box.addView(hint);
 
@@ -215,9 +222,12 @@ public class SetupActivity extends AppCompatActivity {
                             .putString(K_MODEL, model.getText().toString().trim())
                             .putString(K_LANG, lang.getText().toString().trim())
                             .putBoolean("gti_swipe_diagnostics", diagnostics.isChecked())
+                            .putBoolean("gti_usage_log", usageLog.isChecked())
                             .apply();
                     status.append("\nDiagnostico de swipe: "
                             + (diagnostics.isChecked() ? "ATIVADO" : "desativado") + ".");
+                    status.append("\nRegistro de uso: "
+                            + (usageLog.isChecked() ? "ATIVADO" : "desativado") + ".");
                     status.append("\nConfiguracao de voz salva. "
                             + (useExternal.isChecked() ? "Servidor externo ativado (com fallback local)."
                                                        : "Modo local offline ativado."));

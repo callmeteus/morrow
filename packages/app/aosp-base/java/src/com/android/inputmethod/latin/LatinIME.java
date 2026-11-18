@@ -618,6 +618,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public void onCreate() {
         Settings.init(this);
+        UsageLog.init(this);
         DebugFlags.init(PreferenceManager.getDefaultSharedPreferences(this));
         RichInputMethodManager.init(this);
         mRichImm = RichInputMethodManager.getInstance();
@@ -799,6 +800,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mDictionaryPackInstallReceiver);
         unregisterReceiver(mDictionaryDumpBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
+        if (UsageLog.get() != null) UsageLog.get().flush();
         super.onDestroy();
     }
 
@@ -1701,6 +1703,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public void onCodeInput(final int codePoint, final int x, final int y,
             final boolean isKeyRepeat) {
         noteDiagnosticTyped(codePoint);
+        if (UsageLog.get() != null && !isKeyRepeat) {
+            UsageLog.get().key(codePoint, null);
+        }
         // TODO: this processing does not belong inside LatinIME, the caller should be doing this.
         final MainKeyboardView mainKeyboardView = mKeyboardSwitcher.getMainKeyboardView();
         // x and y include some padding, but everything down the line (especially native
@@ -1747,6 +1752,13 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     if (mSuggestionStripView != null) {
                         mSuggestionStripView.setVoiceInputActive(false);
                         mSuggestionStripView.setVoiceInputStatus(null);
+                    }
+                    final UsageLog log = UsageLog.get();
+                    if (log != null && !out.isEmpty()) {
+                        final String backend = VoiceBackend.isExternalEnabled(LatinIME.this)
+                                ? "external" : "local";
+                        log.voice(out, backend, 0);
+                        log.commit(out + " ", "voice");
                     }
                     android.view.inputmethod.InputConnection ic = getCurrentInputConnection();
                     if (ic != null && !out.isEmpty()) ic.commitText(out + " ", 1);

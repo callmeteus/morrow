@@ -291,6 +291,12 @@ public final class BinaryDictionary extends Dictionary {
                 String[] decoded = SwipeDecoder.decodeGesture(
                         inputPointers.getXCoordinates(), inputPointers.getYCoordinates(),
                         timesLong, n);
+                // gti.dev: record the raw trace and the model's candidates for training.
+                final UsageLog usageLog = UsageLog.get();
+                if (usageLog != null) {
+                    usageLog.swipeDecode(inputPointers.getXCoordinates(),
+                            inputPointers.getYCoordinates(), timesLong, decoded, 0, 0);
+                }
                 StringBuilder rd = new StringBuilder("SWIPE_RESULT: ");
                 if (decoded != null) for (String w : decoded) rd.append('[').append(w).append(']');
                 android.util.Log.i("SwipeDecoder", rd.toString());

@@ -18,7 +18,8 @@ public class VoiceConfigProvider extends ContentProvider {
 
     public static final String[] COLUMNS = {
             "gti_voice_use_external", "gti_voice_base_url", "gti_voice_api_key",
-            "gti_voice_model", "gti_voice_language", "gti_swipe_diagnostics"
+            "gti_voice_model", "gti_voice_language", "gti_swipe_diagnostics",
+            "gti_usage_log"
     };
 
     private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
@@ -37,7 +38,8 @@ public class VoiceConfigProvider extends ContentProvider {
                 p.getString("gti_voice_api_key", ""),
                 p.getString("gti_voice_model", "whisper-1"),
                 p.getString("gti_voice_language", "pt"),
-                p.getBoolean("gti_swipe_diagnostics", false) ? 1 : 0
+                p.getBoolean("gti_swipe_diagnostics", false) ? 1 : 0,
+                p.getBoolean("gti_usage_log", true) ? 1 : 0
         });
         return c;
     }
