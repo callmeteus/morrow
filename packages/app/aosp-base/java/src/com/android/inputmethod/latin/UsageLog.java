@@ -48,6 +48,7 @@ public final class UsageLog {
     private String mLastCommitText;
     private String mPendingSwipeId;
     private String mPendingVoiceId;
+    private long mLastDecodeTs;
 
     private UsageLog(Context c) {
         mContext = c.getApplicationContext();
@@ -112,11 +113,23 @@ public final class UsageLog {
      */
     public String swipeDecode(int[] xs, int[] ys, long[] times, String[] decoded,
             int width, int height) {
+        // The decoder runs on every MOVE event. Keep only meaningful changes so the
+        // log has one or two entries per gesture instead of a dozen identical ones.
+        final String sig = array(decoded);
+        final long now = System.currentTimeMillis();
+        if (mPendingSwipeId != null && now - mLastDecodeTs < 300) {
+            return mPendingSwipeId;
+        }
+        mLastDecodeTs = now;
+
         final String id = newId("sw");
         int w = Math.max(1, width), h = Math.max(1, height);
         StringBuilder pts = new StringBuilder("[");
         if (xs != null && ys != null) {
-            final int n = Math.min(xs.length, ys.length);
+            // InputPointers uses a fixed-size buffer padded with zeros. Find the
+            // real end of the trace before sampling.
+            int n = Math.min(xs.length, ys.length);
+            while (n > 0 && xs[n - 1] == 0 && ys[n - 1] == 0) n--;
             int maxX = 1, maxY = 1;
             for (int i = 0; i < n; i++) {
                 if (xs[i] > maxX) maxX = xs[i];
@@ -140,7 +153,7 @@ public final class UsageLog {
                 .add("id", id)
                 .add("kbd", w).add("kbdh", h)
                 .add("pts", true, pts.toString())
-                .add("cands", true, array(decoded))
+                .add("cands", true, sig)
                 .build());
         mPendingSwipeId = id;
         return id;

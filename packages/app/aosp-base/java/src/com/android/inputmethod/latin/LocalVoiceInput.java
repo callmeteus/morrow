@@ -57,6 +57,8 @@ public final class LocalVoiceInput {
     public interface Listener {
         void onPartial(String text);
         void onFinal(String text);
+        /** Same callback with the measured inference time, for usage logging. */
+        void onFinal(String text, long inferMs);
         void onState(String state); // "listening" / "transcribing"
     }
 
@@ -228,7 +230,7 @@ public final class LocalVoiceInput {
             }
             @Override protected void onPostExecute(String s) {
                 VoiceDiagnostics.recordResult(sContext, s, inferMs[0]);
-                l.onFinal(s);
+                l.onFinal(s, inferMs[0]);
             }
         }.execute();
     }

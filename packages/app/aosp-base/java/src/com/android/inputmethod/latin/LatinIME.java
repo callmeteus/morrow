@@ -1747,6 +1747,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 });
             }
             @Override public void onFinal(String text) {
+                onFinal(text, 0);
+            }
+
+            @Override public void onFinal(String text, long inferMs) {
                 final String out = text;
                 mHandler.post(() -> {
                     if (mSuggestionStripView != null) {
@@ -1757,7 +1761,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                     if (log != null && !out.isEmpty()) {
                         final String backend = VoiceBackend.isExternalEnabled(LatinIME.this)
                                 ? "external" : "local";
-                        log.voice(out, backend, 0);
+                        log.voice(out, backend, inferMs);
                         log.commit(out + " ", "voice");
                     }
                     android.view.inputmethod.InputConnection ic = getCurrentInputConnection();
