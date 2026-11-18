@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style green accent colors for the LXX dark theme. -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <color name="gboard_accent_green">#FFA8E6C5</color>
+    <color name="gboard_accent_green_dark">#FF81C7A4</color>
+</resources>

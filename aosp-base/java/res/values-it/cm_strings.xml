@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2015 The CyanogenMod Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+ -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="subtype_no_language_bepo">Alfabeto (Bépo)</string>
+    <string name="subtype_hu_ZZ">Ungherese (QWERTY)</string>
+    <string name="keyboard_theme_material_follow_system">Material - utilizza le impostazioni di sistema</string>
+    <string name="prefs_keyboard_height_scale">Altezza tastiera</string>
+    <string name="number_row">Riga numeri</string>
+    <string name="number_row_summary">Mostra sempre la riga dei numeri per tutti i layout con quattro righe di tasti</string>
+    <string name="number_row_password">Riga dei numeri per le password</string>
+    <string name="number_row_password_summary">Mostra sempre la riga dei numeri per tutti i layout con quattro righe di tasti quando si digita una password</string>
+    <string name="space_trackpad">Spostamento tramite barra spaziatrice</string>
+    <string name="space_trackpad_summary">Scorri sulla barra spaziatrice per spostare il cursore</string>
+    <string name="backspace_trackpad">Trackpad sul tasto Backspace</string>
+    <string name="backspace_trackpad_summary">Scorri sulla tasto Backspace per eliminare le parole</string>
+    <string name="swipe_down_for_digits">Scorri verso il basso per digitare le cifre</string>
+    <string name="swipe_down_for_digits_summary">Scorri verso il basso su una tasto per digitare la cifra corrispondente</string>
+    <string name="show_clipboard_suggestions">Suggerimenti dagli appunti</string>
+    <string name="show_clipboard_suggestions_summary">Suggerisci testo e codici di verifica copiati di recente</string>
+    <string name="clipboard_suggestion_description">Incolla <xliff:g id="text" example="482913">%s</xliff:g></string>
+    <string name="clipboard_suggestion_sensitive_description">Incolla testo copiato</string>
+    <string name="show_longpress_hints">Simboli di pressione prolungata</string>
+    <string name="show_longpress_hints_summary">Mostra i simboli di pressione prolungata per i tasti che li prevedono</string>
+    <string name="show_emoji_key">Mostra tasto emoji</string>
+    <string name="show_emoji_key_summary">Mostra sempre il tasto emoji. Quando questa opzione è abilitata, il tasto di selezione della lingua non può essere mostrato.</string>
+    <string name="enable_split_keyboard_summary">Solo in orizzontale</string>
+    <string name="split_keyboard_duplicate_keys">Duplica tasti centrali</string>
+    <string name="split_keyboard_duplicate_keys_summary">Mostra i tasti vicini al centro su entrambe le metà</string>
+    <string name="spoken_description_split_keyboard">Dividi tastiera</string>
+    <string name="spoken_description_merge_keyboard">Unisci tastiera</string>
+    <string name="spoken_description_float_keyboard">Tastiera fluttuante</string>
+    <string name="spoken_description_dock_keyboard">Riaggancia tastiera</string>
+    <string name="floating_keyboard_drag_handle">Sposta tastiera</string>
+    <string name="floating_keyboard_resize_handle">Ridimensiona tastiera</string>
+    <string name="floating_keyboard_reset">Reimposta</string>
+    <string name="floating_keyboard_hide">Nascondi tastiera</string>
+    <string name="floating_keyboard_switch_ime">Cambia metodo di inserimento</string>
+</resources>

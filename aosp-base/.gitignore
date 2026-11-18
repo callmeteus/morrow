@@ -1,0 +1,11 @@
+/build/
+/.cxx/
+/.gradle/
+/build-tools/
+/local.properties
+*.iml
+/.idea/
+# The Whisper model is copied at build time from the app's assets (no need to duplicate 141MB in git).
+/java/res/raw/ggml_base.bin
+# Local build logs
+build_*.log

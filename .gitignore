@@ -1,0 +1,17 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# The on-device model is fetched separately (see tools/fetch-model.*).
+app/src/main/assets/models/*.bin
+
+# Native build intermediates
+app/.externalNativeBuild/
+app/.cxx/
+app/build/

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: borderless key style (like Gboard "no borders" setting). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@color/key_background_pressed_lxx_dark" />
+    <item android:drawable="@android:color/transparent" />
+</selector>

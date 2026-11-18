@@ -1,0 +1,13 @@
+# Raw datasets and intermediates (large, re-downloadable).
+*.jsonl
+*.npz
+*.wav
+*.pt
+__pycache__/
+*.pyc
+build*/
+smoke/
+model_pten/
+train_*.log
+build_*.log
+# Keep the trained model and wordlist copied into the IME assets instead.

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gboard Voz Local</string>
+    <string name="ime_name">Gboard · Voz local</string>
+    <string name="accessibility_desc">Ferramenta de desenvolvimento: despeja a hierarquia da janela do teclado.</string>
+</resources>

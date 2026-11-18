@@ -1,0 +1,82 @@
+plugins {
+    id 'com.android.application'
+}
+
+// appcompat/core pull mismatched kotlin-stdlib artifacts transitively. Force a
+// single stdlib version (1.8.x merges jdk7/jdk8 into the main artifact).
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+    }
+}
+
+// Path to the vendored whisper.cpp source tree (forward slashes for CMake).
+def whisperDir = new File(projectDir, '../third_party/whisper.cpp').canonicalPath.replace('\\', '/')
+
+android {
+    namespace 'dev.gti.gboard'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "dev.gti.gboard"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0"
+
+        ndk {
+            // Build the on-device Whisper engine for the common ABIs.
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments "-DWHISPER_LIB_DIR=" + whisperDir
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // NDK installed in the local SDK (matches the vendored toolchain).
+    ndkVersion "28.2.13676358"
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/jni/whisper/CMakeLists.txt")
+            version "3.22.1"
+        }
+    }
+
+    packagingOptions {
+        // Keep the 16k WAV test asset and model out of the dex/resource pipeline.
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+
+    testImplementation 'junit:junit:4.13.2'
+}

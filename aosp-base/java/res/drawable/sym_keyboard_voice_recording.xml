@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: mic shown while on-device dictation is recording. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <path
+        android:fillColor="?attr/keyIconTint"
+        android:pathData="M320,200L640,200Q677,200 704,227Q731,254 731,291L731,669Q731,706 704,733Q677,760 640,760L320,760Q283,760 256,733Q229,706 229,669L229,291Q229,254 256,227Q283,200 320,200Z" />
+</vector>

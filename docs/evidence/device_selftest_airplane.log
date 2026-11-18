@@ -1,0 +1,6 @@
+﻿--------- beginning of main
+11-16 16:25:55.307  9031  9031 I SetupActivity: WAV-SELFTEST: intent flag received, will run after engine init
+11-16 16:25:56.240  9031  9057 I VoiceEngine: whisper context ready (threads=4)
+11-16 16:25:56.241  9031  9057 I VoiceEngine: VoiceEngine ready (threads=4)
+11-16 16:25:56.395  9031  9057 I SetupActivity: WAV-SELFTEST: engine ready (dict_size=2934)
+11-16 16:28:31.839  9031  9057 I SetupActivity: WAV self-test file=pt16.wav audio_s=6.35 infer_ms=155385 rtf=24.46 raw="O teclado local ├® conhece a minha voz. O teclado por voz funciona ser inteira-nage." corrected="O teclado local ├® conhece a minha voz. O teclado por voz funciona ser inteira-nage."
