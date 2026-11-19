@@ -3,7 +3,7 @@
 # Then:      powershell -ExecutionPolicy Bypass -File tools/publish-models.ps1
 $ErrorActionPreference = 'Stop'
 
-$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$root = Split-Path -Parent $PSScriptRoot
 
 Write-Host 'Checking Hugging Face login...'
 hf auth whoami
