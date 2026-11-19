@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: docker
+    env:
+      MORROW_CI_BUILD: "1"
     container:
       image: mingc/android-build-box:latest
     steps:
