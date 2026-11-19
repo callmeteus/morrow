@@ -64,8 +64,6 @@
     <string name="spoken_description_mic">Voice input</string>
     <!-- Spoken description for the stop button shown while dictating. -->
     <string name="spoken_description_stop_dictation">Stop dictation</string>
-    <!-- Spoken description for the visible emoji button in the suggestion strip. -->
-    <string name="spoken_description_emoji">Emoji keyboard</string>
     <!-- Spoken description for the "Emoji" keyboard key. -->
     <string name="spoken_description_emoji">Emoji</string>
     <!-- Spoken description for the "Return" keyboard key. -->
