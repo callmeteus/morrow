@@ -15,3 +15,6 @@ packages/app/src/main/assets/models/*.bin
 packages/app/.externalNativeBuild/
 packages/app/.cxx/
 packages/app/build/
+
+# Release binaries are published to Hugging Face, kept out of git
+releases/*/*.bin
