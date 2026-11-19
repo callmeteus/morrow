@@ -619,6 +619,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public void onCreate() {
         Settings.init(this);
         UsageLog.init(this);
+        UserLexicon.init(this);
         DebugFlags.init(PreferenceManager.getDefaultSharedPreferences(this));
         RichInputMethodManager.init(this);
         mRichImm = RichInputMethodManager.getInstance();
@@ -1454,7 +1455,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // (all letters upper) and InputLogic.getActualCapsMode maps it to
         // CAPS_MODE_AUTO_SHIFT_LOCKED, which made swipe output ALL uppercase.
         if (mInputLogic.mConnection != null) {
-            final CharSequence before = mInputLogic.mConnection.getTextBeforeCursor(4, 0);
+            final CharSequence before = mInputLogic.mConnection.getTextBeforeCursor(8, 0);
             final String s = before == null ? "" : before.toString();
             // Empty editor: force first-letter capitalization (start of text).
             if (s.isEmpty()) {
@@ -1463,9 +1464,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
             // Right after a sentence-ending punctuation (., !, ?) optionally
             // followed by spaces: force first-letter capitalization. The cached
-            // getCursorCapsMode often misses this on Samsung.
-            final char last = s.charAt(s.length() - 1);
-            if (last == '.' || last == '!' || last == '?') {
+            // getCursorCapsMode often misses this on Samsung. Skip trailing
+            // whitespace so "foo! " or "bar?  " also start a new sentence.
+            int k = s.length() - 1;
+            while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
+            if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
                 return android.text.TextUtils.CAP_MODE_WORDS
                         | android.text.TextUtils.CAP_MODE_SENTENCES;
             }
@@ -1734,8 +1737,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             @Override public void onState(String state) {
                 // gti.dev: "ready" = mic open waiting for speech, "listening" = user
                 // is speaking, "transcribing" = decoding the captured audio.
-                final boolean active = "listening".equals(state);
-                final String status = "ready".equals(state) ? "Fale agora"
+                // gti.dev: show the STOP button as soon as the mic is open, not only
+                // after speech is detected, like Gboard's ready-to-listen state.
+                final boolean active = "ready".equals(state) || "listening".equals(state);
+                final String status = "ready".equals(state) ? "Pronto para ouvir. Toque para parar"
                         : "listening".equals(state) ? "Ouvindo..."
                         : "transcribing".equals(state) ? "Transcrevendo..."
                         : "error".equals(state) ? "Falha ao abrir o microfone" : null;

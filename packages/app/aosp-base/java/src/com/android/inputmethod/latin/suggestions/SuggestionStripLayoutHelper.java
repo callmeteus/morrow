@@ -204,23 +204,24 @@ final class SuggestionStripLayoutHelper {
         final String word = suggestedWords.getLabel(indexInSuggestedWords);
         // TODO: don't use the index to decide whether this is the auto-correction/typed word, as
         // this is brittle
-        // gti.dev: highlight the center candidate even when it will not be applied
-        // automatically, because the strip now always shows it in the center slot.
-        final boolean isAutoCorrection =
-                indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION;
-        final boolean isTypedWordValid = suggestedWords.mTypedWordValid
-                && indexInSuggestedWords == SuggestedWords.INDEX_OF_TYPED_WORD;
-        if (!isAutoCorrection && !isTypedWordValid) {
+        // gti.dev: only the word that will actually be committed gets the heavy
+        // weight. The AOSP bolded both the typed word and the centre candidate.
+        final boolean isWordThatWillBeSent =
+                (suggestedWords.mWillAutoCorrect
+                        && indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION)
+                || (!suggestedWords.mWillAutoCorrect
+                        && indexInSuggestedWords == SuggestedWords.INDEX_OF_TYPED_WORD);
+        if (!isWordThatWillBeSent) {
             return word;
         }
 
         final Spannable spannedWord = new SpannableString(word);
         final int options = mSuggestionStripOptions;
-        if ((isAutoCorrection && (options & AUTO_CORRECT_BOLD) != 0)
-                || (isTypedWordValid && (options & VALID_TYPED_WORD_BOLD) != 0)) {
+        if ((options & (AUTO_CORRECT_BOLD | VALID_TYPED_WORD_BOLD)) != 0) {
             addStyleSpan(spannedWord, BOLD_SPAN);
         }
-        if (isAutoCorrection && (options & AUTO_CORRECT_UNDERLINE) != 0) {
+        if (indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION
+                && (options & AUTO_CORRECT_UNDERLINE) != 0) {
             addStyleSpan(spannedWord, UNDERLINE_SPAN);
         }
         return spannedWord;
@@ -302,13 +303,16 @@ final class SuggestionStripLayoutHelper {
         final boolean isTypedWord = suggestedWords.getInfo(indexInSuggestedWords).isKindOf(
                 SuggestedWordInfo.KIND_TYPED);
 
+        // gti.dev: the emphasised colour marks the word that will be sent,
+        // matching the bold rule above.
+        final boolean isWordThatWillBeSent =
+                (suggestedWords.mWillAutoCorrect
+                        && indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION)
+                || (!suggestedWords.mWillAutoCorrect
+                        && indexInSuggestedWords == SuggestedWords.INDEX_OF_TYPED_WORD);
         final int color;
-        if (indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION) {
-            // gti.dev: center slot is the corrector's best guess regardless of
-            // whether it will be auto-applied on space.
+        if (isWordThatWillBeSent) {
             color = mColorAutoCorrect;
-        } else if (isTypedWord && suggestedWords.mTypedWordValid) {
-            color = mColorValidTypedWord;
         } else if (isTypedWord) {
             color = mColorTypedWord;
         } else {

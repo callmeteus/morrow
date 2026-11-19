@@ -45,6 +45,7 @@ import com.android.inputmethod.latin.Suggest.OnGetSuggestedWordsCallback;
 import com.android.inputmethod.latin.SuggestedWords;
 import com.android.inputmethod.latin.SuggestedWords.SuggestedWordInfo;
 import com.android.inputmethod.latin.UsageLog;
+import com.android.inputmethod.latin.UserLexicon;
 import com.android.inputmethod.latin.WordComposer;
 import com.android.inputmethod.latin.common.Constants;
 import com.android.inputmethod.latin.common.InputPointers;
@@ -292,6 +293,11 @@ public final class InputLogic {
         final UsageLog usageLogForPick = UsageLog.get();
         if (usageLogForPick != null) {
             usageLogForPick.suggestionPicked(suggestion, mWordComposer.getTypedWord());
+        }
+        // gti.dev: remember the user's choice so the rejected word is never offered again.
+        final UserLexicon userLexicon = UserLexicon.get();
+        if (userLexicon != null) {
+            userLexicon.noteCorrection(mWordComposer.getTypedWord(), suggestion);
         }
         // If this is a punctuation picked from the suggestion strip, pass it to onCodeInput
         if (suggestion.length() == 1 && suggestedWords.isPunctuationSuggestions()) {
@@ -1803,11 +1809,17 @@ public final class InputLogic {
         // caps when the editor is empty or the last char is . ! ? so batch input (swipe)
         // capitalises only the first letter, like Gboard. Do NOT include CAP_MODE_CHARACTERS:
         // getActualCapsMode() maps that flag to CAPS_MODE_AUTO_SHIFT_LOCKED (all letters upper).
-        final CharSequence before = mConnection.getTextBeforeCursor(4, 0);
+        final CharSequence before = mConnection.getTextBeforeCursor(8, 0);
         final String s = before == null ? "" : before.toString();
-        if (s.isEmpty() || s.charAt(s.length() - 1) == '.'
-                || s.charAt(s.length() - 1) == '!' || s.charAt(s.length() - 1) == '?') {
+        if (s.isEmpty()) {
             caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
+        } else {
+            // Skip trailing spaces so "foo! " and "bar?  " also start a sentence.
+            int k = s.length() - 1;
+            while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
+            if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
+                caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
+            }
         }
         return caps;
     }
@@ -2234,6 +2246,10 @@ public final class InputLogic {
             Log.d(TAG, "commitChosenWord() : NgramContext = " + ngramContext);
             startTimeMillis = System.currentTimeMillis();
         }
+        // gti.dev: every committed word feeds the on-device user lexicon, so words
+        // written often gradually outrank equally frequent dictionary entries.
+        final UserLexicon lexicon = UserLexicon.get();
+        if (lexicon != null) lexicon.noteWord(chosenWord);
         // gti.dev: training signal. Link the final word to its source (swipe, voice is
         // logged separately) and to the previous commit so later corrections can be paired.
         final UsageLog usageLog = UsageLog.get();

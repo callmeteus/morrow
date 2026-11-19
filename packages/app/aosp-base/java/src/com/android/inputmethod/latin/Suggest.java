@@ -254,6 +254,8 @@ public final class Suggest {
                         : sourceDictionaryOfRemovedWord,
                 SuggestedWordInfo.NOT_AN_INDEX /* indexOfTouchPointOfSecondWord */,
                 SuggestedWordInfo.NOT_A_CONFIDENCE /* autoCommitFirstWordConfidence */);
+        // gti.dev: drop words the user corrected before and boost words they write often.
+        applyUserLexicon(suggestionsContainer);
         if (!TextUtils.isEmpty(typedWordString)) {
             suggestionsContainer.add(0, typedWordInfo);
         }
@@ -333,6 +335,8 @@ public final class Suggest {
         // (typedWordValid=true), not as an "auto correct word" (willAutoCorrect=false).
         // Note that because this method is never used to get predictions, there is no need to
         // modify inputType such in getSuggestedWordsForNonBatchInput.
+        // gti.dev: apply the user lexicon before choosing the gesture result.
+        applyUserLexicon(suggestionsContainer);
         final SuggestedWordInfo pseudoTypedWordInfo = suggestionsContainer.isEmpty() ? null
                 : suggestionsContainer.get(0);
 
@@ -343,6 +347,36 @@ public final class Suggest {
                 false /* willAutoCorrect */,
                 false /* isObsoleteSuggestions */,
                 inputStyle, sequenceNumber));
+    }
+
+    /**
+     * gti.dev: apply the on-device user lexicon to dictionary suggestions.
+     * Words the user previously corrected are removed; words written often get
+     * a ranking boost. The typed word is added by the caller afterwards, so it
+     * always stays in the first slot.
+     */
+    private static void applyUserLexicon(final ArrayList<SuggestedWordInfo> suggestions) {
+        final UserLexicon lex = UserLexicon.get();
+        if (lex == null || suggestions.isEmpty()) return;
+        for (int i = suggestions.size() - 1; i >= 0; --i) {
+            final SuggestedWordInfo info = suggestions.get(i);
+            if (lex.isSuppressed(info.mWord)) {
+                suggestions.remove(i);
+                continue;
+            }
+            final int boost = lex.boost(info.mWord);
+            if (boost > 0) {
+                suggestions.set(i, new SuggestedWordInfo(info.mWord, info.mPrevWordsContext,
+                        info.mScore + boost, info.mKindAndFlags, info.mSourceDict,
+                        info.mIndexOfTouchPointOfSecondWord, info.mAutoCommitFirstWordConfidence));
+            }
+        }
+        java.util.Collections.sort(suggestions, new java.util.Comparator<SuggestedWordInfo>() {
+            @Override
+            public int compare(final SuggestedWordInfo a, final SuggestedWordInfo b) {
+                return Integer.compare(b.mScore, a.mScore);
+            }
+        });
     }
 
     private static ArrayList<SuggestedWordInfo> getSuggestionsInfoListWithDebugInfo(

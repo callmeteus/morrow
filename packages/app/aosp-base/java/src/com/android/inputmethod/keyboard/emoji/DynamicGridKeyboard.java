@@ -169,6 +169,20 @@ final class DynamicGridKeyboard extends Keyboard {
     public void loadRecentKeys(final Collection<DynamicGridKeyboard> keyboards) {
         final String str = Settings.readEmojiRecentKeys(mPrefs);
         final List<Object> keys = JsonUtils.jsonStrToList(str);
+        if (keys.isEmpty()) {
+            // gti.dev: seed a few common emojis on first run so the recents tab
+            // never looks empty, while still letting the user's own picks take over.
+            final int[] seed = {
+                    0x1F600, 0x2764, 0x1F44D, 0x1F602,
+                    0x1F389, 0x1F525, 0x1F60A, 0x1F680
+            };
+            for (final int code : seed) {
+                final Key key = getKeyByCode(keyboards, code);
+                if (key != null) addKeyLast(key);
+            }
+            saveRecentKeys();
+            return;
+        }
         for (final Object o : keys) {
             final Key key;
             if (o instanceof Integer) {

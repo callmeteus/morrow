@@ -1,0 +1,38 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: docker
+    container:
+      image: mingc/android-build-box:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Whisper model
+        run: |
+          pip install -q huggingface_hub
+          hf download giofolf/omnivox ggml-base.bin \
+            --local-dir packages/app/src/main/assets/models
+          cp packages/app/src/main/assets/models/ggml-base.bin \
+            packages/app/aosp-base/java/res/raw/ggml_base.bin
+
+      - name: Build setup app
+        working-directory: packages/app
+        run: ./gradlew assembleDebug
+
+      - name: Build IME
+        working-directory: packages/app/aosp-base
+        run: ./gradlew assembleDebug
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: morrow-apks
+          path: |
+            packages/app/build/outputs/apk/debug/*.apk
+            packages/app/aosp-base/build/outputs/apk/debug/*.apk

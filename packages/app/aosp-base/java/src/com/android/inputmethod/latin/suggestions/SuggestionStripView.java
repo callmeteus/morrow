@@ -88,6 +88,8 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
 
     private final ViewGroup mSuggestionsStrip;
     private final ImageButton mVoiceKey;
+    // gti.dev: a visible emoji button instead of the hidden comma long-press.
+    private final ImageButton mEmojiKey;
     private final ImageButton mSplitKey;
     private final ImageButton mFloatKey;
     private final int mDockedStripMargin;
@@ -181,6 +183,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
 
         mSuggestionsStrip = (ViewGroup)findViewById(R.id.suggestions_strip);
         mVoiceKey = (ImageButton)findViewById(R.id.suggestions_strip_voice_key);
+        mEmojiKey = (ImageButton)findViewById(R.id.suggestions_strip_emoji_key);
         mSplitKey = (ImageButton)findViewById(R.id.suggestions_strip_split_key);
         mFloatKey = (ImageButton)findViewById(R.id.suggestions_strip_float_key);
         mDockedStripMargin =
@@ -262,6 +265,9 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             // gti.dev: change the mic icon while recording, like Gboard.
             mVoiceKey.setImageDrawable(active ? mRecordingIcon : mVoiceIcon);
             mVoiceKey.setActivated(active);
+            mVoiceKey.setContentDescription(getContext().getString(active
+                    ? com.android.inputmethod.latin.R.string.spoken_description_stop_dictation
+                    : com.android.inputmethod.latin.R.string.spoken_description_mic));
         }
     }
 
@@ -653,6 +659,13 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         if (view == mSplitKey) {
             mListener.toggleSplitKeyboard();
             updateSplitKey();
+            return;
+        }
+        if (view == mEmojiKey) {
+            // gti.dev: explicit emoji button next to the mic.
+            mListener.onCodeInput(Constants.CODE_EMOJI,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
             return;
         }
         if (view == mVoiceKey || view == mImportantNoticeStrip) {
