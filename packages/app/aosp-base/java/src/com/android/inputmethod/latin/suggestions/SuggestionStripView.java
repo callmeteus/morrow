@@ -343,6 +343,9 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
      * this with the real composing/editor state before pushing suggestions.
      */
     public void setShowWordSuggestions(final boolean showWordSuggestions) {
+        if (mShowWordSuggestions == showWordSuggestions) {
+            return;
+        }
         mShowWordSuggestions = showWordSuggestions;
         refreshStripVisibility();
     }

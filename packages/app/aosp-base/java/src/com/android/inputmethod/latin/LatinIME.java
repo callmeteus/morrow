@@ -1223,6 +1223,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             mKeyboardSwitcher.requestUpdatingShiftState(getCurrentAutoCapsState(),
                     getCurrentRecapitalizeState());
         }
+        // gti.dev: keep the toolbar/suggestion state in sync even when text is
+        // cleared by a source other than our own key handling.
+        refreshToolbarVisibility();
     }
 
     /**
@@ -1893,6 +1896,21 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         return null != mSuggestionStripView;
     }
 
+    /**
+     * gti.dev: match Gboard's strip behaviour. With an empty editor show only
+     * the icon toolbar; swap in word suggestions once text exists. This also
+     * keeps next-word predictions visible after a committed word + space.
+     */
+    private void refreshToolbarVisibility() {
+        if (!hasSuggestionStripView()) {
+            return;
+        }
+        final CharSequence beforeCursor = mInputLogic.mConnection.getTextBeforeCursor(1, 0);
+        final boolean hasText = mInputLogic.getComposingLength() > 0
+                || (beforeCursor != null && beforeCursor.length() > 0);
+        mSuggestionStripView.setShowWordSuggestions(hasText);
+    }
+
     private void setSuggestedWords(final SuggestedWords suggestedWords) {
         final SettingsValues currentSettingsValues = mSettings.getCurrent();
         mInputLogic.setSuggestedWords(suggestedWords);
@@ -1932,13 +1950,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
         }
 
-        // gti.dev: match Gboard's strip behaviour. With an empty editor show only
-        // the icon toolbar; swap in word suggestions once text exists. This also
-        // keeps next-word predictions visible after a committed word + space.
-        final CharSequence beforeCursor = mInputLogic.mConnection.getTextBeforeCursor(1, 0);
-        final boolean hasText = mInputLogic.getComposingLength() > 0
-                || (beforeCursor != null && beforeCursor.length() > 0);
-        mSuggestionStripView.setShowWordSuggestions(hasText);
+        refreshToolbarVisibility();
 
         if (currentSettingsValues.isSuggestionsEnabledPerUserSettings()
                 || currentSettingsValues.isApplicationSpecifiedCompletionsOn()
