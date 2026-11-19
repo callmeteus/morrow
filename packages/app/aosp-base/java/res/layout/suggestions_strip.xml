@@ -69,37 +69,51 @@
         android:layout_marginLeft="@dimen/config_suggestions_strip_horizontal_margin"
         android:layout_marginRight="@dimen/config_suggestions_strip_horizontal_margin"
         android:visibility="invisible" />
-    <ImageButton
-        android:id="@+id/suggestions_strip_float_key"
-        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+    <!-- gti.dev: Gboard-style toolbar on the left instead of the AOSP floating-key icon. -->
+    <LinearLayout
+        android:id="@+id/suggestions_strip_toolbar"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/ic_floating_keyboard"
-        android:contentDescription="@string/spoken_description_float_keyboard"
-        style="?attr/suggestionWordStyle" />
-    <ImageButton
-        android:id="@+id/suggestions_strip_split_key"
-        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
-        android:layout_height="fill_parent"
-        android:layout_toEndOf="@id/suggestions_strip_float_key"
-        android:layout_toRightOf="@id/suggestions_strip_float_key"
-        android:layout_centerVertical="true"
-        android:src="@drawable/ic_split_keyboard"
-        android:visibility="gone"
-        android:contentDescription="@string/spoken_description_split_keyboard"
-        style="?attr/suggestionWordStyle" />
-    <ImageButton
-        android:id="@+id/suggestions_strip_emoji_key"
-        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
-        android:layout_height="fill_parent"
-        android:layout_toStartOf="@id/suggestions_strip_voice_key"
-        android:layout_toLeftOf="@id/suggestions_strip_voice_key"
-        android:layout_centerVertical="true"
-        android:src="@drawable/ic_emoji_smiley"
-        android:contentDescription="@string/spoken_description_emoji"
-        style="?attr/suggestionWordStyle" />
+        android:layout_centerVertical="true">
+        <ImageButton
+            android:id="@+id/suggestions_strip_clipboard_key"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_clipboard"
+            android:contentDescription="@string/spoken_description_clipboard"
+            style="?attr/suggestionWordStyle" />
+        <ImageButton
+            android:id="@+id/suggestions_strip_emoji_key"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_emoji_smiley"
+            android:contentDescription="@string/spoken_description_emoji"
+            style="?attr/suggestionWordStyle" />
+        <ImageButton
+            android:id="@+id/suggestions_strip_gif_key"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_gif"
+            android:contentDescription="@string/spoken_description_gif"
+            style="?attr/suggestionWordStyle" />
+        <ImageButton
+            android:id="@+id/suggestions_strip_theme_key"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_theme"
+            android:contentDescription="@string/spoken_description_theme"
+            style="?attr/suggestionWordStyle" />
+        <ImageButton
+            android:id="@+id/suggestions_strip_settings_key"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_settings"
+            android:contentDescription="@string/spoken_description_settings"
+            style="?attr/suggestionWordStyle" />
+    </LinearLayout>
     <ImageButton
         android:id="@+id/suggestions_strip_voice_key"
         android:layout_width="@dimen/config_suggestions_strip_edge_key_width"

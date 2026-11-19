@@ -90,8 +90,11 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private final ImageButton mVoiceKey;
     // gti.dev: a visible emoji button instead of the hidden comma long-press.
     private final ImageButton mEmojiKey;
-    private final ImageButton mSplitKey;
-    private final ImageButton mFloatKey;
+    // gti.dev: Gboard-style toolbar buttons.
+    private final ImageButton mClipboardKey;
+    private final ImageButton mGifKey;
+    private final ImageButton mThemeKey;
+    private final ImageButton mSettingsKey;
     private final int mDockedStripMargin;
     private final View mImportantNoticeStrip;
     private final InlineSuggestionsStrip mInlineSuggestionsStrip;
@@ -184,8 +187,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         mSuggestionsStrip = (ViewGroup)findViewById(R.id.suggestions_strip);
         mVoiceKey = (ImageButton)findViewById(R.id.suggestions_strip_voice_key);
         mEmojiKey = (ImageButton)findViewById(R.id.suggestions_strip_emoji_key);
-        mSplitKey = (ImageButton)findViewById(R.id.suggestions_strip_split_key);
-        mFloatKey = (ImageButton)findViewById(R.id.suggestions_strip_float_key);
+        mClipboardKey = (ImageButton)findViewById(R.id.suggestions_strip_clipboard_key);
+        mGifKey = (ImageButton)findViewById(R.id.suggestions_strip_gif_key);
+        mThemeKey = (ImageButton)findViewById(R.id.suggestions_strip_theme_key);
+        mSettingsKey = (ImageButton)findViewById(R.id.suggestions_strip_settings_key);
         mDockedStripMargin =
                 ((MarginLayoutParams) mSuggestionsStrip.getLayoutParams()).getMarginStart();
         mImportantNoticeStrip = findViewById(R.id.important_notice_strip);
@@ -233,10 +238,11 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         mVoiceKey.setImageDrawable(iconVoice);
         mVoiceKey.setOnClickListener(this);
         mEmojiKey.setOnClickListener(this);
-        mSplitKey.setImageTintList(getToolKeyTintList());
-        mSplitKey.setOnClickListener(this);
-        mFloatKey.setImageTintList(getToolKeyTintList());
-        mFloatKey.setOnClickListener(this);
+        for (final ImageButton key : new ImageButton[] {
+                mClipboardKey, mGifKey, mThemeKey, mSettingsKey }) {
+            key.setImageTintList(getToolKeyTintList());
+            key.setOnClickListener(this);
+        }
     }
 
     /**
@@ -290,20 +296,12 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     }
 
     private void updateFloatKey() {
-        final boolean isFloating = Settings.getInstance().getCurrent().mIsFloatingKeyboardEnabled;
-        mFloatKey.setActivated(isFloating);
-        mFloatKey.setImageAlpha(isFloating ? TOOL_KEY_ALPHA_ON : TOOL_KEY_ALPHA_OFF);
-        mFloatKey.setContentDescription(getResources().getString(isFloating
-                ? R.string.spoken_description_dock_keyboard
-                : R.string.spoken_description_float_keyboard));
-        final int margin = isFloating
-                ? getResources().getDimensionPixelSize(
-                        R.dimen.config_suggestions_strip_edge_key_width)
-                : mDockedStripMargin;
-        setHorizontalMargins(mSuggestionsStrip, margin);
-        setHorizontalMargins(mImportantNoticeStrip, margin);
-        setHorizontalMargins(mInlineSuggestionsStrip, margin);
-        setHorizontalMargins(mClipboardSuggestionStrip, margin);
+        // gti.dev: the Gboard-style toolbar owns the left edge now; keep the
+        // standard margin for the suggestion strip.
+        setHorizontalMargins(mSuggestionsStrip, mDockedStripMargin);
+        setHorizontalMargins(mImportantNoticeStrip, mDockedStripMargin);
+        setHorizontalMargins(mInlineSuggestionsStrip, mDockedStripMargin);
+        setHorizontalMargins(mClipboardSuggestionStrip, mDockedStripMargin);
     }
 
     private static void setHorizontalMargins(final View view, final int margin) {
@@ -318,18 +316,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     }
 
     private void updateSplitKey() {
-        if (Settings.getInstance().getCurrent().mIsFloatingKeyboardEnabled
-                || !SplitKeyboardUtils.isSplitKeyboardAvailable(getResources())) {
-            mSplitKey.setVisibility(GONE);
-            return;
-        }
-        final boolean isSplit = Settings.getInstance().getCurrent().mIsSplitKeyboardEnabled;
-        mSplitKey.setVisibility(VISIBLE);
-        mSplitKey.setActivated(isSplit);
-        mSplitKey.setImageAlpha(isSplit ? TOOL_KEY_ALPHA_ON : TOOL_KEY_ALPHA_OFF);
-        mSplitKey.setContentDescription(getResources().getString(isSplit
-                ? R.string.spoken_description_merge_keyboard
-                : R.string.spoken_description_split_keyboard));
+        // gti.dev: split/floating toggles are no longer shown in the strip.
     }
 
     public void setSuggestions(final SuggestedWords suggestedWords, final boolean isRtlLanguage) {
@@ -648,23 +635,38 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             mListener.showImportantNoticeContents();
             return;
         }
-        if (view == mFloatKey) {
-            mListener.toggleFloatingKeyboard();
-            return;
-        }
         if (view.getTag() instanceof ClipboardSuggestion.Match && mClipboardSuggestion != null) {
             mListener.pickClipboardSuggestion(mClipboardSuggestion,
                     (ClipboardSuggestion.Match) view.getTag());
             return;
         }
-        if (view == mSplitKey) {
-            mListener.toggleSplitKeyboard();
-            updateSplitKey();
+        if (view == mEmojiKey) {
+            mListener.onCodeInput(Constants.CODE_EMOJI,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
             return;
         }
-        if (view == mEmojiKey) {
-            // gti.dev: explicit emoji button next to the mic.
+        if (view == mClipboardKey) {
+            mListener.onCodeInput(Constants.CODE_CLIPBOARD_PASTE,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
+            return;
+        }
+        if (view == mGifKey) {
+            // gti.dev: GIF button; no dedicated action yet, open the emoji panel.
             mListener.onCodeInput(Constants.CODE_EMOJI,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
+            return;
+        }
+        if (view == mThemeKey) {
+            mListener.onCodeInput(Constants.CODE_SETTINGS,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
+            return;
+        }
+        if (view == mSettingsKey) {
+            mListener.onCodeInput(Constants.CODE_SETTINGS,
                     Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
                     false /* isKeyRepeat */);
             return;
