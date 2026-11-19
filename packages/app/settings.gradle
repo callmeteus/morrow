@@ -12,4 +12,4 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "gboard-local-voice"
+rootProject.name = "morrow"

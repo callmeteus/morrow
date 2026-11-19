@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.png" alt="gboard-clone" width="900">
+  <img src="docs/assets/banner.png" alt="Morrow" width="900">
 </p>
 
 <p align="center">
@@ -87,7 +87,7 @@ and independently reimplemented here.
 ## Monorepo layout
 
 ```
-gboard-clone/
+morrow/
 ├── packages/
 │   ├── app/                          # setup/launcher app (dev.gti.gboard)
 │   │   ├── build.gradle              # Android module (AGP 8.5.2, NDK 28, CMake)
