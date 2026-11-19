@@ -16,7 +16,7 @@ tags:
 
 # Omnivox
 
-**Omnivox** is the local speech model used by [gboard-clone](https://github.com/callmeteus/gboard-clone): an offline, on-device Whisper engine for an Android keyboard. It runs entirely on the phone through `whisper.cpp` + JNI, with no network calls and no dependency on Google's speech service.
+**Omnivox** is the local speech model used by a Gboard-style Android keyboard with offline dictation: an offline, on-device Whisper engine for an Android keyboard. It runs entirely on the phone through `whisper.cpp` + JNI, with no network calls and no dependency on Google's speech service.
 
 The base weights are the standard `ggml-base` model from [ggerganov/whisper.cpp](https://github.com/ggerganov/whisper.cpp) (OpenAI Whisper base, MIT). This release packages them together with the project's local correction dictionaries so the whole offline pipeline can be reproduced in one download. The `base` model is multilingual, so Omnivox is not tied to a single language; Portuguese and English are the languages exercised by the keyboard.
 
@@ -47,10 +47,10 @@ Omnivox uses the unmodified Whisper `base` checkpoint. Adaptation is handled at 
 
 ## License
 
-Whisper base weights and whisper.cpp are MIT licensed (Copyright OpenAI / Georgi Gerganov). The correction dictionaries are part of the gboard-clone project (MIT). See the source repository for full notices.
+Whisper base weights and whisper.cpp are MIT licensed (Copyright OpenAI / Georgi Gerganov). The correction dictionaries are part of the keyboard project (MIT). See the source repository for full notices.
 
 ## Credits
 
 - OpenAI Whisper
 - ggerganov/whisper.cpp
-- gboard-clone contributors
+- Keyboard project contributors

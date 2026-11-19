@@ -16,7 +16,7 @@ tags:
 
 # Omniglide
 
-**Omniglide** is the neural swipe-typing model used by [gboard-clone](https://github.com/callmeteus/gboard-clone). It decodes a finger gesture across an Android QWERTY keyboard into the word the user intended, replacing AOSP's geometric gesture fallback (which had no language model and produced garbage). Omniglide is multilingual: it was trained on real Portuguese (pt-BR / pt-PT) gestures from HeliBoard and real English gestures from FUTO.
+**Omniglide** is the neural swipe-typing model used by a Gboard-style Android keyboard with offline dictation. It decodes a finger gesture across an Android QWERTY keyboard into the word the user intended, replacing AOSP's geometric gesture fallback (which had no language model and produced garbage). Omniglide is multilingual: it was trained on real Portuguese (pt-BR / pt-PT) gestures from HeliBoard and real English gestures from FUTO.
 
 ## Model
 
@@ -47,4 +47,4 @@ MIT. The vendored OpenSwipe engine is MIT licensed. See the source repository fo
 
 - HeliBoard gesture contributors
 - FUTO keyboard contributors
-- gboard-clone contributors
+- Keyboard project contributors
