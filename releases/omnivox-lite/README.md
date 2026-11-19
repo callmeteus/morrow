@@ -14,9 +14,9 @@ tags:
 - asr
 ---
 
-# Omnivox
+# OmniVox Lite
 
-**Omnivox** is the local speech model used by a Gboard-style Android keyboard with offline dictation: an offline, on-device Whisper engine for an Android keyboard. It runs entirely on the phone through `whisper.cpp` + JNI, with no network calls and no dependency on Google's speech service.
+**OmniVox Lite** is the local speech model used by a Gboard-style Android keyboard with offline dictation: an offline, on-device Whisper engine for an Android keyboard. It runs entirely on the phone through `whisper.cpp` + JNI, with no network calls and no dependency on Google's speech service.
 
 The base weights are the standard `ggml-base` model from [ggerganov/whisper.cpp](https://github.com/ggerganov/whisper.cpp) (OpenAI Whisper base, MIT). This release packages them together with the project's local correction dictionaries so the whole offline pipeline can be reproduced in one download. The `base` model is multilingual, so Omnivox is not tied to a single language; Portuguese and English are the languages exercised by the keyboard.
 
@@ -32,7 +32,7 @@ The base weights are the standard `ggml-base` model from [ggerganov/whisper.cpp]
 ## Usage
 
 ```bash
-hf download giofolf/omnivox ggml-base.bin --local-dir .
+hf download giofolf/omnivox-lite ggml-base.bin --local-dir .
 ```
 
 In the keyboard, the model is copied into the app assets and loaded through `VoiceEngine.java`:
@@ -43,7 +43,7 @@ AudioRecord -> 16 kHz PCM -> libwhisper.so (JNI) -> transcript -> local dictiona
 
 ## Training / adaptation
 
-Omnivox uses the unmodified Whisper `base` checkpoint. Adaptation is handled at runtime by the local dictionary corrector (`DictionaryCorrector.java` in the source repo), which replaces low-confidence ASR words with high-frequency dictionary candidates using accent-insensitive edit distance.
+OmniVox Lite uses the unmodified Whisper `base` checkpoint. Adaptation is handled at runtime by the local dictionary corrector (`DictionaryCorrector.java` in the source repo), which replaces low-confidence ASR words with high-frequency dictionary candidates using accent-insensitive edit distance.
 
 ## License
 

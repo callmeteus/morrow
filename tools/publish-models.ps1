@@ -12,7 +12,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $models = @(
-    @{ Dir = 'releases/omnivox';   Repo = 'giofolf/omnivox' },
+    @{ Dir = 'releases/omnivox-lite';   Repo = 'giofolf/omnivox-lite' },
     @{ Dir = 'releases/omniglide'; Repo = 'giofolf/omniglide' }
 )
 

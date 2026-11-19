@@ -52,17 +52,17 @@ account. Both are multilingual and run fully on-device.
 
 | Model | Hugging Face | Format | What it does |
 | --- | --- | --- | --- |
-| **Omnivox** | [`giofolf/omnivox`](https://huggingface.co/giofolf/omnivox) | `ggml-base.bin` (~141 MB) | Whisper base for local speech recognition, bundled with the pt-BR correction dictionaries |
+| **OmniVox Lite** | [`giofolf/omnivox-lite`](https://huggingface.co/giofolf/omnivox-lite) | `ggml-base.bin` (~141 MB) | Whisper base for local speech recognition, bundled with the pt-BR correction dictionaries |
 | **Omniglide** | [`giofolf/omniglide`](https://huggingface.co/giofolf/omniglide) | `swipe_model.bin` (~2 MB) | Neural swipe decoder trained on real Portuguese and English gesture traces |
 
 Download them with the Hugging Face CLI:
 
 ```bash
-hf download giofolf/omnivox ggml-base.bin --local-dir .
+hf download giofolf/omnivox-lite ggml-base.bin --local-dir .
 hf download giofolf/omniglide swipe_model.bin --local-dir .
 ```
 
-Model cards and license notes live in [`releases/omnivox`](releases/omnivox/README.md)
+Model cards and license notes live in [`releases/omnivox`](releases/omnivox-lite/README.md)
 and [`releases/omniglide`](releases/omniglide/README.md). The release binaries
 are kept out of git; only the cards are versioned.
 
