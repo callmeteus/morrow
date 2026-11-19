@@ -232,6 +232,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                 context, R.drawable.sym_keyboard_voice_recording);
         mVoiceKey.setImageDrawable(iconVoice);
         mVoiceKey.setOnClickListener(this);
+        mEmojiKey.setOnClickListener(this);
         mSplitKey.setImageTintList(getToolKeyTintList());
         mSplitKey.setOnClickListener(this);
         mFloatKey.setImageTintList(getToolKeyTintList());
