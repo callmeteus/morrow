@@ -204,8 +204,10 @@ final class SuggestionStripLayoutHelper {
         final String word = suggestedWords.getLabel(indexInSuggestedWords);
         // TODO: don't use the index to decide whether this is the auto-correction/typed word, as
         // this is brittle
-        final boolean isAutoCorrection = suggestedWords.mWillAutoCorrect
-                && indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION;
+        // gti.dev: highlight the center candidate even when it will not be applied
+        // automatically, because the strip now always shows it in the center slot.
+        final boolean isAutoCorrection =
+                indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION;
         final boolean isTypedWordValid = suggestedWords.mTypedWordValid
                 && indexInSuggestedWords == SuggestedWords.INDEX_OF_TYPED_WORD;
         if (!isAutoCorrection && !isTypedWordValid) {
@@ -246,11 +248,9 @@ final class SuggestionStripLayoutHelper {
     static boolean shouldOmitTypedWord(final int inputStyle,
             final boolean gestureFloatingPreviewTextEnabled,
             final boolean shouldShowUiToAcceptTypedWord) {
-        final boolean omitTypedWord = (inputStyle == SuggestedWords.INPUT_STYLE_TYPING)
-                || (inputStyle == SuggestedWords.INPUT_STYLE_TAIL_BATCH)
-                || (inputStyle == SuggestedWords.INPUT_STYLE_UPDATE_BATCH
-                        && gestureFloatingPreviewTextEnabled);
-        return shouldShowUiToAcceptTypedWord && omitTypedWord;
+        // gti.dev: never hide the word the user produced. It must always occupy
+        // the first slot so it can be accepted as-is.
+        return false;
     }
 
     @UsedForTesting
@@ -274,15 +274,11 @@ final class SuggestionStripLayoutHelper {
             final int positionInSuggestionStrip = centerPositionInStrip + offsetFromCenter;
             return positionInSuggestionStrip;
         }
-        final int indexToDisplayMostImportantSuggestion;
-        final int indexToDisplaySecondMostImportantSuggestion;
-        if (willAutoCorrect) {
-            indexToDisplayMostImportantSuggestion = SuggestedWords.INDEX_OF_AUTO_CORRECTION;
-            indexToDisplaySecondMostImportantSuggestion = SuggestedWords.INDEX_OF_TYPED_WORD;
-        } else {
-            indexToDisplayMostImportantSuggestion = SuggestedWords.INDEX_OF_TYPED_WORD;
-            indexToDisplaySecondMostImportantSuggestion = SuggestedWords.INDEX_OF_AUTO_CORRECTION;
-        }
+        // gti.dev: deterministic strip order. The word the user produced (typed or swiped)
+        // is always the first slot on the left; the corrector's best candidate is always
+        // the center slot. The AOSP used to swap these two depending on willAutoCorrect.
+        final int indexToDisplayMostImportantSuggestion = SuggestedWords.INDEX_OF_AUTO_CORRECTION;
+        final int indexToDisplaySecondMostImportantSuggestion = SuggestedWords.INDEX_OF_TYPED_WORD;
         if (indexInSuggestedWords == indexToDisplayMostImportantSuggestion) {
             // Center in the suggestion strip.
             return centerPositionInStrip;
@@ -307,8 +303,9 @@ final class SuggestionStripLayoutHelper {
                 SuggestedWordInfo.KIND_TYPED);
 
         final int color;
-        if (indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION
-                && suggestedWords.mWillAutoCorrect) {
+        if (indexInSuggestedWords == SuggestedWords.INDEX_OF_AUTO_CORRECTION) {
+            // gti.dev: center slot is the corrector's best guess regardless of
+            // whether it will be auto-applied on space.
             color = mColorAutoCorrect;
         } else if (isTypedWord && suggestedWords.mTypedWordValid) {
             color = mColorValidTypedWord;
