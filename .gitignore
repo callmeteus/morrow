@@ -18,3 +18,5 @@ packages/app/build/
 
 # Release binaries are published to Hugging Face, kept out of git
 releases/*/*.bin
+# Local settings
+.env
