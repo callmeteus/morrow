@@ -29,7 +29,11 @@ android {
 
         ndk {
             // Build the on-device Whisper engine for the common ABIs.
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+            if (project.hasProperty('singleAbi')) {
+                abiFilters 'arm64-v8a'
+            } else {
+                abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+            }
         }
         externalNativeBuild {
             cmake {

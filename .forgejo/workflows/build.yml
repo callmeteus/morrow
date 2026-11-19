@@ -23,11 +23,11 @@ jobs:
 
       - name: Build setup app
         working-directory: packages/app
-        run: sh gradlew assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1024m
+        run: sh gradlew assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1024m -PsingleAbi
 
       - name: Build IME
         working-directory: packages/app/aosp-base
-        run: sh gradlew assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1024m
+        run: sh gradlew assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1024m -PsingleAbi
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
