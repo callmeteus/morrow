@@ -32,7 +32,7 @@ jobs:
         run: sh gradlew assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx1024m -PsingleAbi
 
       - name: Upload APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: morrow-apks
           path: |
