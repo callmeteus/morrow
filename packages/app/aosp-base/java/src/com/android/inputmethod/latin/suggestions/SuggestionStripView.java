@@ -180,6 +180,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             mClipboardSuggestionStrip.setVisibility(INVISIBLE);
         }
 
+        public void hideImportantNoticeStrip() {
+            mImportantNoticeStrip.setVisibility(INVISIBLE);
+        }
+
         public boolean isShowingImportantNoticeStrip() {
             return mImportantNoticeStrip.getVisibility() == VISIBLE;
         }
@@ -299,7 +303,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     /** gti.dev: show Gboard-style centered status ("Fale agora") during dictation. */
     public void setVoiceInputStatus(final String status) {
         if (status == null || status.isEmpty()) {
-            // Restore the normal suggestion strip / toolbar.
+            // gti.dev: the dictation status lives in the important notice strip.
+            // Hide it first, otherwise refreshStripVisibility() sees it as still
+            // active and bails out early, leaving "Transcrevendo..." stuck.
+            mStripVisibilityGroup.hideImportantNoticeStrip();
             refreshStripVisibility();
         } else {
             if (isShowingMoreSuggestionPanel()) dismissMoreSuggestionsPanel();
