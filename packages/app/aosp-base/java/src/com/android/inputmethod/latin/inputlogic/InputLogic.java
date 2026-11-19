@@ -1814,11 +1814,16 @@ public final class InputLogic {
         if (s.isEmpty()) {
             caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
         } else {
-            // Skip trailing spaces so "foo! " and "bar?  " also start a sentence.
-            int k = s.length() - 1;
-            while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
-            if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
+            // A newline starts a new line, so capitalise the next letter too.
+            final char lastChar = s.charAt(s.length() - 1);
+            if (lastChar == '\n' || lastChar == '\r') {
                 caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
+            } else {
+                int k = s.length() - 1;
+                while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
+                if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
+                    caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
+                }
             }
         }
         return caps;

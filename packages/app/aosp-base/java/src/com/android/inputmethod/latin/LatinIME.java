@@ -1462,10 +1462,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 return android.text.TextUtils.CAP_MODE_WORDS
                         | android.text.TextUtils.CAP_MODE_SENTENCES;
             }
-            // Right after a sentence-ending punctuation (., !, ?) optionally
-            // followed by spaces: force first-letter capitalization. The cached
-            // getCursorCapsMode often misses this on Samsung. Skip trailing
-            // whitespace so "foo! " or "bar?  " also start a new sentence.
+            // Right after a sentence-ending punctuation (., !, ?) or a newline,
+            // optionally followed by spaces: force first-letter capitalization.
+            // The cached getCursorCapsMode often misses this on Samsung.
+            final char lastChar = s.charAt(s.length() - 1);
+            if (lastChar == '\n' || lastChar == '\r') {
+                return android.text.TextUtils.CAP_MODE_WORDS
+                        | android.text.TextUtils.CAP_MODE_SENTENCES;
+            }
             int k = s.length() - 1;
             while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
             if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
