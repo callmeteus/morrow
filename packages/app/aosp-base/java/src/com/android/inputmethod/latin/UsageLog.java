@@ -32,7 +32,7 @@ public final class UsageLog {
     private static final String TAG = "UsageLog";
     private static final String FILE_NAME = "usage_events.jsonl";
     private static final String DIR_NAME = "usage";
-    private static final long MAX_BYTES = 4L * 1024 * 1024;
+    private static final long MAX_BYTES = 100L * 1024 * 1024;
     private static final int MAX_GESTURE_POINTS = 48;
     private static final int MAX_CONTEXT = 80;
 
