@@ -62,7 +62,7 @@ hf download giofolf/omnivox-lite ggml-base.bin --local-dir .
 hf download giofolf/omniglide swipe_model.bin --local-dir .
 ```
 
-Model cards and license notes live in [`releases/omnivox`](releases/omnivox-lite/README.md)
+Model cards and license notes live in [`releases/omnivox-lite`](releases/omnivox-lite/README.md)
 and [`releases/omniglide`](releases/omniglide/README.md). The release binaries
 are kept out of git; only the cards are versioned.
 
