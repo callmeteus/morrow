@@ -23,11 +23,11 @@ jobs:
 
       - name: Build setup app
         working-directory: packages/app
-        run: ./gradlew assembleDebug
+        run: sh gradlew assembleDebug
 
       - name: Build IME
         working-directory: packages/app/aosp-base
-        run: ./gradlew assembleDebug
+        run: sh gradlew assembleDebug
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
