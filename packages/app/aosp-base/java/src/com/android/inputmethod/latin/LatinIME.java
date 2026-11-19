@@ -1932,6 +1932,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
         }
 
+        // gti.dev: match Gboard's strip behaviour. With an empty editor show only
+        // the icon toolbar; swap in word suggestions once text exists. This also
+        // keeps next-word predictions visible after a committed word + space.
+        final CharSequence beforeCursor = mInputLogic.mConnection.getTextBeforeCursor(1, 0);
+        final boolean hasText = mInputLogic.getComposingLength() > 0
+                || (beforeCursor != null && beforeCursor.length() > 0);
+        mSuggestionStripView.setShowWordSuggestions(hasText);
+
         if (currentSettingsValues.isSuggestionsEnabledPerUserSettings()
                 || currentSettingsValues.isApplicationSpecifiedCompletionsOn()
                 // We should clear the contextual strip if there is no suggestion from dictionaries.

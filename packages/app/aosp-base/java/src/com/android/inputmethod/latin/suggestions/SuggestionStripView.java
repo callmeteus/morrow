@@ -87,6 +87,9 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private static final String SENSITIVE_CLIPBOARD_LABEL = "\u2022\u2022\u2022\u2022\u2022\u2022";
 
     private final ViewGroup mSuggestionsStrip;
+    // gti.dev: the icon-only toolbar shown when no word is being composed (Gboard style).
+    private final View mToolbar;
+    private boolean mShowWordSuggestions = false;
     private final ImageButton mVoiceKey;
     // gti.dev: a visible emoji button instead of the hidden comma long-press.
     private final ImageButton mEmojiKey;
@@ -122,21 +125,23 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
 
     private static class StripVisibilityGroup {
         private final View mSuggestionStripView;
+        private final View mToolbar;
         private final View mSuggestionsStrip;
         private final View mImportantNoticeStrip;
         private final InlineSuggestionsStrip mInlineSuggestionsStrip;
         private final View mClipboardSuggestionStrip;
 
-        public StripVisibilityGroup(final View suggestionStripView,
+        public StripVisibilityGroup(final View suggestionStripView, final View toolbar,
                 final ViewGroup suggestionsStrip, final View importantNoticeStrip,
                 final InlineSuggestionsStrip inlineSuggestionsStrip,
                 final View clipboardSuggestionStrip) {
             mSuggestionStripView = suggestionStripView;
+            mToolbar = toolbar;
             mSuggestionsStrip = suggestionsStrip;
             mImportantNoticeStrip = importantNoticeStrip;
             mInlineSuggestionsStrip = inlineSuggestionsStrip;
             mClipboardSuggestionStrip = clipboardSuggestionStrip;
-            showSuggestionsStrip(false /* showsClipboardSuggestion */);
+            showToolbar();
         }
 
         public void setLayoutDirection(final boolean isRtlLanguage) {
@@ -147,9 +152,20 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             ViewCompat.setLayoutDirection(mImportantNoticeStrip, layoutDirection);
         }
 
+        // gti.dev: idle state - only the icon toolbar (Gboard has no suggestion
+        // row until you actually start typing).
+        public void showToolbar() {
+            mToolbar.setVisibility(VISIBLE);
+            mSuggestionsStrip.setVisibility(INVISIBLE);
+            mImportantNoticeStrip.setVisibility(INVISIBLE);
+            mInlineSuggestionsStrip.setVisibility(INVISIBLE);
+            mClipboardSuggestionStrip.setVisibility(INVISIBLE);
+        }
+
         public void showSuggestionsStrip(final boolean showsClipboardSuggestion) {
             final boolean showsInline = mInlineSuggestionsStrip.hasSuggestions();
             final boolean showsClipboard = !showsInline && showsClipboardSuggestion;
+            mToolbar.setVisibility(INVISIBLE);
             mSuggestionsStrip.setVisibility(showsInline || showsClipboard ? INVISIBLE : VISIBLE);
             mImportantNoticeStrip.setVisibility(INVISIBLE);
             mInlineSuggestionsStrip.setVisibility(showsInline ? VISIBLE : INVISIBLE);
@@ -157,6 +173,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         }
 
         public void showImportantNoticeStrip() {
+            mToolbar.setVisibility(INVISIBLE);
             mSuggestionsStrip.setVisibility(INVISIBLE);
             mImportantNoticeStrip.setVisibility(VISIBLE);
             mInlineSuggestionsStrip.setVisibility(INVISIBLE);
@@ -185,6 +202,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         inflater.inflate(R.layout.suggestions_strip, this);
 
         mSuggestionsStrip = (ViewGroup)findViewById(R.id.suggestions_strip);
+        mToolbar = findViewById(R.id.suggestions_strip_toolbar);
         mVoiceKey = (ImageButton)findViewById(R.id.suggestions_strip_voice_key);
         mEmojiKey = (ImageButton)findViewById(R.id.suggestions_strip_emoji_key);
         mClipboardKey = (ImageButton)findViewById(R.id.suggestions_strip_clipboard_key);
@@ -196,7 +214,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         mImportantNoticeStrip = findViewById(R.id.important_notice_strip);
         mInlineSuggestionsStrip = findViewById(R.id.inline_suggestions_strip);
         mClipboardSuggestionStrip = findViewById(R.id.clipboard_suggestion_strip);
-        mStripVisibilityGroup = new StripVisibilityGroup(this, mSuggestionsStrip,
+        mStripVisibilityGroup = new StripVisibilityGroup(this, mToolbar, mSuggestionsStrip,
                 mImportantNoticeStrip, mInlineSuggestionsStrip, mClipboardSuggestionStrip);
 
         for (int pos = 0; pos < SuggestedWords.MAX_SUGGESTIONS; pos++) {
@@ -281,8 +299,8 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     /** gti.dev: show Gboard-style centered status ("Fale agora") during dictation. */
     public void setVoiceInputStatus(final String status) {
         if (status == null || status.isEmpty()) {
-            // Restore the normal suggestion strip.
-            mStripVisibilityGroup.showSuggestionsStrip(false /* showsClipboardSuggestion */);
+            // Restore the normal suggestion strip / toolbar.
+            refreshStripVisibility();
         } else {
             if (isShowingMoreSuggestionPanel()) dismissMoreSuggestionsPanel();
             mLayoutHelper.layoutImportantNotice(mImportantNoticeStrip, status);
@@ -319,13 +337,39 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         // gti.dev: split/floating toggles are no longer shown in the strip.
     }
 
+    /**
+     * gti.dev: Gboard shows the icon toolbar while the editor is idle and only
+     * swaps in word suggestions once text is being composed. LatinIME calls
+     * this with the real composing/editor state before pushing suggestions.
+     */
+    public void setShowWordSuggestions(final boolean showWordSuggestions) {
+        mShowWordSuggestions = showWordSuggestions;
+        refreshStripVisibility();
+    }
+
+    private void refreshStripVisibility() {
+        // The dictation status bar owns the strip while it is on screen.
+        if (mStripVisibilityGroup.isShowingImportantNoticeStrip()) {
+            return;
+        }
+        if (mInlineSuggestionsStrip.hasSuggestions() || shouldShowClipboardSuggestion()) {
+            mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
+        } else if (mShowWordSuggestions) {
+            // Typing: word suggestions replace the toolbar.
+            mStripVisibilityGroup.showSuggestionsStrip(false /* showsClipboardSuggestion */);
+        } else {
+            // Idle: Gboard-style toolbar only, no suggestion row.
+            mStripVisibilityGroup.showToolbar();
+        }
+    }
+
     public void setSuggestions(final SuggestedWords suggestedWords, final boolean isRtlLanguage) {
         clear();
         mStripVisibilityGroup.setLayoutDirection(isRtlLanguage);
         mSuggestedWords = suggestedWords;
         mStartIndexOfMoreSuggestions = mLayoutHelper.layoutAndReturnStartIndexOfMoreSuggestions(
                 getContext(), mSuggestedWords, mSuggestionsStrip, this);
-        mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
+        refreshStripVisibility();
     }
 
     @Nullable
@@ -339,7 +383,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         if (isShowingMoreSuggestionPanel()) {
             dismissMoreSuggestionsPanel();
         }
-        mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
+        refreshStripVisibility();
         updateVisibility(mShouldBeVisible, mIsFullscreenMode);
     }
 
@@ -352,7 +396,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                         createClipboardSuggestionChip(match, suggestion.isSensitive()));
             }
         }
-        mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
+        refreshStripVisibility();
     }
 
     @Nonnull
@@ -419,7 +463,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     public void clear() {
         mSuggestionsStrip.removeAllViews();
         removeAllDebugInfoViews();
-        mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
+        refreshStripVisibility();
         dismissMoreSuggestionsPanel();
     }
 
