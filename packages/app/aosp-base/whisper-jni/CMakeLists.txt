@@ -45,7 +45,7 @@ target_compile_definitions(whisper PRIVATE WHISPER_VERSION="bundled")
 # gti.dev: the CI runner has little RAM; -O2 compiles whisper.cpp with far
 # less peak memory than -O3. Local builds keep -O3 for full speed.
 if(DEFINED ENV{MORROW_CI_BUILD})
-    set(MORROW_OPT -O2)
+    set(MORROW_OPT -O1)
 else()
     set(MORROW_OPT -O3)
 endif()
