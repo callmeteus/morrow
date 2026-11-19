@@ -42,7 +42,8 @@
                 android:id="@android:id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:divider="@null" />
+                android:divider="@null"
+                android:background="?attr/emojiTabBarBackground" />
             <FrameLayout
                 android:id="@android:id/tabcontent"
                 android:layout_width="0dip"

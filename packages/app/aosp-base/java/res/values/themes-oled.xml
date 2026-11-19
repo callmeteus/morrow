@@ -5,6 +5,7 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="KeyboardTheme.OLED" parent="KeyboardIcons.OLED">
+        <item name="emojiTabBarBackground">@color/keyboard_background_oled</item>
         <item name="keyIconTint">@color/icon_color_oled</item>
         <item name="inputViewStyle">@style/InputView.LXX</item>
         <item name="keyboardStyle">@style/Keyboard.OLED</item>

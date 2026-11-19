@@ -152,9 +152,9 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         tspec.setContent(R.id.emoji_keyboard_dummy);
         final ImageView iconView = (ImageView)LayoutInflater.from(getContext()).inflate(
                 R.layout.emoji_keyboard_tab_icon, null);
-        // TODO: Replace background color with its own setting rather than using the
-        //       category page indicator background as a workaround.
-        iconView.setBackgroundColor(mCategoryPageIndicatorBackground);
+        // gti.dev: don't paint each tab with the page-indicator background colour;
+        // it resolves to pure black in the You/dark theme. Let the tab bar's
+        // keyboard background show through so the emoji panel matches the keyboard.
         iconView.setImageResource(mEmojiCategory.getCategoryTabIcon(categoryId));
         iconView.setContentDescription(mEmojiCategory.getAccessibilityDescription(categoryId));
         tspec.setIndicator(iconView);

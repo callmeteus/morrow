@@ -22,6 +22,8 @@
     <declare-styleable name="KeyboardTheme">
         <!-- Icon tint color applied to theme-neutral (white) key icons -->
         <attr name="keyIconTint" format="color" />
+        <!-- gti.dev: background for the emoji category tab bar, matches the keyboard. -->
+        <attr name="emojiTabBarBackground" format="color" />
         <!-- InputView style -->
         <attr name="inputViewStyle" format="reference" />
         <!-- Keyboard style -->

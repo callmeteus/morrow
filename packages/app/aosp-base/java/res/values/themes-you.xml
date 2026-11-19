@@ -32,6 +32,7 @@
     </style>
 
     <style name="KeyboardTheme.You" parent="KeyboardIcons.You">
+        <item name="emojiTabBarBackground">@color/keyboard_background_you</item>
         <item name="keyIconTint">@color/icon_color_you</item>
         <item name="inputViewStyle">@style/InputView.You</item>
         <item name="keyboardStyle">@style/Keyboard.You</item>
@@ -97,7 +98,7 @@
         parent="MainKeyboardView.You"
     >
         <item name="categoryIndicatorEnabled">false</item>
-        <item name="categoryPageIndicatorColor">@color/highlight_color_you</item>
+        <item name="categoryPageIndicatorColor">@color/keyboard_key_functional_normal_color_you</item>
         <item name="categoryPageIndicatorBackground">@color/emoji_tab_page_indicator_background_you</item>
         <item name="iconEmojiRecentsTab">@drawable/ic_emoji_recents_lxx_light</item>
         <item name="iconEmojiCategory1Tab">@drawable/ic_emoji_people_lxx_light</item>
