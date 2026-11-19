@@ -1905,9 +1905,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         if (!hasSuggestionStripView()) {
             return;
         }
+        // getComposingLength() can stay stale after the editor text is cleared
+        // externally, so trust the real editor content instead.
         final CharSequence beforeCursor = mInputLogic.mConnection.getTextBeforeCursor(1, 0);
-        final boolean hasText = mInputLogic.getComposingLength() > 0
-                || (beforeCursor != null && beforeCursor.length() > 0);
+        final boolean hasText = beforeCursor != null && beforeCursor.length() > 0;
         mSuggestionStripView.setShowWordSuggestions(hasText);
     }
 
