@@ -73,14 +73,14 @@ public class SetupActivity extends AppCompatActivity {
 
     private TextView buildUi() {
         TextView title = new TextView(this);
-        title.setText("Gboard · Voz local (offline)");
+        title.setText("Morrow · Voz local (offline)");
         title.setTextSize(22);
         title.setTextColor(Color.WHITE);
         title.setPadding(dp(24), dp(24), dp(24), dp(8));
 
         TextView desc = new TextView(this);
         desc.setText(
-            "Teclado no estilo Gboard com ditado por voz 100% local (Whisper embarcado).\n\n" +
+            "Morrow: teclado com ditado por voz 100% local (Whisper embarcado).\n\n" +
             "1. Habilite o teclado nas configurações de entrada.\n" +
             "2. Conceda a permissão de microfone.\n" +
             "3. Use o botão de teste abaixo para validar o STT local.\n\n" +
