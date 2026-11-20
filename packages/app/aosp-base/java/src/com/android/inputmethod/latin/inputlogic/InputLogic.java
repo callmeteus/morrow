@@ -558,7 +558,8 @@ public final class InputLogic {
                 // after typing some letters and a period, then gesturing; the keyboard is not in
                 // caps mode yet, but since a gesture is starting, it should go in caps mode,
                 // unless the user explictly said it should not.
-                keyboardSwitcher.requestUpdatingShiftState(getCurrentAutoCapsState(settingsValues),
+                keyboardSwitcher.requestUpdatingShiftState(
+                        getCurrentAutoCapsState(settingsValues, true /* isGestureTyping */),
                         getCurrentRecapitalizeState());
             }
         }
@@ -1795,6 +1796,11 @@ public final class InputLogic {
      * @return a caps mode from TextUtils.CAP_MODE_* or Constants.TextUtils.CAP_MODE_OFF.
      */
     public int getCurrentAutoCapsState(final SettingsValues settingsValues) {
+        return getCurrentAutoCapsState(settingsValues, false /* isGestureTyping */);
+    }
+
+    public int getCurrentAutoCapsState(final SettingsValues settingsValues,
+            final boolean isGestureTyping) {
         if (!settingsValues.mAutoCap) return Constants.TextUtils.CAP_MODE_OFF;
 
         final EditorInfo ei = getCurrentInputEditorInfo();
@@ -1835,10 +1841,18 @@ public final class InputLogic {
             final char lastChar = s.charAt(s.length() - 1);
             if (lastChar == '\n' || lastChar == '\r') {
                 caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
+            } else if (isGestureTyping) {
+                // gti.dev: a gesture/swipe starting after a sentence-ending
+                // punctuation should capitalise the first letter, like Gboard.
+                caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
             } else {
+                // gti.dev: only capitalise after ". " (punctuation followed by a
+                // space), like Gboard. A bare "www." or "Olá." must NOT capitalise.
                 int k = s.length() - 1;
                 while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
-                if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
+                final boolean spaceAfterPunct = k >= 0 && k < s.length() - 1;
+                if (spaceAfterPunct
+                        && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
                     caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
                 }
             }

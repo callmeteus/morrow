@@ -1494,7 +1494,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
             int k = s.length() - 1;
             while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
-            if (k >= 0 && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
+            // gti.dev: only capitalise after ". " (punctuation followed by a space),
+            // like Gboard. A bare "www." or "Olá." must NOT capitalise.
+            final boolean spaceAfterPunct = k >= 0 && k < s.length() - 1;
+            if (spaceAfterPunct
+                    && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
                 return android.text.TextUtils.CAP_MODE_WORDS
                         | android.text.TextUtils.CAP_MODE_SENTENCES;
             }
