@@ -597,4 +597,9 @@ Tip: You can download and remove dictionaries by going to &lt;b>Languages&#160;&
     <string name="tools_item_clipboard">Área de transferência</string>
     <string name="tools_item_emoji">Emoji</string>
     <string name="tools_item_settings">Configurações</string>
+    <string name="tools_item_one_handed">Uma mão só</string>
+    <string name="tools_item_text_mode">Modo de texto</string>
+    <string name="tools_item_share">Compartilhar o Gboard</string>
+    <string name="tools_item_resize">Redimensionar</string>
+    <string name="tools_item_floating">Flutuante</string>
 </resources>

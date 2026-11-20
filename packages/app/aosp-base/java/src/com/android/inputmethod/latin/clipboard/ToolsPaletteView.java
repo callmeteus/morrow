@@ -1,6 +1,7 @@
 /*
- * gti.dev: Gboard-style tools grid, opened by the grid button in the toolbar.
- * Shows shortcuts to the translation panel, clipboard, emoji and settings.
+ * gti.dev: Gboard-style tools menu, opened by the grid button in the toolbar.
+ * Renders rounded two-column pills for emoji, one-handed, translate, clipboard,
+ * settings and floating. Shortcuts open their matching panel.
  */
 
 package com.android.inputmethod.latin.clipboard;
@@ -11,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -30,55 +32,73 @@ public final class ToolsPaletteView extends LinearLayout implements View.OnClick
     protected void onFinishInflate() {
         super.onFinishInflate();
         final GridLayout grid = findViewById(R.id.tools_grid);
+        addTool(grid, R.string.tools_item_emoji, R.drawable.ic_emoji_smiley,
+                Constants.CODE_EMOJI, true);
+        addTool(grid, R.string.tools_item_one_handed, R.drawable.ic_floating_switch_ime,
+                Constants.CODE_SETTINGS, false);
         addTool(grid, R.string.tools_item_translate, R.drawable.ic_translate,
-                Constants.CODE_TRANSLATE);
+                Constants.CODE_TRANSLATE, true);
         addTool(grid, R.string.tools_item_clipboard, R.drawable.ic_clipboard,
-                Constants.CODE_CLIPBOARD_PASTE);
-        addTool(grid, R.string.tools_item_emoji, R.drawable.ic_emoji_smiley, Constants.CODE_EMOJI);
+                Constants.CODE_CLIPBOARD_PASTE, false);
         addTool(grid, R.string.tools_item_settings, R.drawable.ic_settings,
-                Constants.CODE_SETTINGS);
+                Constants.CODE_SETTINGS, true);
+        addTool(grid, R.string.tools_item_floating, R.drawable.ic_floating_keyboard,
+                Constants.CODE_SETTINGS, false);
         findViewById(R.id.tools_back_key).setOnClickListener(this);
+        findViewById(R.id.tools_edit_key).setOnClickListener(this);
     }
 
     private void addTool(final GridLayout grid, final int labelRes, final int iconRes,
-            final int code) {
-        final LinearLayout cell = new LinearLayout(getContext());
-        cell.setOrientation(LinearLayout.VERTICAL);
-        cell.setGravity(Gravity.CENTER);
-        cell.setClickable(true);
-        cell.setOnClickListener(this);
-        cell.setTag(code);
-        final int size = dpToPx(72);
-        final int index = grid.getChildCount();
-        cell.setLayoutParams(new GridLayout.LayoutParams(
-                GridLayout.spec(index / 3),
-                GridLayout.spec(index % 3)));
-        cell.setMinimumWidth(size);
+            final int code, final boolean showChevron) {
+        final LinearLayout pill = new LinearLayout(getContext());
+        pill.setOrientation(LinearLayout.HORIZONTAL);
+        pill.setGravity(Gravity.CENTER_VERTICAL);
+        pill.setClickable(true);
+        pill.setOnClickListener(this);
+        pill.setTag(code);
+        pill.setBackgroundResource(R.drawable.tools_pill_bg);
+        pill.setPadding(dpToPx(12), dpToPx(10), dpToPx(10), dpToPx(10));
 
-        final ImageButton icon = new ImageButton(getContext());
+        final int index = grid.getChildCount();
+        final GridLayout.LayoutParams params = new GridLayout.LayoutParams(
+                GridLayout.spec(index / 2, 1f),
+                GridLayout.spec(index % 2, 1f));
+        params.width = 0;
+        params.height = dpToPx(56);
+        params.setMargins(dpToPx(4), dpToPx(6), dpToPx(4), dpToPx(6));
+        pill.setLayoutParams(params);
+
+        final ImageView icon = new ImageView(getContext());
         icon.setImageResource(iconRes);
-        icon.setBackground(null);
         icon.setClickable(false);
         icon.setFocusable(false);
         final LinearLayout.LayoutParams iconParams =
-                new LinearLayout.LayoutParams(dpToPx(48), dpToPx(48));
-        iconParams.gravity = Gravity.CENTER;
+                new LinearLayout.LayoutParams(dpToPx(24), dpToPx(24));
         icon.setLayoutParams(iconParams);
+        pill.addView(icon);
 
         final TextView label = new TextView(getContext());
         label.setText(labelRes);
-        label.setTextColor(0xFFE0E0E0);
+        label.setTextColor(0xFFE8EAED);
         label.setTextSize(13f);
-        label.setGravity(Gravity.CENTER);
-        final LinearLayout.LayoutParams labelParams =
-                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        labelParams.gravity = Gravity.CENTER;
+        label.setSingleLine(true);
+        final LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        labelParams.setMargins(dpToPx(8), 0, dpToPx(4), 0);
         label.setLayoutParams(labelParams);
+        pill.addView(label);
 
-        cell.addView(icon);
-        cell.addView(label);
-        grid.addView(cell);
+        if (showChevron) {
+            final ImageView chevron = new ImageView(getContext());
+            chevron.setImageResource(R.drawable.ic_tools_chevron);
+            chevron.setClickable(false);
+            chevron.setFocusable(false);
+            final LinearLayout.LayoutParams chevronParams =
+                    new LinearLayout.LayoutParams(dpToPx(20), dpToPx(20));
+            chevron.setLayoutParams(chevronParams);
+            pill.addView(chevron);
+        }
+        grid.addView(pill);
     }
 
     private int dpToPx(final int dp) {
@@ -93,6 +113,9 @@ public final class ToolsPaletteView extends LinearLayout implements View.OnClick
     public void onClick(final View v) {
         if (v.getId() == R.id.tools_back_key) {
             mKeyboardActionListener.onCodeInput(Constants.CODE_ALPHA_FROM_EMOJI,
+                    Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
+        } else if (v.getId() == R.id.tools_edit_key) {
+            mKeyboardActionListener.onCodeInput(Constants.CODE_SETTINGS,
                     Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
         } else if (v.getTag() instanceof Integer) {
             mKeyboardActionListener.onCodeInput((Integer) v.getTag(),

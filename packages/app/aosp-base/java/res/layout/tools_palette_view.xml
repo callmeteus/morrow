@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- gti.dev: Gboard-style tools grid, opened by the grid button. -->
+<!-- gti.dev: Gboard-style tools menu, opened by the grid button. -->
 <com.android.inputmethod.latin.clipboard.ToolsPaletteView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tools_palette_view"
@@ -10,35 +10,64 @@
     android:background="#FF202124"
     android:visibility="gone">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="6dp"
-        android:text="@string/tools_panel_title"
-        android:textColor="#FFE0E0E0"
-        android:textSize="15sp" />
-
     <GridLayout
         android:id="@+id/tools_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="3"
-        android:padding="12dp" />
+        android:columnCount="2"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:useDefaultMargins="false" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="1" />
 
-    <ImageButton
-        android:id="@+id/tools_back_key"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="start"
-        android:layout_margin="8dp"
-        android:src="@drawable/ic_clipboard_back"
-        android:contentDescription="@string/spoken_description_back"
-        android:background="?android:attr/selectableItemBackgroundBorderless" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp">
+
+        <ImageButton
+            android:id="@+id/tools_back_key"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_clipboard_back"
+            android:contentDescription="@string/spoken_description_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/tools_dot_active" />
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/tools_dot_inactive" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/tools_edit_key"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_tools_edit"
+            android:contentDescription="@string/tools_item_settings"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+    </LinearLayout>
 </com.android.inputmethod.latin.clipboard.ToolsPaletteView>
