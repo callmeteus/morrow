@@ -1844,11 +1844,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             return;
         }
         if (Constants.CODE_ONE_HANDED == event.mKeyCode) {
-            // gti.dev: one-handed shortcut from the spacebar popup. No dedicated
-            // one-handed mode exists, so open the keyboard settings.
-            mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
-                    getCurrentAutoCapsState(), getCurrentRecapitalizeState());
-            launchSettings("");
+            // gti.dev: one-handed shortcut toggles the compact floating keyboard,
+            // like Gboard's one-handed mode.
+            toggleFloatingKeyboard();
             return;
         }
         if (Constants.CODE_TOOLS == event.mKeyCode) {
