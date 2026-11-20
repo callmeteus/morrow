@@ -93,6 +93,7 @@
     <key-style
         latin:styleName="spaceKeyStyle"
         latin:keySpec="!icon/space_key|!code/key_space"
+        latin:moreKeys="!icon/settings_key|!code/key_settings,!icon/one_handed_key|!code/key_one_handed"
         latin:backgroundType="spacebar"
         latin:keyActionFlags="noKeyPreview|enableLongPress" />
     <!-- U+200C: ZERO WIDTH NON-JOINER

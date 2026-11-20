@@ -54,6 +54,7 @@ public final class KeyboardCodesSet {
         "key_alpha_from_emoji",
         "key_unspecified",
         "key_clipboard_paste",
+        "key_one_handed",
     };
 
     private static final int[] DEFAULT = {
@@ -75,6 +76,7 @@ public final class KeyboardCodesSet {
         Constants.CODE_ALPHA_FROM_EMOJI,
         Constants.CODE_UNSPECIFIED,
         Constants.CODE_CLIPBOARD_PASTE,
+        Constants.CODE_ONE_HANDED,
     };
 
     static {

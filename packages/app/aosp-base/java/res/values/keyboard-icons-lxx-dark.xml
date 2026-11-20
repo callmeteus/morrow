@@ -43,5 +43,6 @@
         <item name="iconEmojiActionKey">@drawable/sym_keyboard_smiley_lxx_dark</item>
         <item name="iconEmojiNormalKey">@drawable/sym_keyboard_smiley_lxx_dark</item>
         <item name="iconClipboardPasteKey">@drawable/sym_keyboard_clipboard_paste_lxx_dark</item>
+        <item name="iconOneHandedKey">@drawable/ic_one_handed</item>
     </style>
 </resources>

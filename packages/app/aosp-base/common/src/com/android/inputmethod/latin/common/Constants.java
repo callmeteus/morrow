@@ -251,6 +251,7 @@ public final class Constants {
     // gti.dev: Gboard-style toolbar panels.
     public static final int CODE_TRANSLATE = -17;
     public static final int CODE_TOOLS = -18;
+    public static final int CODE_ONE_HANDED = -19;
 
     public static boolean isLetterCode(final int code) {
         return code >= CODE_SPACE;
@@ -276,6 +277,7 @@ public final class Constants {
         case CODE_CLIPBOARD_PASTE: return "clipboard_paste";
         case CODE_TRANSLATE: return "translate";
         case CODE_TOOLS: return "tools";
+        case CODE_ONE_HANDED: return "one_handed";
         case CODE_TAB: return "tab";
         case CODE_ENTER: return "enter";
         case CODE_SPACE: return "space";

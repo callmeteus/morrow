@@ -1843,6 +1843,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
             return;
         }
+        if (Constants.CODE_ONE_HANDED == event.mKeyCode) {
+            // gti.dev: one-handed shortcut from the spacebar popup. No dedicated
+            // one-handed mode exists, so open the keyboard settings.
+            mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
+                    getCurrentAutoCapsState(), getCurrentRecapitalizeState());
+            launchSettings("");
+            return;
+        }
         if (Constants.CODE_TOOLS == event.mKeyCode) {
             // gti.dev: open the Gboard-style tools grid.
             if (mKeyboardSwitcher.isShowingToolsPalette()) {

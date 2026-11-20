@@ -291,6 +291,7 @@
         <attr name="iconEmojiActionKey" format="reference" />
         <attr name="iconEmojiNormalKey" format="reference" />
         <attr name="iconClipboardPasteKey" format="reference" />
+        <attr name="iconOneHandedKey" format="reference" />
     </declare-styleable>
 
     <declare-styleable name="Keyboard_GridRows">
