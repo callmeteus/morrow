@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: GIF button label for the emoji keyboard action bar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="20dp"
+    android:viewportWidth="36"
+    android:viewportHeight="20">
+    <path
+        android:fillColor="#FFE8EAED"
+        android:pathData="M2,3h32a2,2 0 0 1 2,2v10a2,2 0 0 1 -2,2h-32a2,2 0 0 1 -2,-2v-10a2,2 0 0 1 2,-2z" />
+    <path
+        android:fillColor="#FF303134"
+        android:pathData="M7,6h3v1.5h-1.5v5h1.5v1.5h-3v-8z M12,6h1.5l1.5,5l1.5,-5h1.5v8h-1.5v-5l-1.5,5h-0.8l-1.5,-5v5h-1.5z M20,6h3a2,2 0 0 1 0,4h-1.5v4h-1.5z M21.5,7.5v1h1.5a0.5,0.5 0 0 0 0,-1z" />
+</vector>

@@ -256,9 +256,11 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                 context, R.drawable.sym_keyboard_voice_recording);
         mVoiceKey.setImageDrawable(iconVoice);
         mVoiceKey.setOnClickListener(this);
+        // gti.dev: Gboard uses a neutral light color for idle toolbar icons.
+        final ColorStateList toolbarTint = ColorStateList.valueOf(0xFFE8EAED);
         for (final ImageButton key : new ImageButton[] {
                 mMoreKey, mSettingsKey, mTranslateKey, mClipboardKey }) {
-            key.setImageTintList(getToolKeyTintList());
+            key.setImageTintList(toolbarTint);
             key.setOnClickListener(this);
         }
     }

@@ -89,9 +89,26 @@ public final class LocalVoiceInput {
     /** Starts recording from the mic and emits a partial transcript every 2.5s. */
     public static void start(final Context c, final Listener l) {
         Log.i(TAG, "start() ctx=" + ctx);
+        // gti.dev: recover from any state left stuck by a previous failed run.
+        // Without this, a failed dictation leaves recording/stopRequested set and
+        // every later mic tap only calls stop(), so the mic appears dead.
+        if (recording || stopRequested) {
+            recording = false;
+            stopRequested = false;
+            if (recorder != null) {
+                try { recorder.stop(); } catch (Exception ignored) {}
+                try { recorder.release(); } catch (Exception ignored) {}
+                recorder = null;
+            }
+        }
         sContext = c.getApplicationContext();
         init(c);
-        if (ctx == 0) { Log.e(TAG, "ctx==0, abort"); l.onFinal(""); return; }
+        if (ctx == 0) {
+            Log.e(TAG, "ctx==0, abort");
+            l.onState("error");
+            l.onFinal("");
+            return;
+        }
         int minBuf = AudioRecord.getMinBufferSize(SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         final int bufSize = minBuf <= 0 ? SAMPLE_RATE : minBuf;
@@ -190,6 +207,9 @@ public final class LocalVoiceInput {
             if (voiceHeard) {
                 finishRecording(l);
             } else {
+                // gti.dev: reset state even when no speech was captured, otherwise
+                // `recording` stays true and the next mic tap only calls stop().
+                cleanupRecorder();
                 l.onFinal("");
             }
         }, "local-voice-record");
@@ -207,14 +227,20 @@ public final class LocalVoiceInput {
         }
     }
 
-    /** Release recorder and run the final transcription. Called once from the record thread. */
-    private static void finishRecording(final Listener l) {
+    /** Release the recorder and reset all recording flags. Safe to call repeatedly. */
+    private static void cleanupRecorder() {
         recording = false;
+        stopRequested = false;
         if (recorder != null) {
             try { recorder.stop(); } catch (Exception ignored) {}
-            recorder.release();
+            try { recorder.release(); } catch (Exception ignored) {}
             recorder = null;
         }
+    }
+
+    /** Release recorder and run the final transcription. Called once from the record thread. */
+    private static void finishRecording(final Listener l) {
+        cleanupRecorder();
         final short[] pcm = pendingBuffer;
         final int plen = pendingLen;
         pendingBuffer = null;
