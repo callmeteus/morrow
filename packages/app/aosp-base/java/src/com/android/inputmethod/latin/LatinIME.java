@@ -1813,6 +1813,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
             return;
         }
+        if (Constants.CODE_TRANSLATE == event.mKeyCode) {
+            // gti.dev: open the Gboard-style translation panel.
+            if (mKeyboardSwitcher.isShowingTranslationPalette()) {
+                mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
+                        getCurrentAutoCapsState(), getCurrentRecapitalizeState());
+            } else {
+                mKeyboardSwitcher.setTranslationKeyboard();
+            }
+            return;
+        }
         final InputTransaction completeInputTransaction =
                 mInputLogic.onCodeInput(mSettings.getCurrent(), event,
                         mKeyboardSwitcher.getKeyboardShiftMode(),

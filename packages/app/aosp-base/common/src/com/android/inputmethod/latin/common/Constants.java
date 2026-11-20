@@ -248,6 +248,9 @@ public final class Constants {
     // Code value representing the code is not specified.
     public static final int CODE_UNSPECIFIED = -15;
     public static final int CODE_CLIPBOARD_PASTE = -16;
+    // gti.dev: Gboard-style toolbar panels.
+    public static final int CODE_TRANSLATE = -17;
+    public static final int CODE_TOOLS = -18;
 
     public static boolean isLetterCode(final int code) {
         return code >= CODE_SPACE;
@@ -271,6 +274,8 @@ public final class Constants {
         case CODE_ALPHA_FROM_EMOJI: return "alpha";
         case CODE_UNSPECIFIED: return "unspec";
         case CODE_CLIPBOARD_PASTE: return "clipboard_paste";
+        case CODE_TRANSLATE: return "translate";
+        case CODE_TOOLS: return "tools";
         case CODE_TAB: return "tab";
         case CODE_ENTER: return "enter";
         case CODE_SPACE: return "space";

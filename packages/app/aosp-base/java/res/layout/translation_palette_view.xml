@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style translation panel. -->
+<com.android.inputmethod.latin.clipboard.TranslationPaletteView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/translation_palette_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:orientation="vertical"
+    android:visibility="gone">
+
+    <!-- Language row: [back] [detect] [swap] [English] -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+        <ImageButton
+            android:id="@+id/translation_back_key"
+            android:layout_width="44dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_clipboard_back"
+            android:contentDescription="@string/spoken_description_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+        <TextView
+            android:id="@+id/translation_source_key"
+            android:layout_width="0dip"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="@string/translate_detect_language"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:background="@drawable/translation_language_pill" />
+        <ImageButton
+            android:id="@+id/translation_swap_key"
+            android:layout_width="44dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_translate_swap"
+            android:contentDescription="@string/translate_swap"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+        <TextView
+            android:id="@+id/translation_target_key"
+            android:layout_width="0dip"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="@string/translate_english"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:background="@drawable/translation_language_pill" />
+    </LinearLayout>
+
+    <!-- Input field -->
+    <EditText
+        android:id="@+id/translation_input"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:hint="@string/translate_type_here"
+        android:textColor="@android:color/white"
+        android:textColorHint="#9E9E9E"
+        android:textSize="16sp"
+        android:background="@drawable/translation_input_border"
+        android:importantForAutofill="no" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1" />
+</com.android.inputmethod.latin.clipboard.TranslationPaletteView>

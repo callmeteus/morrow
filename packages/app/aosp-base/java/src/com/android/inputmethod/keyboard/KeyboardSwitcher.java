@@ -35,6 +35,7 @@ import com.android.inputmethod.event.Event;
 import com.android.inputmethod.keyboard.KeyboardLayoutSet.KeyboardLayoutSetException;
 import com.android.inputmethod.keyboard.emoji.EmojiPalettesView;
 import com.android.inputmethod.latin.clipboard.ClipboardPaletteView;
+import com.android.inputmethod.latin.clipboard.TranslationPaletteView;
 import com.android.inputmethod.keyboard.internal.KeyboardState;
 import com.android.inputmethod.keyboard.internal.KeyboardTextsSet;
 import com.android.inputmethod.latin.InputView;
@@ -63,6 +64,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private MainKeyboardView mKeyboardView;
     private EmojiPalettesView mEmojiPalettesView;
     private ClipboardPaletteView mClipboardPaletteView;
+    private TranslationPaletteView mTranslationPaletteView;
     private FloatingKeyboardController mFloatingKeyboardController;
     private boolean mIsFloating;
     private int mFloatingKeyboardWidth;
@@ -337,6 +339,25 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.setVisibility(View.GONE);
         mEmojiPalettesView.stopEmojiPalettes();
         mClipboardPaletteView.setVisibility(View.GONE);
+        mTranslationPaletteView.setVisibility(View.GONE);
+    }
+
+    /** gti.dev: show the Gboard-style translation panel. */
+    public void setTranslationKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setTranslationKeyboard");
+        }
+        mMainKeyboardFrame.setVisibility(View.GONE);
+        mKeyboardView.setVisibility(View.GONE);
+        mEmojiPalettesView.setVisibility(View.GONE);
+        mEmojiPalettesView.stopEmojiPalettes();
+        mClipboardPaletteView.setVisibility(View.GONE);
+        mTranslationPaletteView.show();
+        mTranslationPaletteView.setVisibility(View.VISIBLE);
+    }
+
+    public boolean isShowingTranslationPalette() {
+        return mTranslationPaletteView != null && mTranslationPaletteView.isShown();
     }
 
     /** gti.dev: show the Gboard-style clipboard history panel. */
@@ -517,6 +538,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (isShowingClipboardPalette()) {
             return mClipboardPaletteView;
         }
+        if (isShowingTranslationPalette()) {
+            return mTranslationPaletteView;
+        }
         return mKeyboardView;
     }
 
@@ -549,6 +573,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
                 R.id.emoji_palettes_view);
         mClipboardPaletteView = (ClipboardPaletteView)mCurrentInputView.findViewById(
                 R.id.clipboard_palette_view);
+        mTranslationPaletteView = (TranslationPaletteView)mCurrentInputView.findViewById(
+                R.id.translation_palette_view);
 
         mKeyboardView = (MainKeyboardView) mCurrentInputView.findViewById(R.id.keyboard_view);
         mKeyboardView.setHardwareAcceleratedDrawingEnabled(isHardwareAcceleratedDrawingEnabled);
@@ -557,6 +583,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
                 isHardwareAcceleratedDrawingEnabled);
         mEmojiPalettesView.setKeyboardActionListener(mLatinIME);
         mClipboardPaletteView.setKeyboardActionListener(mLatinIME);
+        mTranslationPaletteView.setKeyboardActionListener(mLatinIME);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {

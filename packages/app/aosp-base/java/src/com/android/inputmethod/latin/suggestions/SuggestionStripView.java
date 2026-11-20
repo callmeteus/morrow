@@ -672,9 +672,15 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                     (ClipboardSuggestion.Match) view.getTag());
             return;
         }
-        if (view == mMoreKey || view == mTranslateKey || view == mSettingsKey) {
-            // gti.dev: the grid, translate and gear buttons open the keyboard
-            // settings for now (no dedicated tools/translate panel yet).
+        if (view == mTranslateKey) {
+            // gti.dev: open the Gboard-style translation panel.
+            mListener.onCodeInput(Constants.CODE_TRANSLATE,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
+            return;
+        }
+        if (view == mMoreKey || view == mSettingsKey) {
+            // gti.dev: the grid and gear buttons open the keyboard settings.
             mListener.onCodeInput(Constants.CODE_SETTINGS,
                     Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
                     false /* isKeyRepeat */);
