@@ -1738,6 +1738,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             LocalVoiceInput.stop(mLocalDictationListener);
             return;
         }
+        // gti.dev: play a soft confirmation tone when the mic activates, like Gboard.
+        AudioAndHapticFeedbackManager.getInstance().playDictationStartSound();
         LocalVoiceInput.init(this);
         mLocalDictationListener = new LocalVoiceInput.Listener() {
             @Override public void onPartial(String text) { }

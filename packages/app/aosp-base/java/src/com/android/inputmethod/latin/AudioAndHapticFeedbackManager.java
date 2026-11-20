@@ -18,6 +18,7 @@ package com.android.inputmethod.latin;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Vibrator;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
@@ -106,6 +107,27 @@ public final class AudioAndHapticFeedbackManager {
             break;
         }
         mAudioManager.playSoundEffect(sound, mSettingsValues.mKeypressSoundVolume);
+    }
+
+    /**
+     * gti.dev: play a short, soft confirmation tone when dictation starts, like
+     * Gboard's microphone activation sound. Respects the keypress sound setting.
+     */
+    public void playDictationStartSound() {
+        if (!mSoundOn) {
+            return;
+        }
+        try {
+            final ToneGenerator tone = new ToneGenerator(
+                    AudioManager.STREAM_MUSIC, 40 /* volume percent */);
+            tone.startTone(ToneGenerator.TONE_PROP_BEEP, 80 /* duration ms */);
+            // Release the ToneGenerator shortly after the tone finishes.
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                try { tone.release(); } catch (Exception ignored) { }
+            }, 300);
+        } catch (Exception e) {
+            // Audio is best-effort; never let it break dictation.
+        }
     }
 
     public void performHapticFeedback(final View viewToPerformHapticFeedbackOn) {
