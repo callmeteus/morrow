@@ -23,3 +23,7 @@ releases/*/*.bin
 
 # Private local references (e.g. Gboard UI screenshots), never tracked
 .private/
+
+# Gradle/JVM crash logs (local only)
+packages/app/aosp-base/hs_err_pid*.log
+packages/app/aosp-base/replay_pid*.log
