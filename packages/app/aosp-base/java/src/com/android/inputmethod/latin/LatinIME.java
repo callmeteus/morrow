@@ -86,6 +86,7 @@ import com.android.inputmethod.keyboard.KeyboardSwitcher;
 import com.android.inputmethod.keyboard.MainKeyboardView;
 import com.android.inputmethod.latin.Suggest.OnGetSuggestedWordsCallback;
 import com.android.inputmethod.latin.SuggestedWords.SuggestedWordInfo;
+import com.android.inputmethod.latin.clipboard.ClipboardHistory;
 import com.android.inputmethod.latin.clipboard.ClipboardSuggestion;
 import com.android.inputmethod.latin.clipboard.ClipboardSuggestionMonitor;
 import com.android.inputmethod.latin.common.Constants;
@@ -180,6 +181,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     private final Rect mFloatingPanelRect = new Rect();
     private SuggestionStripView mSuggestionStripView;
     private ClipboardSuggestionMonitor mClipboardSuggestionMonitor;
+    private ClipboardHistory mClipboardHistory;
 
     private RichInputMethodManager mRichImm;
     @UsedForTesting final KeyboardSwitcher mKeyboardSwitcher;
@@ -633,6 +635,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
         mHandler.onCreate();
         mClipboardSuggestionMonitor = new ClipboardSuggestionMonitor(this, this);
+        mClipboardHistory = new ClipboardHistory(this);
 
         // TODO: Resolve mutual dependencies of {@link #loadSettings()} and
         // {@link #resetDictionaryFacilitatorIfNecessary()}.
@@ -1525,6 +1528,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public void onClipboardSuggestionChanged(@Nullable final ClipboardSuggestion suggestion) {
+        // gti.dev: record new clipboard content into the local history.
+        if (suggestion != null && mClipboardHistory != null) {
+            for (final ClipboardSuggestion.Match match : suggestion.getMatches()) {
+                mClipboardHistory.add(match.getText());
+            }
+        }
         if (hasSuggestionStripView()) {
             mSuggestionStripView.setClipboardSuggestion(suggestion);
         }
@@ -1792,6 +1801,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         if (Constants.CODE_SHORTCUT == event.mKeyCode) {
             // gti.dev: on-device Whisper dictation instead of Google/system STT.
             startLocalDictation();
+            return;
+        }
+        if (Constants.CODE_CLIPBOARD_PASTE == event.mKeyCode) {
+            // gti.dev: open the Gboard-style clipboard history panel.
+            if (mKeyboardSwitcher.isShowingClipboardPalette()) {
+                mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
+                        getCurrentAutoCapsState(), getCurrentRecapitalizeState());
+            } else {
+                mKeyboardSwitcher.setClipboardKeyboard();
+            }
             return;
         }
         final InputTransaction completeInputTransaction =

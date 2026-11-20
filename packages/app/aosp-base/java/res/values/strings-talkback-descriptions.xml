@@ -68,6 +68,7 @@
     <string name="spoken_description_more_features">More features</string>
     <string name="spoken_description_translate">Translate</string>
     <string name="spoken_description_clipboard">Clipboard</string>
+    <string name="spoken_description_back">Back</string>
     <!-- Spoken description for the "Emoji" keyboard key. -->
     <string name="spoken_description_emoji">Emoji</string>
     <!-- Spoken description for the "Return" keyboard key. -->

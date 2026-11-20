@@ -34,6 +34,7 @@ import com.android.inputmethod.compat.InputMethodServiceCompatUtils;
 import com.android.inputmethod.event.Event;
 import com.android.inputmethod.keyboard.KeyboardLayoutSet.KeyboardLayoutSetException;
 import com.android.inputmethod.keyboard.emoji.EmojiPalettesView;
+import com.android.inputmethod.latin.clipboard.ClipboardPaletteView;
 import com.android.inputmethod.keyboard.internal.KeyboardState;
 import com.android.inputmethod.keyboard.internal.KeyboardTextsSet;
 import com.android.inputmethod.latin.InputView;
@@ -61,6 +62,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private View mMainKeyboardFrame;
     private MainKeyboardView mKeyboardView;
     private EmojiPalettesView mEmojiPalettesView;
+    private ClipboardPaletteView mClipboardPaletteView;
     private FloatingKeyboardController mFloatingKeyboardController;
     private boolean mIsFloating;
     private int mFloatingKeyboardWidth;
@@ -334,6 +336,24 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mMainKeyboardFrame.setVisibility(visibility);
         mEmojiPalettesView.setVisibility(View.GONE);
         mEmojiPalettesView.stopEmojiPalettes();
+        mClipboardPaletteView.setVisibility(View.GONE);
+    }
+
+    /** gti.dev: show the Gboard-style clipboard history panel. */
+    public void setClipboardKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setClipboardKeyboard");
+        }
+        mMainKeyboardFrame.setVisibility(View.GONE);
+        mKeyboardView.setVisibility(View.GONE);
+        mEmojiPalettesView.setVisibility(View.GONE);
+        mEmojiPalettesView.stopEmojiPalettes();
+        mClipboardPaletteView.showClipboardHistory();
+        mClipboardPaletteView.setVisibility(View.VISIBLE);
+    }
+
+    public boolean isShowingClipboardPalette() {
+        return mClipboardPaletteView != null && mClipboardPaletteView.isShown();
     }
 
     // Implements {@link KeyboardState.SwitchActions}.
@@ -494,6 +514,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (isShowingEmojiPalettes()) {
             return mEmojiPalettesView;
         }
+        if (isShowingClipboardPalette()) {
+            return mClipboardPaletteView;
+        }
         return mKeyboardView;
     }
 
@@ -524,6 +547,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mMainKeyboardFrame = mCurrentInputView.findViewById(R.id.main_keyboard_frame);
         mEmojiPalettesView = (EmojiPalettesView)mCurrentInputView.findViewById(
                 R.id.emoji_palettes_view);
+        mClipboardPaletteView = (ClipboardPaletteView)mCurrentInputView.findViewById(
+                R.id.clipboard_palette_view);
 
         mKeyboardView = (MainKeyboardView) mCurrentInputView.findViewById(R.id.keyboard_view);
         mKeyboardView.setHardwareAcceleratedDrawingEnabled(isHardwareAcceleratedDrawingEnabled);
@@ -531,6 +556,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.setHardwareAcceleratedDrawingEnabled(
                 isHardwareAcceleratedDrawingEnabled);
         mEmojiPalettesView.setKeyboardActionListener(mLatinIME);
+        mClipboardPaletteView.setKeyboardActionListener(mLatinIME);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style clipboard history panel. -->
+<com.android.inputmethod.latin.clipboard.ClipboardPaletteView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/clipboard_palette_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:orientation="vertical"
+    android:visibility="gone">
+
+    <!-- Title bar: [back] Área de transferência [clear] -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+        <ImageButton
+            android:id="@+id/clipboard_back_key"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_clipboard_back"
+            android:contentDescription="@string/spoken_description_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+        <TextView
+            android:layout_width="0dip"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:text="@string/clipboard_panel_title"
+            android:textSize="18sp"
+            style="?attr/suggestionWordStyle" />
+        <ImageButton
+            android:id="@+id/clipboard_clear_key"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_clipboard_clear"
+            android:contentDescription="@string/clipboard_panel_clear"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="6dp"
+        android:text="@string/clipboard_panel_recent"
+        android:textSize="13sp"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:fillViewport="true">
+        <LinearLayout
+            android:id="@+id/clipboard_items_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp" />
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/clipboard_action_bar"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+        <TextView
+            android:id="@+id/clipboard_alphabet_key"
+            android:layout_width="0dip"
+            android:layout_weight="0.15"
+            android:gravity="center"
+            android:layout_height="match_parent" />
+        <View
+            android:layout_width="0dip"
+            android:layout_weight="0.70"
+            android:layout_height="match_parent" />
+        <ImageButton
+            android:id="@+id/clipboard_delete_key"
+            android:layout_width="0dip"
+            android:layout_weight="0.15"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/spoken_description_delete" />
+    </LinearLayout>
+</com.android.inputmethod.latin.clipboard.ClipboardPaletteView>
