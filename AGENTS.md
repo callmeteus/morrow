@@ -49,3 +49,21 @@ duplicate them here.
 - The first suggestion is always the word the user produced; the centre
   suggestion is the corrector's best candidate; only the word that will be
   committed gets the heavy font weight.
+
+## Training must be published to Hugging Face
+
+- Every training run, once finished, MUST be uploaded to Hugging Face before the task is
+  reported as done. This is mandatory, whether the run passed acceptance or not.
+- Upload the final weights or adapter, the export in the delivery format, the model card
+  (settings, data sources and hours, metrics table, acceptance verdict, license and attribution
+  of the base model and of every dataset), and the training log summary.
+- Visibility: upload as private by default. Make a repository public only when the run passed
+  its acceptance rule and the user said so. A failed run is still uploaded (private, card says
+  FAIL) so the result and the numbers are never lost.
+- Repositories: `giofolf/omnivox-pro` (Parakeet TDT, repo ai-personal-assistant) and
+  `giofolf/omnivox-lite` (Whisper base, repo morrow). Use a new revision or a clearly named
+  folder per run; never overwrite a published run.
+- Never put tokens in the repository or in logs. Use the logged-in `hf` CLI or `HF_TOKEN` from
+  the environment. Ask the user to run `hf auth login` if it is missing.
+- Do not delete the local export or adapter until the upload is verified (file list and sizes
+  match on the Hub).
