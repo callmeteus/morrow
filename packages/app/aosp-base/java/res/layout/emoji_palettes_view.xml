@@ -88,13 +88,48 @@
             android:layout_height="match_parent"
             android:hapticFeedbackEnabled="false"
             android:soundEffectsEnabled="false" />
+        <!-- gti.dev: Gboard-style action bar tabs (GIF, stickers, kaomoji). -->
+        <TextView
+            android:id="@+id/emoji_keyboard_gif"
+            android:layout_width="0dip"
+            android:layout_weight="0.13"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="GIF"
+            android:textColor="#FFE8EAED"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:hapticFeedbackEnabled="false"
+            android:soundEffectsEnabled="false" />
+        <ImageButton
+            android:id="@+id/emoji_keyboard_sticker"
+            android:layout_width="0dip"
+            android:layout_weight="0.13"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_sticker"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:hapticFeedbackEnabled="false"
+            android:soundEffectsEnabled="false"
+            android:contentDescription="Stickers" />
+        <TextView
+            android:id="@+id/emoji_keyboard_kaomoji"
+            android:layout_width="0dip"
+            android:layout_weight="0.13"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text=":-)"
+            android:textColor="#FFE8EAED"
+            android:textSize="16sp"
+            android:hapticFeedbackEnabled="false"
+            android:soundEffectsEnabled="false" />
         <!-- TODO: Implement KeyView and replace this. -->
         <!-- Provide audio and haptic feedback by ourselves based on the keyboard settings.
              We just need to ignore the system's audio and haptic feedback settings. -->
         <RelativeLayout
             android:id="@+id/emoji_keyboard_space"
             android:layout_width="0dip"
-            android:layout_weight="0.70"
+            android:layout_weight="0.31"
             android:layout_height="match_parent"
             android:hapticFeedbackEnabled="false"
             android:soundEffectsEnabled="false"

@@ -276,6 +276,21 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
 
         mEmojiLayoutParams.setKeyProperties(mSpacebar);
         mSpacebarIcon = findViewById(R.id.emoji_keyboard_space_icon);
+
+        // gti.dev: Gboard-style bottom tabs. The AOSP has no GIF backend, so GIF and
+        // stickers map to the smiley/people categories and kaomoji to symbols. This
+        // keeps the bar functional instead of showing inert buttons.
+        final java.util.ArrayList<EmojiCategory.CategoryProperties> shown =
+                mEmojiCategory.getShownCategories();
+        final View gifTab = findViewById(R.id.emoji_keyboard_gif);
+        final View stickerTab = findViewById(R.id.emoji_keyboard_sticker);
+        final View kaomojiTab = findViewById(R.id.emoji_keyboard_kaomoji);
+        if (shown.size() > 3) {
+            gifTab.setOnClickListener(v -> setCurrentCategoryId(shown.get(1).mCategoryId, false));
+            stickerTab.setOnClickListener(v -> setCurrentCategoryId(shown.get(2).mCategoryId, false));
+            kaomojiTab.setOnClickListener(v -> setCurrentCategoryId(shown.get(shown.size() - 1)
+                    .mCategoryId, false));
+        }
     }
 
     @Override
