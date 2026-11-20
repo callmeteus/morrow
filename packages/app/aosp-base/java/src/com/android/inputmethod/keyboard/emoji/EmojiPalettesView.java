@@ -20,6 +20,7 @@ package com.android.inputmethod.keyboard.emoji;
 import static com.android.inputmethod.latin.common.Constants.NOT_A_COORDINATE;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -74,6 +75,9 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
     private final int mCategoryIndicatorBackgroundResId;
     private final int mCategoryPageIndicatorColor;
     private final int mCategoryPageIndicatorBackground;
+    // gti.dev: tint the emoji category tabs: the selected tab uses the keyboard
+    // accent, the others a muted version, so the active category stands out.
+    private final ColorStateList mEmojiTabTint;
     private EmojiPalettesAdapter mEmojiPalettesAdapter;
     private final EmojiLayoutParams mEmojiLayoutParams;
     private final DeleteKeyOnTouchListener mDeleteKeyOnTouchListener;
@@ -129,7 +133,18 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
                 R.styleable.EmojiPalettesView_categoryPageIndicatorColor, 0);
         mCategoryPageIndicatorBackground = emojiPalettesViewAttr.getColor(
                 R.styleable.EmojiPalettesView_categoryPageIndicatorBackground, 0);
+        // gti.dev: highlight the selected emoji category with a legible accent
+        // from the keyboard theme (the same colour used on functional keys).
+        final int accent = emojiPalettesViewAttr.getColor(
+                R.styleable.EmojiPalettesView_emojiTabHighlightColor,
+                mCategoryPageIndicatorColor);
         emojiPalettesViewAttr.recycle();
+
+        final int muted = Color.argb(0x9F, Color.red(accent),
+                Color.green(accent), Color.blue(accent));
+        mEmojiTabTint = new ColorStateList(
+                new int[][] { new int[] { android.R.attr.state_selected }, new int[] { } },
+                new int[] { accent, muted });
         mDeleteKeyOnTouchListener = new DeleteKeyOnTouchListener();
     }
 
@@ -155,6 +170,8 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         // gti.dev: don't paint each tab with the page-indicator background colour;
         // it resolves to pure black in the You/dark theme. Let the tab bar's
         // keyboard background show through so the emoji panel matches the keyboard.
+        // Tint the icon so the selected category stands out with the keyboard accent.
+        iconView.setImageTintList(mEmojiTabTint);
         iconView.setImageResource(mEmojiCategory.getCategoryTabIcon(categoryId));
         iconView.setContentDescription(mEmojiCategory.getAccessibilityDescription(categoryId));
         tspec.setIndicator(iconView);

@@ -21,6 +21,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="KeyboardTheme.LXX_Light" parent="KeyboardIcons.LXX_Light">
         <item name="emojiTabBarBackground">@color/emoji_tab_page_indicator_background_lxx_light</item>
+        <item name="emojiTabHighlightColor">@color/highlight_color_lxx_light</item>
         <item name="inputViewStyle">@style/InputView.LXX</item>
         <item name="keyboardStyle">@style/Keyboard.LXX_Light</item>
         <item name="keyboardViewStyle">@style/KeyboardView.LXX_Light</item>

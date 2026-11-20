@@ -24,6 +24,8 @@
         <attr name="keyIconTint" format="color" />
         <!-- gti.dev: background for the emoji category tab bar, matches the keyboard. -->
         <attr name="emojiTabBarBackground" format="color" />
+        <!-- gti.dev: highlight colour for the selected emoji category tab. -->
+        <attr name="emojiTabHighlightColor" format="color" />
         <!-- InputView style -->
         <attr name="inputViewStyle" format="reference" />
         <!-- Keyboard style -->
@@ -193,6 +195,7 @@
     </declare-styleable>
 
     <declare-styleable name="EmojiPalettesView">
+        <attr name="emojiTabHighlightColor" />
         <attr name="categoryIndicatorEnabled" format="boolean" />
         <attr name="categoryIndicatorDrawable" format="reference" />
         <attr name="categoryIndicatorBackground" format="reference" />
