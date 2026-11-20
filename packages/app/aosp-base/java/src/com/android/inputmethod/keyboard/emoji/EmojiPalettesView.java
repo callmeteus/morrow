@@ -262,20 +262,12 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         mAlphabetKeyLeft.setTag(Constants.CODE_ALPHA_FROM_EMOJI);
         mAlphabetKeyLeft.setOnTouchListener(this);
         mAlphabetKeyLeft.setOnClickListener(this);
-        mSpacebar = findViewById(R.id.emoji_keyboard_space);
-        mSpacebar.setBackgroundResource(mSpacebarBackgroundId);
-        mSpacebar.setTag(Constants.CODE_SPACE);
-        mSpacebar.setOnTouchListener(this);
-        mSpacebar.setOnClickListener(this);
-
+        // gti.dev: the spacebar was removed from the emoji action bar (Gboard style).
         // deleteKey depends only on OnTouchListener.
         mDeleteKey = (ImageButton)findViewById(R.id.emoji_keyboard_delete);
         mDeleteKey.setBackgroundResource(mFunctionalKeyBackgroundId);
         mDeleteKey.setTag(Constants.CODE_DELETE);
         mDeleteKey.setOnTouchListener(mDeleteKeyOnTouchListener);
-
-        mEmojiLayoutParams.setKeyProperties(mSpacebar);
-        mSpacebarIcon = findViewById(R.id.emoji_keyboard_space_icon);
 
         // gti.dev: Gboard-style bottom tabs. The AOSP has no GIF backend, so GIF and
         // stickers map to the smiley/people categories and kaomoji to symbols. This
@@ -403,7 +395,7 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
             mDeleteKey.setImageResource(deleteIconResId);
         }
         final int spacebarResId = iconSet.getIconResourceId(KeyboardIconsSet.NAME_SPACE_KEY);
-        if (spacebarResId != 0) {
+        if (spacebarResId != 0 && mSpacebarIcon != null) {
             // TODO: Remove this workaround to place the spacebar icon.
             mSpacebarIcon.setBackgroundResource(spacebarResId);
         }
