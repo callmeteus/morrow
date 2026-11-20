@@ -20,3 +20,6 @@ packages/app/build/
 releases/*/*.bin
 # Local settings
 .env
+
+# Private local references (e.g. Gboard UI screenshots), never tracked
+.private/

@@ -91,13 +91,11 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private final View mToolbar;
     private boolean mShowWordSuggestions = false;
     private final ImageButton mVoiceKey;
-    // gti.dev: a visible emoji button instead of the hidden comma long-press.
-    private final ImageButton mEmojiKey;
     // gti.dev: Gboard-style toolbar buttons.
-    private final ImageButton mClipboardKey;
-    private final ImageButton mGifKey;
-    private final ImageButton mThemeKey;
+    private final ImageButton mMoreKey;
     private final ImageButton mSettingsKey;
+    private final ImageButton mTranslateKey;
+    private final ImageButton mClipboardKey;
     private final int mDockedStripMargin;
     private final View mImportantNoticeStrip;
     private final InlineSuggestionsStrip mInlineSuggestionsStrip;
@@ -208,11 +206,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         mSuggestionsStrip = (ViewGroup)findViewById(R.id.suggestions_strip);
         mToolbar = findViewById(R.id.suggestions_strip_toolbar);
         mVoiceKey = (ImageButton)findViewById(R.id.suggestions_strip_voice_key);
-        mEmojiKey = (ImageButton)findViewById(R.id.suggestions_strip_emoji_key);
-        mClipboardKey = (ImageButton)findViewById(R.id.suggestions_strip_clipboard_key);
-        mGifKey = (ImageButton)findViewById(R.id.suggestions_strip_gif_key);
-        mThemeKey = (ImageButton)findViewById(R.id.suggestions_strip_theme_key);
+        mMoreKey = (ImageButton)findViewById(R.id.suggestions_strip_more_key);
         mSettingsKey = (ImageButton)findViewById(R.id.suggestions_strip_settings_key);
+        mTranslateKey = (ImageButton)findViewById(R.id.suggestions_strip_translate_key);
+        mClipboardKey = (ImageButton)findViewById(R.id.suggestions_strip_clipboard_key);
         mDockedStripMargin =
                 ((MarginLayoutParams) mSuggestionsStrip.getLayoutParams()).getMarginStart();
         mImportantNoticeStrip = findViewById(R.id.important_notice_strip);
@@ -259,9 +256,8 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                 context, R.drawable.sym_keyboard_voice_recording);
         mVoiceKey.setImageDrawable(iconVoice);
         mVoiceKey.setOnClickListener(this);
-        mEmojiKey.setOnClickListener(this);
         for (final ImageButton key : new ImageButton[] {
-                mClipboardKey, mGifKey, mThemeKey, mSettingsKey }) {
+                mMoreKey, mSettingsKey, mTranslateKey, mClipboardKey }) {
             key.setImageTintList(getToolKeyTintList());
             key.setOnClickListener(this);
         }
@@ -694,33 +690,16 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                     (ClipboardSuggestion.Match) view.getTag());
             return;
         }
-        if (view == mEmojiKey) {
-            mListener.onCodeInput(Constants.CODE_EMOJI,
+        if (view == mMoreKey || view == mTranslateKey || view == mSettingsKey) {
+            // gti.dev: the grid, translate and gear buttons open the keyboard
+            // settings for now (no dedicated tools/translate panel yet).
+            mListener.onCodeInput(Constants.CODE_SETTINGS,
                     Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
                     false /* isKeyRepeat */);
             return;
         }
         if (view == mClipboardKey) {
             mListener.onCodeInput(Constants.CODE_CLIPBOARD_PASTE,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mGifKey) {
-            // gti.dev: GIF button; no dedicated action yet, open the emoji panel.
-            mListener.onCodeInput(Constants.CODE_EMOJI,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mThemeKey) {
-            mListener.onCodeInput(Constants.CODE_SETTINGS,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mSettingsKey) {
-            mListener.onCodeInput(Constants.CODE_SETTINGS,
                     Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
                     false /* isKeyRepeat */);
             return;
