@@ -1131,8 +1131,11 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             return;
         }
         final int code = key.getCode();
-        if (code == Constants.CODE_SPACE || code == Constants.CODE_LANGUAGE_SWITCH) {
-            // Long pressing the space key invokes IME switcher dialog.
+        final com.android.inputmethod.keyboard.internal.MoreKeySpec[] moreKeys = key.getMoreKeys();
+        if ((code == Constants.CODE_SPACE || code == Constants.CODE_LANGUAGE_SWITCH)
+                && (moreKeys == null || moreKeys.length == 0)) {
+            // gti.dev: only invoke the IME switcher when there are no moreKeys.
+            // The space key defines a Gboard-style popup, so show that instead.
             if (sListener.onCustomRequest(Constants.CUSTOM_CODE_SHOW_INPUT_METHOD_PICKER)) {
                 cancelKeyTracking();
                 sListener.onReleaseKey(code, false /* withSliding */);
