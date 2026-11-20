@@ -36,6 +36,7 @@ import com.android.inputmethod.keyboard.KeyboardLayoutSet.KeyboardLayoutSetExcep
 import com.android.inputmethod.keyboard.emoji.EmojiPalettesView;
 import com.android.inputmethod.latin.clipboard.ClipboardPaletteView;
 import com.android.inputmethod.latin.clipboard.TranslationPaletteView;
+import com.android.inputmethod.latin.clipboard.ToolsPaletteView;
 import com.android.inputmethod.keyboard.internal.KeyboardState;
 import com.android.inputmethod.keyboard.internal.KeyboardTextsSet;
 import com.android.inputmethod.latin.InputView;
@@ -65,6 +66,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private EmojiPalettesView mEmojiPalettesView;
     private ClipboardPaletteView mClipboardPaletteView;
     private TranslationPaletteView mTranslationPaletteView;
+    private ToolsPaletteView mToolsPaletteView;
     private FloatingKeyboardController mFloatingKeyboardController;
     private boolean mIsFloating;
     private int mFloatingKeyboardWidth;
@@ -340,6 +342,25 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.stopEmojiPalettes();
         mClipboardPaletteView.setVisibility(View.GONE);
         mTranslationPaletteView.setVisibility(View.GONE);
+        mToolsPaletteView.setVisibility(View.GONE);
+    }
+
+    /** gti.dev: show the Gboard-style tools grid. */
+    public void setToolsKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setToolsKeyboard");
+        }
+        mMainKeyboardFrame.setVisibility(View.GONE);
+        mKeyboardView.setVisibility(View.GONE);
+        mEmojiPalettesView.setVisibility(View.GONE);
+        mEmojiPalettesView.stopEmojiPalettes();
+        mClipboardPaletteView.setVisibility(View.GONE);
+        mTranslationPaletteView.setVisibility(View.GONE);
+        mToolsPaletteView.setVisibility(View.VISIBLE);
+    }
+
+    public boolean isShowingToolsPalette() {
+        return mToolsPaletteView != null && mToolsPaletteView.isShown();
     }
 
     /** gti.dev: show the Gboard-style translation panel. */
@@ -352,6 +373,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.setVisibility(View.GONE);
         mEmojiPalettesView.stopEmojiPalettes();
         mClipboardPaletteView.setVisibility(View.GONE);
+        mToolsPaletteView.setVisibility(View.GONE);
         mTranslationPaletteView.show();
         mTranslationPaletteView.setVisibility(View.VISIBLE);
     }
@@ -369,6 +391,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mKeyboardView.setVisibility(View.GONE);
         mEmojiPalettesView.setVisibility(View.GONE);
         mEmojiPalettesView.stopEmojiPalettes();
+        mToolsPaletteView.setVisibility(View.GONE);
         mClipboardPaletteView.showClipboardHistory();
         mClipboardPaletteView.setVisibility(View.VISIBLE);
     }
@@ -389,6 +412,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         // @see #getVisibleKeyboardView() and
         // @see LatinIME#onComputeInset(android.inputmethodservice.InputMethodService.Insets)
         mKeyboardView.setVisibility(View.GONE);
+        mToolsPaletteView.setVisibility(View.GONE);
         mEmojiPalettesView.startEmojiPalettes(
                 mKeyboardTextsSet.getText(KeyboardTextsSet.SWITCH_TO_ALPHA_KEY_LABEL),
                 mKeyboardView.getKeyVisualAttribute(), keyboard.mIconsSet);
@@ -541,6 +565,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (isShowingTranslationPalette()) {
             return mTranslationPaletteView;
         }
+        if (isShowingToolsPalette()) {
+            return mToolsPaletteView;
+        }
         return mKeyboardView;
     }
 
@@ -575,6 +602,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
                 R.id.clipboard_palette_view);
         mTranslationPaletteView = (TranslationPaletteView)mCurrentInputView.findViewById(
                 R.id.translation_palette_view);
+        mToolsPaletteView = (ToolsPaletteView)mCurrentInputView.findViewById(
+                R.id.tools_palette_view);
 
         mKeyboardView = (MainKeyboardView) mCurrentInputView.findViewById(R.id.keyboard_view);
         mKeyboardView.setHardwareAcceleratedDrawingEnabled(isHardwareAcceleratedDrawingEnabled);
@@ -584,6 +613,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.setKeyboardActionListener(mLatinIME);
         mClipboardPaletteView.setKeyboardActionListener(mLatinIME);
         mTranslationPaletteView.setKeyboardActionListener(mLatinIME);
+        mToolsPaletteView.setKeyboardActionListener(mLatinIME);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {

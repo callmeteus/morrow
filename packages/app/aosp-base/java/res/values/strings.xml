@@ -591,4 +591,10 @@ Tip: You can download and remove dictionaries by going to &lt;b>Languages&#160;&
     <string name="translate_swap">Trocar idiomas</string>
     <string name="translate_type_here">Digite aqui para traduzir</string>
     <string name="translation_lang_portuguese">Português</string>
+    <!-- gti.dev: Gboard-style tools grid. -->
+    <string name="tools_panel_title">Ferramentas</string>
+    <string name="tools_item_translate">Traduzir</string>
+    <string name="tools_item_clipboard">Área de transferência</string>
+    <string name="tools_item_emoji">Emoji</string>
+    <string name="tools_item_settings">Configurações</string>
 </resources>

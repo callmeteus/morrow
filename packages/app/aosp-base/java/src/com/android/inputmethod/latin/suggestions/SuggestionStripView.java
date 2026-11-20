@@ -679,8 +679,15 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                     false /* isKeyRepeat */);
             return;
         }
-        if (view == mMoreKey || view == mSettingsKey) {
-            // gti.dev: the grid and gear buttons open the keyboard settings.
+        if (view == mMoreKey) {
+            // gti.dev: grid button opens the Gboard-style tools panel.
+            mListener.onCodeInput(Constants.CODE_TOOLS,
+                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
+                    false /* isKeyRepeat */);
+            return;
+        }
+        if (view == mSettingsKey) {
+            // gti.dev: gear button opens the keyboard settings.
             mListener.onCodeInput(Constants.CODE_SETTINGS,
                     Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
                     false /* isKeyRepeat */);

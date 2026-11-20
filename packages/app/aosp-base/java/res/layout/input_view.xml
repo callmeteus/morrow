@@ -35,4 +35,7 @@
     <include
         android:id="@+id/translation_palette_view"
         layout="@layout/translation_palette_view" />
+    <include
+        android:id="@+id/tools_palette_view"
+        layout="@layout/tools_palette_view" />
 </com.android.inputmethod.latin.InputView>
