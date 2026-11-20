@@ -1800,6 +1800,23 @@ public final class InputLogic {
         final EditorInfo ei = getCurrentInputEditorInfo();
         if (ei == null) return Constants.TextUtils.CAP_MODE_OFF;
         final int inputType = ei.inputType;
+        // gti.dev: URLs, e-mails, passwords, numbers and phones must never auto-capitalize,
+        // like Gboard. Trust the editor's caps mode for these fields instead of forcing
+        // first-letter capitalization below.
+        final int variation = inputType & android.text.InputType.TYPE_MASK_VARIATION;
+        final int inputClass = inputType & android.text.InputType.TYPE_MASK_CLASS;
+        if (com.android.inputmethod.latin.utils.InputTypeUtils.isEmailVariation(variation)
+                || variation == android.text.InputType.TYPE_TEXT_VARIATION_URI
+                || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
+                || variation == android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                || variation == android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
+                || inputClass == android.text.InputType.TYPE_CLASS_NUMBER
+                || inputClass == android.text.InputType.TYPE_CLASS_PHONE) {
+            return mConnection.getCursorCapsMode(inputType,
+                    settingsValues.mSpacingAndPunctuations,
+                    SpaceState.PHANTOM == mSpaceState);
+        }
         // Warning: this depends on mSpaceState, which may not be the most current value. If
         // mSpaceState gets updated later, whoever called this may need to be told about it.
         int caps = mConnection.getCursorCapsMode(inputType, settingsValues.mSpacingAndPunctuations,

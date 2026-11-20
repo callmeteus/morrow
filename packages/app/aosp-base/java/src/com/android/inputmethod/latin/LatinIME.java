@@ -1452,6 +1452,22 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     int getCurrentAutoCapsState() {
         final int caps = mInputLogic.getCurrentAutoCapsState(mSettings.getCurrent());
+        // gti.dev: URL and email fields must never auto-capitalize the first letter,
+        // like Gboard. The cached getCursorCapsMode often returns WORDS for an empty
+        // editor on these fields, so suppress it explicitly.
+        final android.view.inputmethod.EditorInfo ei = getCurrentInputEditorInfo();
+        if (ei != null) {
+            final int inputClass = ei.inputType & android.text.InputType.TYPE_MASK_CLASS;
+            final int variation = ei.inputType & android.text.InputType.TYPE_MASK_VARIATION;
+            final boolean noAutoCaps = inputClass == android.text.InputType.TYPE_CLASS_TEXT
+                    && (variation == android.text.InputType.TYPE_TEXT_VARIATION_URI
+                        || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
+                        || com.android.inputmethod.latin.utils.InputTypeUtils.isEmailVariation(
+                                variation));
+            if (noAutoCaps) {
+                return com.android.inputmethod.latin.common.Constants.TextUtils.CAP_MODE_OFF;
+            }
+        }
         // gti.dev: after deleting everything the RichInputConnection's cached
         // text before the cursor can be stale, so getCursorCapsMode returns OFF
         // and the keyboard stays lowercase. When the editor is actually empty
