@@ -27,6 +27,10 @@
     <string name="tools_item_floating">Flotante</string>
 
     <!-- GIF picker -->
+    <string name="shortcut_add_desc">Añadir</string>
+    <string name="shortcut_emoji_desc">Emoji</string>
+    <string name="shortcut_edit_desc">Editar</string>
+    <string name="shortcut_send_desc">Enviar</string>
     <string name="gif_tab_label">GIF</string>
     <string name="gif_search_hint">Buscar GIFs</string>
     <string name="gif_searching">Buscando...</string>

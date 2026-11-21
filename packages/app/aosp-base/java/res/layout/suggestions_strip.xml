@@ -22,11 +22,84 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Provide audio and haptic feedback by ourselves based on the keyboard settings.
          We just need to ignore the system's audio and haptic feedback settings. -->
+    <!-- gti.dev: Gboard's top shortcut row (+, Aa, ☺, @, pencil, send). It is
+         shown while idle and hidden once word suggestions take over. -->
+    <LinearLayout
+        android:id="@+id/suggestions_shortcut_strip"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:hapticFeedbackEnabled="false"
+        android:soundEffectsEnabled="false">
+
+        <ImageButton
+            android:id="@+id/shortcut_add"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_add_circle"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/shortcut_add_desc"
+            style="?attr/suggestionWordStyle" />
+        <TextView
+            android:id="@+id/shortcut_abc"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:gravity="center"
+            android:text="Aa"
+            android:textSize="18sp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:hapticFeedbackEnabled="false"
+            android:soundEffectsEnabled="false" />
+        <ImageButton
+            android:id="@+id/shortcut_emoji"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_emoji_smiley"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/shortcut_emoji_desc"
+            style="?attr/suggestionWordStyle" />
+        <TextView
+            android:id="@+id/shortcut_at"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:gravity="center"
+            android:text="@"
+            android:textSize="20sp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:hapticFeedbackEnabled="false"
+            android:soundEffectsEnabled="false" />
+        <ImageButton
+            android:id="@+id/shortcut_edit"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_tools_edit"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/shortcut_edit_desc"
+            style="?attr/suggestionWordStyle" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+        <ImageButton
+            android:id="@+id/shortcut_send"
+            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_height="fill_parent"
+            android:src="@drawable/sym_keyboard_send"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/shortcut_send_desc"
+            style="?attr/suggestionWordStyle" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/suggestions_strip"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_below="@id/suggestions_shortcut_strip"
         android:layout_marginLeft="@dimen/config_suggestions_strip_horizontal_margin"
         android:layout_marginRight="@dimen/config_suggestions_strip_horizontal_margin"
         android:hapticFeedbackEnabled="false"
@@ -39,7 +112,8 @@
         android:id="@+id/important_notice_strip"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_below="@id/suggestions_shortcut_strip"
         android:layout_marginLeft="@dimen/config_suggestions_strip_horizontal_margin"
         android:layout_marginRight="@dimen/config_suggestions_strip_horizontal_margin"
         android:hapticFeedbackEnabled="false"
@@ -56,7 +130,8 @@
         android:id="@+id/inline_suggestions_strip"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_below="@id/suggestions_shortcut_strip"
         android:layout_marginLeft="@dimen/config_suggestions_strip_horizontal_margin"
         android:layout_marginRight="@dimen/config_suggestions_strip_horizontal_margin"
         android:visibility="invisible" />
@@ -65,7 +140,8 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_below="@id/suggestions_shortcut_strip"
         android:layout_marginLeft="@dimen/config_suggestions_strip_horizontal_margin"
         android:layout_marginRight="@dimen/config_suggestions_strip_horizontal_margin"
         android:visibility="invisible" />
@@ -74,10 +150,10 @@
         android:id="@+id/suggestions_strip_toolbar"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_below="@id/suggestions_shortcut_strip"
         android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true">
+        android:layout_alignParentLeft="true">
         <!-- gti.dev: order matches the real Gboard toolbar: grid, gear, translate, clipboard. -->
         <ImageButton
             android:id="@+id/suggestions_strip_more_key"
@@ -111,10 +187,10 @@
     <ImageButton
         android:id="@+id/suggestions_strip_voice_key"
         android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
-        android:layout_height="fill_parent"
+        android:layout_height="@dimen/config_suggestions_strip_height"
+        android:layout_below="@id/suggestions_shortcut_strip"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
         android:contentDescription="@string/spoken_description_mic"
         style="?attr/suggestionWordStyle" />
 </merge>
