@@ -65,5 +65,8 @@ duplicate them here.
   folder per run; never overwrite a published run.
 - Never put tokens in the repository or in logs. Use the logged-in `hf` CLI or `HF_TOKEN` from
   the environment. Ask the user to run `hf auth login` if it is missing.
-- Do not delete the local export or adapter until the upload is verified (file list and sizes
-  match on the Hub).
+- Do not delete anything local until the upload is verified (file list and sizes match on the Hub).
+- After the upload is verified, delete the exported weight files from the local disk: the ONNX
+  external data (`*.onnx.data`), the `.onnx` graphs and, for OmniVox Lite, the ggml `.bin` files.
+  Keep the small files (adapters, `vocab.txt`, configs, hashes, logs, reports) and the base
+  checkpoint. Record the Hub revision and the freed size in the run report.
