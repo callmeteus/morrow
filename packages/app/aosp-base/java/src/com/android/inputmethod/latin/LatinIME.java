@@ -1731,16 +1731,15 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     // gti.dev: true while the normal keyboard types into the GIF search field.
     private boolean mGifSearchActive = false;
 
-    /** gti.dev: show the normal keyboard to type a GIF search query. */
+    /** gti.dev: keep the GIF panel visible and type into its search field. */
     public void startGifSearch() {
         mGifSearchActive = true;
-        mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
-                getCurrentAutoCapsState(), getCurrentRecapitalizeState());
+        mKeyboardSwitcher.showGifSearchKeyboard();
     }
 
     private void finishGifSearch() {
         mGifSearchActive = false;
-        mKeyboardSwitcher.setGifKeyboard();
+        mKeyboardSwitcher.hideGifSearchKeyboard();
     }
 
     // Implementation of {@link KeyboardActionListener}.
@@ -1749,22 +1748,38 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             final boolean isKeyRepeat) {
         // gti.dev: route typing into the GIF search field instead of the editor.
         if (mGifSearchActive) {
-            final com.android.inputmethod.latin.gif.GifPaletteView palette =
-                    mKeyboardSwitcher.getGifPaletteView();
-            if (palette == null) {
-                mGifSearchActive = false;
-            } else if (codePoint == Constants.CODE_DELETE) {
-                palette.deleteSearchText();
-            } else if (codePoint == Constants.CODE_ENTER
-                    || codePoint == Constants.CODE_ACTION_NEXT) {
+            // Toolbar buttons (mic, grid, settings, translate, clipboard) must
+            // still work: leave search mode and let the code fall through to
+            // the normal onEvent handling below.
+            final boolean toolbarCode = codePoint == Constants.CODE_SHORTCUT
+                    || codePoint == Constants.CODE_TOOLS
+                    || codePoint == Constants.CODE_SETTINGS
+                    || codePoint == Constants.CODE_TRANSLATE
+                    || codePoint == Constants.CODE_CLIPBOARD_PASTE
+                    || codePoint == Constants.CODE_GIF
+                    || codePoint == Constants.CODE_ONE_HANDED
+                    || codePoint == Constants.CODE_EMOJI;
+            if (toolbarCode) {
                 finishGifSearch();
-            } else if (codePoint > 0 && Character.isValidCodePoint(codePoint)
-                    && Constants.isLetterCode(codePoint) && codePoint != Constants.CODE_SPACE) {
-                palette.appendSearchText(new String(Character.toChars(codePoint)));
-            } else if (codePoint == Constants.CODE_SPACE) {
-                palette.appendSearchText(" ");
+                // fall through to normal handling
+            } else {
+                final com.android.inputmethod.latin.gif.GifPaletteView palette =
+                        mKeyboardSwitcher.getGifPaletteView();
+                if (palette == null) {
+                    mGifSearchActive = false;
+                } else if (codePoint == Constants.CODE_DELETE) {
+                    palette.deleteSearchText();
+                } else if (codePoint == Constants.CODE_ENTER
+                        || codePoint == Constants.CODE_ACTION_NEXT) {
+                    finishGifSearch();
+                } else if (codePoint > 0 && Character.isValidCodePoint(codePoint)
+                        && Constants.isLetterCode(codePoint) && codePoint != Constants.CODE_SPACE) {
+                    palette.appendSearchText(new String(Character.toChars(codePoint)));
+                } else if (codePoint == Constants.CODE_SPACE) {
+                    palette.appendSearchText(" ");
+                }
+                return;
             }
-            return;
         }
         noteDiagnosticTyped(codePoint);
         if (UsageLog.get() != null && !isKeyRepeat) {

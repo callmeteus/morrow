@@ -387,6 +387,41 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         return mGifPaletteView != null && mGifPaletteView.isShown();
     }
 
+    /** gti.dev: keep the GIF search panel visible at the top while the normal
+     *  alphabet keyboard is shown underneath it (Gboard-style search state). */
+    public void showGifSearchKeyboard() {
+        if (mKeyboardView == null || mGifPaletteView == null) return;
+        // Hide the GIF grid, keep the search header visible.
+        mGifPaletteView.setSearchEditing(true);
+        // Show the alphabet keyboard frame underneath the panel.
+        mMainKeyboardFrame.setVisibility(View.VISIBLE);
+        mKeyboardView.setVisibility(View.VISIBLE);
+        // Hide the suggestion strip so we don't get a duplicate top row.
+        final View strip = mCurrentInputView.findViewById(R.id.suggestion_strip_view);
+        if (strip != null) strip.setVisibility(View.GONE);
+        // Lift the GIF panel above the keyboard by giving it a bottom margin.
+        mGifPaletteView.post(() -> {
+            final android.widget.FrameLayout.LayoutParams lp =
+                    (android.widget.FrameLayout.LayoutParams) mGifPaletteView.getLayoutParams();
+            lp.bottomMargin = mKeyboardView.getHeight();
+            mGifPaletteView.setLayoutParams(lp);
+        });
+    }
+
+    /** gti.dev: restore the full GIF panel and hide the alphabet keyboard. */
+    public void hideGifSearchKeyboard() {
+        if (mGifPaletteView == null) return;
+        final android.widget.FrameLayout.LayoutParams lp =
+                (android.widget.FrameLayout.LayoutParams) mGifPaletteView.getLayoutParams();
+        lp.bottomMargin = 0;
+        mGifPaletteView.setLayoutParams(lp);
+        mGifPaletteView.setSearchEditing(false);
+        if (mMainKeyboardFrame != null) mMainKeyboardFrame.setVisibility(View.GONE);
+        if (mKeyboardView != null) mKeyboardView.setVisibility(View.GONE);
+        final View strip = mCurrentInputView.findViewById(R.id.suggestion_strip_view);
+        if (strip != null) strip.setVisibility(View.VISIBLE);
+    }
+
     public com.android.inputmethod.latin.gif.GifPaletteView getGifPaletteView() {
         return mGifPaletteView;
     }

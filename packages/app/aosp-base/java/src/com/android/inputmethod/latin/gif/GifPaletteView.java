@@ -220,6 +220,20 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         mSearchRequestListener = listener;
     }
 
+    /** gti.dev: while searching, show only the search header; the alphabet
+     *  keyboard is displayed underneath by KeyboardSwitcher. */
+    public void setSearchEditing(final boolean editing) {
+        final View grid = findViewById(R.id.gif_grid);
+        if (grid != null) grid.setVisibility(editing ? View.GONE : View.VISIBLE);
+        if (mStatus != null) mStatus.setVisibility(editing ? View.GONE : View.VISIBLE);
+        // Adjust our height so the panel shrinks to the header while searching.
+        // The parent is a FrameLayout, so use generic ViewGroup.LayoutParams.
+        final android.view.ViewGroup.LayoutParams lp = getLayoutParams();
+        lp.height = editing ? android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                : android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+        setLayoutParams(lp);
+    }
+
     /** gti.dev: called by LatinIME while the normal keyboard types into the search field. */
     public void appendSearchText(final String text) {
         mSearch.append(text);
