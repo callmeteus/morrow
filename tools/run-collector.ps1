@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
-$backend = Join-Path $root "packages\app\backend"
+$backend = Join-Path $root "packages\backend"
 $dataDir = Join-Path $env:TEMP "gboard-collector-local"
 
 $env:COLLECTOR_ADDR = "127.0.0.1:8080"

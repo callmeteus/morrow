@@ -1,6 +1,6 @@
 # Dataset collector end-to-end test
 
-Run at 2026-11-21 15:59:23 by tools/test-collector.ps1.
+Run at 2026-11-21 17:03:06 by tools/test-collector.ps1.
 Real Go server on 127.0.0.1:18081, data under docs/evidence/collector-run/.
 
 ## Output

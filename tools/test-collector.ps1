@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 $root = Split-Path -Parent $PSScriptRoot
-$backend = Join-Path $root "packages\app\backend"
+$backend = Join-Path $root "packages\backend"
 $evidence = Join-Path $root "docs\evidence\collector-run"
 $report = Join-Path $root "docs\evidence\collector_e2e.md"
 

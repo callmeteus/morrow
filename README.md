@@ -259,7 +259,7 @@ whisper.cpp and ggml (MIT), OpenSwipe engine (MIT), and AOSP LatinIME
 
 ## Coleta de dataset (apenas builds de debug)
 
-O coletor em `packages/app/backend/` recebe, de builds **debug**, os dados brutos usados para
+O coletor em `packages/backend/` recebe, de builds **debug**, os dados brutos usados para
 melhorar o teclado: áudio WAV do ditado, o texto original do Whisper e o
 resultado da correção, gestos de swipe com o trace e a palavra decodificada, e
 eventos da faixa de sugestões (qual posição foi escolhida, sugestões ignoradas,
@@ -285,7 +285,7 @@ de setup (campos de URL e token do coletor).
 ### Deploy
 
 O serviço roda na **h-server-1** (Tailscale `100.69.33.118`) como Swarm service,
-com a imagem construída de `packages/app/backend/Dockerfile`. O Traefik em `c-oracle-server`
+com a imagem construída de `packages/backend/Dockerfile`. O Traefik em `c-oracle-server`
 publica `https://morrow.gti.dev` (porta 443, sem porta customizada) e encaminha
 para a porta publicada no routing mesh. Os manifests Terraform e as regras do
 Grafana ficam no repositório `gti-infra`, não aqui.
