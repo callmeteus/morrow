@@ -142,19 +142,6 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         mDeleteKeyOnTouchListener = new DeleteKeyOnTouchListener();
     }
 
-    @Override
-    protected void onMeasure(final int widthMeasureSpec, final int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        final Resources res = getContext().getResources();
-        // The main keyboard expands to the entire this {@link KeyboardView}.
-        final int width = ResourceUtils.getDefaultKeyboardWidth(getContext())
-                + getPaddingLeft() + getPaddingRight();
-        final int height = ResourceUtils.getDefaultKeyboardHeight(res)
-                + res.getDimensionPixelSize(R.dimen.config_suggestions_strip_height)
-                + getPaddingTop() + getPaddingBottom();
-        setMeasuredDimension(width, height);
-    }
-
     private void addTab(final TabHost host, final int categoryId) {
         final String tabId = EmojiCategory.getCategoryName(categoryId, 0 /* categoryPageId */);
         final TabHost.TabSpec tspec = host.newTabSpec(tabId);

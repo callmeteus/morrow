@@ -1348,7 +1348,15 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             mInsetsUpdater.setInsets(outInsets);
             return;
         }
-        final int suggestionsHeight = (!mKeyboardSwitcher.isShowingEmojiPalettes()
+        // gti.dev: when any palette (emoji, GIF, clipboard, tools, translation)
+        // replaces the main keyboard, its suggestion strip is inside the hidden
+        // main frame. Counting its height here shifts the panel down.
+        final boolean paletteShown = mKeyboardSwitcher.isShowingEmojiPalettes()
+                || mKeyboardSwitcher.isShowingGifPalette()
+                || mKeyboardSwitcher.isShowingClipboardPalette()
+                || mKeyboardSwitcher.isShowingToolsPalette()
+                || mKeyboardSwitcher.isShowingTranslationPalette();
+        final int suggestionsHeight = (!paletteShown
                 && mSuggestionStripView.getVisibility() == View.VISIBLE)
                 ? mSuggestionStripView.getHeight() : 0;
         final int visibleTopY = inputHeight - visibleKeyboardView.getHeight() - suggestionsHeight;
