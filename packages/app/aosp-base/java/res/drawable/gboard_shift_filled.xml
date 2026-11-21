@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style bold filled shift arrow, no underline. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <!-- thick arrow: wide triangular head + short stem, like the reference -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M480,120L860,500L660,500L660,820L300,820L300,500L100,500L480,120Z" />
+</vector>
