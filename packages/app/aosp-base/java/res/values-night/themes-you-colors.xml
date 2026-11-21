@@ -9,11 +9,12 @@
     <color name="keyboard_key_normal_color_you">@android:color/system_surface_container_highest_dark</color>
     <color name="keyboard_key_pressed_color_you">@android:color/system_surface_container_dark</color>
     <color name="keyboard_key_text_color_you">@android:color/system_on_surface_dark</color>
-    <color name="keyboard_key_functional_normal_color_you">@android:color/system_secondary_container_dark</color>
-    <color name="keyboard_key_functional_pressed_color_you">@android:color/system_on_secondary_dark</color>
+    <!-- gti.dev: Gboard purple for functional/action keys in night mode too. -->
+    <color name="keyboard_key_functional_normal_color_you">#FF9585D6</color>
+    <color name="keyboard_key_functional_pressed_color_you">#FFB0A2E6</color>
     <color name="keyboard_key_functional_text_color_you">@android:color/system_on_secondary_container_dark</color>
-    <color name="keyboard_key_action_normal_color_you">@android:color/system_secondary_container_dark</color>
-    <color name="keyboard_key_action_pressed_color_you">@android:color/system_on_secondary_dark</color>
+    <color name="keyboard_key_action_normal_color_you">#FF9585D6</color>
+    <color name="keyboard_key_action_pressed_color_you">#FFB0A2E6</color>
     <color name="shift_normal_color_you">@android:color/system_on_secondary_container_dark</color>
     <color name="shift_locked_color_you">@android:color/system_on_secondary_container_dark</color>
     <color name="icon_color_you">@android:color/system_on_secondary_container_dark</color>
