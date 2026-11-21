@@ -109,6 +109,8 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
     private void setupActionBar() {
         final View bar = findViewById(R.id.emoji_action_bar);
         if (bar == null) return;
+        com.android.inputmethod.keyboard.emoji.ActionBarHighlight.setActive(
+                bar, R.id.emoji_keyboard_gif);
         final TextView abc = bar.findViewById(R.id.emoji_keyboard_alphabet_left);
         if (abc != null) {
             abc.setText("ABC");

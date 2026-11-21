@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- gti.dev: shared bottom action bar for the emoji and GIF panels. -->
+<!-- gti.dev: shared bottom action bar for the emoji and GIF panels.
+     Sizes follow the Gboard reference: ABC and backspace are single-key wide,
+     category tabs are rounded pills. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/emoji_action_bar"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="48dp"
+    android:gravity="center"
     android:background="#FF202124">
 
     <TextView
         android:id="@+id/emoji_keyboard_alphabet_left"
-        android:layout_width="0dip"
-        android:layout_weight="0.15"
-        android:gravity="center"
+        android:layout_width="38dp"
         android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="ABC"
+        android:textColor="#FF9AA0A6"
+        android:textSize="15sp"
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false" />
 
+    <View android:layout_width="22dp" android:layout_height="1dp" />
+
     <TextView
         android:id="@+id/emoji_keyboard_gif"
-        android:layout_width="0dip"
-        android:layout_weight="0.13"
-        android:layout_height="match_parent"
+        android:layout_width="56dp"
+        android:layout_height="38dp"
         android:gravity="center"
+        android:background="@drawable/tools_pill_bg"
         android:text="@string/gif_tab_label"
         android:textColor="#FFE8EAED"
         android:textSize="14sp"
@@ -29,24 +36,29 @@
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false" />
 
+    <View android:layout_width="10dp" android:layout_height="1dp" />
+
     <TextView
         android:id="@+id/emoji_keyboard_kaomoji"
-        android:layout_width="0dip"
-        android:layout_weight="0.13"
-        android:layout_height="match_parent"
+        android:layout_width="56dp"
+        android:layout_height="38dp"
         android:gravity="center"
+        android:background="@drawable/tools_pill_bg"
         android:text=":-)"
         android:textColor="#FFE8EAED"
         android:textSize="16sp"
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false" />
 
+    <View android:layout_width="22dp" android:layout_height="1dp" />
+
     <ImageButton
         android:id="@+id/emoji_keyboard_delete"
-        android:layout_width="0dip"
-        android:layout_weight="0.15"
-        android:gravity="center"
+        android:layout_width="38dp"
         android:layout_height="match_parent"
+        android:background="@null"
+        android:gravity="center"
+        android:scaleType="centerInside"
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false"
         android:contentDescription="@string/spoken_description_delete" />

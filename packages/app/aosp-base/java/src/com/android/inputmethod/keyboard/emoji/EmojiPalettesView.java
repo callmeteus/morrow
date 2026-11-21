@@ -247,8 +247,7 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
 
         setCurrentCategoryId(mEmojiCategory.getCurrentCategoryId(), true /* force */);
 
-        final LinearLayout actionBar = (LinearLayout)findViewById(R.id.emoji_action_bar);
-        mEmojiLayoutParams.setActionBarProperties(actionBar);
+        // gti.dev: the shared action bar keeps its 48dp height from XML, matching GIF panel.
 
         // {@link #mAlphabetKeyLeft}, {@link #mAlphabetKeyRight, and spaceKey depend on
         // {@link View.OnClickListener} as well as {@link View.OnTouchListener}.
@@ -258,14 +257,13 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         // The text on alphabet keys are set at
         // {@link #startEmojiPalettes(String,int,float,Typeface)}.
         mAlphabetKeyLeft = (TextView)findViewById(R.id.emoji_keyboard_alphabet_left);
-        mAlphabetKeyLeft.setBackgroundResource(mFunctionalKeyBackgroundId);
+        // gti.dev: Gboard shows ABC and backspace as plain glyphs, no key background.
         mAlphabetKeyLeft.setTag(Constants.CODE_ALPHA_FROM_EMOJI);
         mAlphabetKeyLeft.setOnTouchListener(this);
         mAlphabetKeyLeft.setOnClickListener(this);
         // gti.dev: the spacebar was removed from the emoji action bar (Gboard style).
         // deleteKey depends only on OnTouchListener.
         mDeleteKey = (ImageButton)findViewById(R.id.emoji_keyboard_delete);
-        mDeleteKey.setBackgroundResource(mFunctionalKeyBackgroundId);
         mDeleteKey.setTag(Constants.CODE_DELETE);
         mDeleteKey.setOnTouchListener(mDeleteKeyOnTouchListener);
 
@@ -392,7 +390,8 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
                                          final KeyDrawParams params) {
         alphabetKey.setText(label);
         alphabetKey.setTextColor(params.mFunctionalTextColor);
-        alphabetKey.setTextSize(TypedValue.COMPLEX_UNIT_PX, params.mLabelSize);
+        // gti.dev: fixed text size keeps ABC the same size as a normal key.
+        alphabetKey.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         alphabetKey.setTypeface(params.mTypeface);
     }
 
@@ -461,6 +460,13 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         // gti.dev: pass the resolved tab index directly. TabHost.getCurrentTab()
         // can lag behind setCurrentTab(), which highlighted the wrong tab.
         updateTabHighlight(newTabId);
+        // gti.dev: highlight the kaomoji tab when the emoticons category is active.
+        final java.util.ArrayList<EmojiCategory.CategoryProperties> shown =
+                mEmojiCategory.getShownCategories();
+        final boolean emoticons = !shown.isEmpty()
+                && shown.get(shown.size() - 1).mCategoryId == categoryId;
+        ActionBarHighlight.setActive(findViewById(R.id.emoji_action_bar),
+                emoticons ? R.id.emoji_keyboard_kaomoji : -1);
     }
 
     /** gti.dev: highlight the active category tab, keep the others visible but muted. */
