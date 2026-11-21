@@ -1827,35 +1827,28 @@ public final class InputLogic {
         // mSpaceState gets updated later, whoever called this may need to be told about it.
         int caps = mConnection.getCursorCapsMode(inputType, settingsValues.mSpacingAndPunctuations,
                 SpaceState.PHANTOM == mSpaceState);
-        // gti.dev: Samsung's cached RichInputConnection text can make getCursorCapsMode
-        // return the wrong mode. Read the real text before the cursor and force FIRST-LETTER
-        // caps when the editor is empty or the last char is . ! ? so batch input (swipe)
-        // capitalises only the first letter, like Gboard. Do NOT include CAP_MODE_CHARACTERS:
-        // getActualCapsMode() maps that flag to CAPS_MODE_AUTO_SHIFT_LOCKED (all letters upper).
-        final CharSequence before = mConnection.getTextBeforeCursor(8, 0);
+        // gti.dev: Gboard capitalization rules, using live editor text. The local
+        // cache goes stale after delete-all or a trailing space, so read straight
+        // from the InputConnection. Do NOT include CAP_MODE_CHARACTERS: getActualCapsMode()
+        // maps it to CAPS_MODE_AUTO_SHIFT_LOCKED (all letters upper).
+        final CharSequence before = mConnection.getTextBeforeCursorDirect(8);
         final String s = before == null ? "" : before.toString();
-        if (s.isEmpty()) {
-            caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
-        } else {
-            // A newline starts a new line, so capitalise the next letter too.
-            final char lastChar = s.charAt(s.length() - 1);
-            if (lastChar == '\n' || lastChar == '\r') {
-                caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
-            } else if (isGestureTyping) {
-                // gti.dev: a gesture/swipe starting after a sentence-ending
-                // punctuation should capitalise the first letter, like Gboard.
-                caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
-            } else {
-                // gti.dev: only capitalise after ". " (punctuation followed by a
-                // space), like Gboard. A bare "www." or "Olá." must NOT capitalise.
-                int k = s.length() - 1;
-                while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
-                final boolean spaceAfterPunct = k >= 0 && k < s.length() - 1;
-                if (spaceAfterPunct
-                        && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
-                    caps = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
-                }
-            }
+        final int cap = TextUtils.CAP_MODE_WORDS | TextUtils.CAP_MODE_SENTENCES;
+        // Rule 1: start of text / empty editor (covers delete-all).
+        if (s.isEmpty()) return cap;
+        // Rule 3: newline (directly or followed by spaces).
+        final char lastChar = s.charAt(s.length() - 1);
+        if (lastChar == '\n' || lastChar == '\r') return cap;
+        int k = s.length() - 1;
+        while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
+        if (k < 0) return cap;
+        final char c = s.charAt(k);
+        if (c == '\n' || c == '\r') return cap;
+        // Rule 2: sentence terminator (. ! ?) followed by a space, like Gboard.
+        // A bare "www." or "Olá." must NOT capitalise.
+        if (isGestureTyping || (k < s.length() - 1
+                && settingsValues.mSpacingAndPunctuations.isSentenceTerminator(c))) {
+            return cap;
         }
         return caps;
     }
