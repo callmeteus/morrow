@@ -37,6 +37,7 @@ import com.android.inputmethod.keyboard.emoji.EmojiPalettesView;
 import com.android.inputmethod.latin.clipboard.ClipboardPaletteView;
 import com.android.inputmethod.latin.clipboard.TranslationPaletteView;
 import com.android.inputmethod.latin.clipboard.ToolsPaletteView;
+import com.android.inputmethod.latin.gif.GifPaletteView;
 import com.android.inputmethod.keyboard.internal.KeyboardState;
 import com.android.inputmethod.keyboard.internal.KeyboardTextsSet;
 import com.android.inputmethod.latin.InputView;
@@ -67,6 +68,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private ClipboardPaletteView mClipboardPaletteView;
     private TranslationPaletteView mTranslationPaletteView;
     private ToolsPaletteView mToolsPaletteView;
+    private GifPaletteView mGifPaletteView;
     private FloatingKeyboardController mFloatingKeyboardController;
     private boolean mIsFloating;
     private int mFloatingKeyboardWidth;
@@ -343,6 +345,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mClipboardPaletteView.setVisibility(View.GONE);
         mTranslationPaletteView.setVisibility(View.GONE);
         mToolsPaletteView.setVisibility(View.GONE);
+        mGifPaletteView.setVisibility(View.GONE);
     }
 
     /** gti.dev: show the Gboard-style tools grid. */
@@ -363,6 +366,25 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         return mToolsPaletteView != null && mToolsPaletteView.isShown();
     }
 
+    /** gti.dev: show the keyless GifJif GIF search panel. */
+    public void setGifKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setGifKeyboard");
+        }
+        mMainKeyboardFrame.setVisibility(View.GONE);
+        mKeyboardView.setVisibility(View.GONE);
+        mEmojiPalettesView.setVisibility(View.GONE);
+        mEmojiPalettesView.stopEmojiPalettes();
+        mClipboardPaletteView.setVisibility(View.GONE);
+        mTranslationPaletteView.setVisibility(View.GONE);
+        mToolsPaletteView.setVisibility(View.GONE);
+        mGifPaletteView.setVisibility(View.VISIBLE);
+    }
+
+    public boolean isShowingGifPalette() {
+        return mGifPaletteView != null && mGifPaletteView.isShown();
+    }
+
     /** gti.dev: show the Gboard-style translation panel. */
     public void setTranslationKeyboard() {
         if (DEBUG_ACTION) {
@@ -374,6 +396,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.stopEmojiPalettes();
         mClipboardPaletteView.setVisibility(View.GONE);
         mToolsPaletteView.setVisibility(View.GONE);
+        mGifPaletteView.setVisibility(View.GONE);
         mTranslationPaletteView.show();
         mTranslationPaletteView.setVisibility(View.VISIBLE);
     }
@@ -392,6 +415,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mEmojiPalettesView.setVisibility(View.GONE);
         mEmojiPalettesView.stopEmojiPalettes();
         mToolsPaletteView.setVisibility(View.GONE);
+        mGifPaletteView.setVisibility(View.GONE);
         mClipboardPaletteView.showClipboardHistory();
         mClipboardPaletteView.setVisibility(View.VISIBLE);
     }
@@ -413,6 +437,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         // @see LatinIME#onComputeInset(android.inputmethodservice.InputMethodService.Insets)
         mKeyboardView.setVisibility(View.GONE);
         mToolsPaletteView.setVisibility(View.GONE);
+        mGifPaletteView.setVisibility(View.GONE);
         mEmojiPalettesView.startEmojiPalettes(
                 mKeyboardTextsSet.getText(KeyboardTextsSet.SWITCH_TO_ALPHA_KEY_LABEL),
                 mKeyboardView.getKeyVisualAttribute(), keyboard.mIconsSet);
@@ -568,6 +593,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (isShowingToolsPalette()) {
             return mToolsPaletteView;
         }
+        if (isShowingGifPalette()) {
+            return mGifPaletteView;
+        }
         return mKeyboardView;
     }
 
@@ -604,6 +632,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
                 R.id.translation_palette_view);
         mToolsPaletteView = (ToolsPaletteView)mCurrentInputView.findViewById(
                 R.id.tools_palette_view);
+        mGifPaletteView = (GifPaletteView)mCurrentInputView.findViewById(
+                R.id.gif_palette_view);
 
         mKeyboardView = (MainKeyboardView) mCurrentInputView.findViewById(R.id.keyboard_view);
         mKeyboardView.setHardwareAcceleratedDrawingEnabled(isHardwareAcceleratedDrawingEnabled);
@@ -614,6 +644,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mClipboardPaletteView.setKeyboardActionListener(mLatinIME);
         mTranslationPaletteView.setKeyboardActionListener(mLatinIME);
         mToolsPaletteView.setKeyboardActionListener(mLatinIME);
+        mGifPaletteView.setKeyboardActionListener(mLatinIME);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {

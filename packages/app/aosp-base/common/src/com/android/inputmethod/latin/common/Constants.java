@@ -252,6 +252,7 @@ public final class Constants {
     public static final int CODE_TRANSLATE = -17;
     public static final int CODE_TOOLS = -18;
     public static final int CODE_ONE_HANDED = -19;
+    public static final int CODE_GIF = -20;
 
     public static boolean isLetterCode(final int code) {
         return code >= CODE_SPACE;
@@ -278,6 +279,7 @@ public final class Constants {
         case CODE_TRANSLATE: return "translate";
         case CODE_TOOLS: return "tools";
         case CODE_ONE_HANDED: return "one_handed";
+        case CODE_GIF: return "gif";
         case CODE_TAB: return "tab";
         case CODE_ENTER: return "enter";
         case CODE_SPACE: return "space";

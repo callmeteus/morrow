@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style GIF search panel. -->
+<com.android.inputmethod.latin.gif.GifPaletteView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gif_palette_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:orientation="vertical"
+    android:background="#FF202124"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/gif_search"
+            android:layout_width="0dip"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="@drawable/tools_pill_bg"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:hint="Search GIFs"
+            android:textColor="#FFE8EAED"
+            android:textColorHint="#FF9AA0A6"
+            android:textSize="15sp"
+            android:singleLine="true"
+            android:imeOptions="actionSearch" />
+
+        <ImageButton
+            android:id="@+id/gif_back_key"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_clipboard_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/spoken_description_back" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/gif_grid"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false" />
+
+    <TextView
+        android:id="@+id/gif_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="12dp"
+        android:textColor="#FF9AA0A6"
+        android:textSize="13sp" />
+</com.android.inputmethod.latin.gif.GifPaletteView>

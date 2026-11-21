@@ -1849,6 +1849,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             toggleFloatingKeyboard();
             return;
         }
+        if (Constants.CODE_GIF == event.mKeyCode) {
+            // gti.dev: open the GIF search panel.
+            if (mKeyboardSwitcher.isShowingGifPalette()) {
+                mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
+                        getCurrentAutoCapsState(), getCurrentRecapitalizeState());
+            } else {
+                mKeyboardSwitcher.setGifKeyboard();
+            }
+            return;
+        }
         if (Constants.CODE_TOOLS == event.mKeyCode) {
             // gti.dev: open the Gboard-style tools grid.
             if (mKeyboardSwitcher.isShowingToolsPalette()) {

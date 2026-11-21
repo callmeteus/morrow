@@ -278,7 +278,10 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         final View stickerTab = findViewById(R.id.emoji_keyboard_sticker);
         final View kaomojiTab = findViewById(R.id.emoji_keyboard_kaomoji);
         if (shown.size() > 3) {
-            gifTab.setOnClickListener(v -> setCurrentCategoryId(shown.get(1).mCategoryId, false));
+            // gti.dev: GIF tab opens the GIF search panel (Gboard-style).
+            gifTab.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_GIF, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
             stickerTab.setOnClickListener(v -> setCurrentCategoryId(shown.get(2).mCategoryId, false));
             kaomojiTab.setOnClickListener(v -> setCurrentCategoryId(shown.get(shown.size() - 1)
                     .mCategoryId, false));
