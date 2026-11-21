@@ -378,6 +378,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mClipboardPaletteView.setVisibility(View.GONE);
         mTranslationPaletteView.setVisibility(View.GONE);
         mToolsPaletteView.setVisibility(View.GONE);
+        final Keyboard keyboard = mKeyboardLayoutSet.getKeyboard(KeyboardId.ELEMENT_ALPHABET);
+        mGifPaletteView.setActionBarIcons(keyboard.mIconsSet);
         mGifPaletteView.setVisibility(View.VISIBLE);
     }
 
@@ -442,6 +444,12 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
                 mKeyboardTextsSet.getText(KeyboardTextsSet.SWITCH_TO_ALPHA_KEY_LABEL),
                 mKeyboardView.getKeyVisualAttribute(), keyboard.mIconsSet);
         mEmojiPalettesView.setVisibility(View.VISIBLE);
+    }
+
+    /** gti.dev: open the emoji panel directly on the ASCII emoticons category. */
+    public void setEmojiKeyboardToEmoticons() {
+        setEmojiKeyboard();
+        mEmojiPalettesView.showEmoticonsCategory();
     }
 
     public enum KeyboardSwitchState {

@@ -5,14 +5,17 @@
 package com.android.inputmethod.latin.gif;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.graphics.drawable.AnimatedImageDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,8 +54,16 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
 
     private final List<GifJifClient.Gif> mGifs = new ArrayList<>();
     private final GifAdapter mAdapter = new GifAdapter();
-    private final ExecutorService mExecutor = Executors.newFixedThreadPool(4);
+    private final ExecutorService mExecutor = Executors.newFixedThreadPool(6);
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    // gti.dev: cache decoded thumbnails so scrolling does not refetch every GIF.
+    private final LruCache<String, Drawable> mCache =
+            new LruCache<String, Drawable>(64) {
+                @Override protected int sizeOf(final String key, final Drawable value) {
+                    return 1;
+                }
+            };
+    private final ColorDrawable mPlaceholder = new ColorDrawable(Color.parseColor("#FF3C4043"));
 
     private EditText mSearch;
     private TextView mStatus;
@@ -70,6 +81,7 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         grid.setLayoutManager(new GridLayoutManager(getContext(), 3));
         grid.setAdapter(mAdapter);
         findViewById(R.id.gif_back_key).setOnClickListener(this);
+        setupActionBar();
         mSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
@@ -91,6 +103,49 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                         ? getResources().getString(R.string.gif_no_results) : "");
             });
         });
+    }
+
+    /** gti.dev: wire the shared bottom action bar so users can switch panels. */
+    private void setupActionBar() {
+        final View bar = findViewById(R.id.emoji_action_bar);
+        if (bar == null) return;
+        final TextView abc = bar.findViewById(R.id.emoji_keyboard_alphabet_left);
+        if (abc != null) {
+            abc.setText("ABC");
+            abc.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_ALPHA_FROM_EMOJI, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
+        }
+        final View gifTab = bar.findViewById(R.id.emoji_keyboard_gif);
+        if (gifTab != null) {
+            gifTab.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_GIF, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
+        }
+        final View kaomojiTab = bar.findViewById(R.id.emoji_keyboard_kaomoji);
+        if (kaomojiTab != null) {
+            kaomojiTab.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_KAOMOJI, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
+        }
+        final ImageButton delete = bar.findViewById(R.id.emoji_keyboard_delete);
+        if (delete != null) {
+            delete.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_DELETE, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
+        }
+    }
+
+    /** gti.dev: apply the keyboard's delete icon to the shared action bar. */
+    public void setActionBarIcons(final com.android.inputmethod.keyboard.internal.KeyboardIconsSet iconSet) {
+        final View bar = findViewById(R.id.emoji_action_bar);
+        if (bar == null) return;
+        final ImageButton delete = bar.findViewById(R.id.emoji_keyboard_delete);
+        if (delete != null) {
+            final int res = iconSet.getIconResourceId(
+                    com.android.inputmethod.keyboard.internal.KeyboardIconsSet.NAME_DELETE_KEY);
+            if (res != 0) delete.setImageResource(res);
+        }
     }
 
     public void setKeyboardActionListener(final KeyboardActionListener listener) {
@@ -135,48 +190,68 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                 mKeyboardActionListener.onCodeInput(Constants.CODE_ALPHA_FROM_EMOJI,
                         Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
             });
-            // gti.dev: load the animated source so GIFs play in the grid, like Gboard.
-            loadBitmap(holder.image, gif.fullUrl);
+            // gti.dev: prefer the small purpose-built thumbnail; fall back to the
+            // full source only when no preview is available. Full URLs can be MP4
+            // or multi-megabyte GIFs that fail to decode in the grid.
+            final String url = gif.previewUrl != null && !gif.previewUrl.isEmpty()
+                    ? gif.previewUrl : gif.fullUrl;
+            holder.image.setTag(url);
+            loadBitmap(holder.image, url, gif.fullUrl);
         }
 
         @Override public int getItemCount() { return mGifs.size(); }
 
-        private void loadBitmap(final ImageView view, final String url) {
-            view.setImageDrawable(null);
+        private void loadBitmap(final ImageView view, final String url, final String fallbackUrl) {
+            final Drawable cached = mCache.get(url);
+            if (cached != null) {
+                showDrawable(view, url, cached);
+                return;
+            }
+            view.setImageDrawable(mPlaceholder);
             mExecutor.execute(() -> {
-                Drawable drawable = null;
-                HttpURLConnection conn = null;
-                try {
-                    conn = (HttpURLConnection) new URL(url).openConnection();
-                    conn.setConnectTimeout(6000);
-                    conn.setReadTimeout(6000);
-                    conn.setRequestProperty("User-Agent", "MorrowKeyboard/1.0");
-                    if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        final byte[] bytes;
-                        try (InputStream in = conn.getInputStream();
-                             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                            final byte[] buf = new byte[8192];
-                            int n;
-                            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
-                            bytes = out.toByteArray();
-                        }
-                        // gti.dev: ImageDecoder yields an AnimatedImageDrawable for GIF/WebP,
-                        // so the thumbnail animates. Static images fall back gracefully.
-                        drawable = ImageDecoder.decodeDrawable(
-                                ImageDecoder.createSource(ByteBuffer.wrap(bytes)));
-                    }
-                } catch (Exception ignored) {
-                } finally {
-                    if (conn != null) conn.disconnect();
+                Drawable drawable = download(url);
+                if (drawable == null && fallbackUrl != null && !fallbackUrl.equals(url)) {
+                    drawable = download(fallbackUrl);
                 }
                 final Drawable result = drawable;
-                mMainHandler.post(() -> {
-                    view.setImageDrawable(result);
-                    if (result instanceof AnimatedImageDrawable) {
-                        ((AnimatedImageDrawable) result).start();
-                    }
-                });
+                if (result != null) mCache.put(url, result);
+                mMainHandler.post(() -> showDrawable(view, url,
+                        result != null ? result : mPlaceholder));
             });
+        }
+
+        private Drawable download(final String url) {
+            HttpURLConnection conn = null;
+            try {
+                conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+                conn.setRequestProperty("User-Agent", "MorrowKeyboard/1.0");
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) return null;
+                final byte[] bytes;
+                try (InputStream in = conn.getInputStream();
+                     ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                    final byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    bytes = out.toByteArray();
+                }
+                if (bytes.length == 0) return null;
+                return ImageDecoder.decodeDrawable(
+                        ImageDecoder.createSource(ByteBuffer.wrap(bytes)));
+            } catch (Exception | OutOfMemoryError e) {
+                return null;
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        }
+
+        private void showDrawable(final ImageView view, final String url, final Drawable drawable) {
+            if (!url.equals(view.getTag())) return; // view was recycled, skip stale result
+            view.setImageDrawable(drawable);
+            if (drawable instanceof AnimatedImageDrawable) {
+                ((AnimatedImageDrawable) drawable).start();
+            }
         }
     }
 }

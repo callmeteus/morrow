@@ -45,7 +45,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gif_grid"
         android:layout_width="match_parent"
-        android:layout_height="280dp"
+        android:layout_height="230dp"
         android:padding="8dp"
         android:clipToPadding="false" />
 
@@ -54,7 +54,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="12dp"
+        android:padding="6dp"
         android:textColor="#FF9AA0A6"
         android:textSize="13sp" />
+
+    <!-- gti.dev: keep the shared action bar visible so users can switch panels. -->
+    <include layout="@layout/emoji_action_bar" />
 </com.android.inputmethod.latin.gif.GifPaletteView>

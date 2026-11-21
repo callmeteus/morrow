@@ -1875,6 +1875,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
             return;
         }
+        if (Constants.CODE_KAOMOJI == event.mKeyCode) {
+            // gti.dev: switch to the emoji panel on the kaomoji category.
+            mKeyboardSwitcher.setEmojiKeyboardToEmoticons();
+            return;
+        }
         if (Constants.CODE_TOOLS == event.mKeyCode) {
             // gti.dev: open the Gboard-style tools grid.
             if (mKeyboardSwitcher.isShowingToolsPalette()) {

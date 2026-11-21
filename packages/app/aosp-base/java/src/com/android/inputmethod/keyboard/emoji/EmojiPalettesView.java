@@ -285,6 +285,15 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         }
     }
 
+    /** gti.dev: jump to the ASCII emoticons (kaomoji) category. */
+    public void showEmoticonsCategory() {
+        final java.util.ArrayList<EmojiCategory.CategoryProperties> shown =
+                mEmojiCategory.getShownCategories();
+        if (shown != null && !shown.isEmpty()) {
+            setCurrentCategoryId(shown.get(shown.size() - 1).mCategoryId, false);
+        }
+    }
+
     @Override
     public boolean dispatchTouchEvent(final MotionEvent ev) {
         // Add here to the stack trace to nail down the {@link IllegalArgumentException} exception

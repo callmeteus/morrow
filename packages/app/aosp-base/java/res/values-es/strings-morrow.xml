@@ -27,6 +27,7 @@
     <string name="tools_item_floating">Flotante</string>
 
     <!-- GIF picker -->
+    <string name="gif_tab_label">GIF</string>
     <string name="gif_search_hint">Buscar GIFs</string>
     <string name="gif_searching">Buscando...</string>
     <string name="gif_no_results">No se encontraron GIFs</string>
