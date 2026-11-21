@@ -18,6 +18,14 @@
   priority: medium · status: planned · added: 2026-11-21
 - [ ] **R-018** Learn from swipe gestures while maintaining the dictionary, and optionally collect in-app tap coordinates (x, y) as metrics
   priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-019** Add a borderless keyboard mode
+  priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-020** Add a settings option to disable keyboard vibration
+  priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-021** Add an option to show a dedicated emoji key
+  priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-022** Add the remaining keyboard preference options: number row, number row for passwords, language switch key, comma key and period key
+  priority: medium · status: planned · added: 2026-11-21
 ## Deferred
 
 ## Done
