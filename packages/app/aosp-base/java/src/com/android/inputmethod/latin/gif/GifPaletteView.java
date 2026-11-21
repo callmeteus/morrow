@@ -68,6 +68,13 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
     private EditText mSearch;
     private TextView mStatus;
     private Runnable mSearchRequestListener = null;
+    // gti.dev: infinite scroll state.
+    private RecyclerView mGrid;
+    private GridLayoutManager mGridLayoutManager;
+    private String mCurrentQuery = "happy";
+    private String mCursor = null;
+    private boolean mHasMore = false;
+    private boolean mIsLoading = false;
 
     public GifPaletteView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -78,9 +85,19 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         super.onFinishInflate();
         mSearch = findViewById(R.id.gif_search);
         mStatus = findViewById(R.id.gif_status);
-        final RecyclerView grid = findViewById(R.id.gif_grid);
-        grid.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        grid.setAdapter(mAdapter);
+        mGrid = findViewById(R.id.gif_grid);
+        mGridLayoutManager = new GridLayoutManager(getContext(), 3);
+        mGrid.setLayoutManager(mGridLayoutManager);
+        mGrid.setAdapter(mAdapter);
+        // gti.dev: load the next page when the user scrolls near the end.
+        mGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override public void onScrolled(final RecyclerView rv, final int dx, final int dy) {
+                if (dy <= 0 || mIsLoading || !mHasMore) return;
+                final int last = mGridLayoutManager.findLastVisibleItemPosition();
+                final int total = mAdapter.getItemCount();
+                if (last >= total - 4) loadMore();
+            }
+        });
         findViewById(R.id.gif_back_key).setOnClickListener(this);
         setupActionBar();
         // gti.dev: an EditText inside an IME cannot raise the software keyboard
@@ -101,17 +118,55 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         mMainHandler.postDelayed(() -> load("happy"), 250);
     }
 
+    /** New search: reset pagination and load the first page. */
     private void load(final String query) {
         final String q = query.trim().isEmpty() ? "happy" : query.trim();
+        mCurrentQuery = q;
+        mCursor = null;
+        mHasMore = false;
+        mStatus.setText(R.string.gif_searching);
+        mIsLoading = true;
+        mExecutor.execute(() -> {
+            final GifJifClient.Result page = GifJifClient.searchPage(q, null);
+            mMainHandler.post(() -> {
+                mIsLoading = false;
+                if (!q.equals(mCurrentQuery)) return; // a newer search superseded this one
+                mGifs.clear();
+                mGifs.addAll(page.gifs);
+                mCursor = page.cursor;
+                mHasMore = page.hasMore;
+                mAdapter.notifyDataSetChanged();
+                mStatus.setText(page.gifs.isEmpty()
+                        ? getResources().getString(R.string.gif_no_results) : "");
+            });
+        });
+    }
+
+    /** Infinite scroll: append the next page for the current query. */
+    private void loadMore() {
+        if (mIsLoading || !mHasMore) return;
+        mIsLoading = true;
+        final String query = mCurrentQuery;
+        final String cursor = mCursor;
         mStatus.setText(R.string.gif_searching);
         mExecutor.execute(() -> {
-            final List<GifJifClient.Gif> found = GifJifClient.search(q);
+            final GifJifClient.Result page = GifJifClient.searchPage(query, cursor);
             mMainHandler.post(() -> {
-                mGifs.clear();
-                mGifs.addAll(found);
-                mAdapter.notifyDataSetChanged();
-                mStatus.setText(found.isEmpty()
-                        ? getResources().getString(R.string.gif_no_results) : "");
+                mIsLoading = false;
+                if (!query.equals(mCurrentQuery)) return;
+                final int start = mGifs.size();
+                // de-duplicate by full URL, repeated cursor pages can overlap
+                for (final GifJifClient.Gif gif : page.gifs) {
+                    boolean dup = false;
+                    for (final GifJifClient.Gif existing : mGifs) {
+                        if (existing.fullUrl.equals(gif.fullUrl)) { dup = true; break; }
+                    }
+                    if (!dup) mGifs.add(gif);
+                }
+                mCursor = page.cursor;
+                mHasMore = page.hasMore && page.gifs.size() > 0;
+                mAdapter.notifyItemRangeInserted(start, mGifs.size() - start);
+                mStatus.setText("");
             });
         });
     }
