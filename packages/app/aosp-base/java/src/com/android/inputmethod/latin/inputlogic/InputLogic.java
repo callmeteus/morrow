@@ -1845,9 +1845,10 @@ public final class InputLogic {
         final char c = s.charAt(k);
         if (c == '\n' || c == '\r') return cap;
         // Rule 2: sentence terminator (. ! ?) followed by a space, like Gboard.
-        // A bare "www." or "Olá." must NOT capitalise.
-        if (isGestureTyping || (k < s.length() - 1
-                && settingsValues.mSpacingAndPunctuations.isSentenceTerminator(c))) {
+        // A bare "www." or "Olá." must NOT capitalise. This applies to gesture
+        // typing too: mid-word swipes must never capitalise out of nowhere.
+        if (k < s.length() - 1
+                && settingsValues.mSpacingAndPunctuations.isSentenceTerminator(c)) {
             return cap;
         }
         return caps;
