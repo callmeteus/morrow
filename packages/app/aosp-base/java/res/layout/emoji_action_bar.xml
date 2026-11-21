@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- gti.dev: shared bottom action bar for the emoji and GIF panels.
-     Sizes follow the Gboard reference: ABC and backspace are single-key wide,
-     category tabs are rounded pills. -->
+     Sizes and spacing follow the Gboard reference: ABC and backspace sit at
+     the edges, category pills grouped in the middle. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/emoji_action_bar"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="48dp"
-    android:gravity="center"
+    android:gravity="center_vertical"
     android:background="#FF202124">
 
     <TextView
@@ -21,7 +21,8 @@
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false" />
 
-    <View android:layout_width="22dp" android:layout_height="1dp" />
+    <!-- gti.dev: flexible spacers push ABC/backspace to the edges like Gboard. -->
+    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
     <TextView
         android:id="@+id/emoji_keyboard_gif"
@@ -50,7 +51,7 @@
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false" />
 
-    <View android:layout_width="22dp" android:layout_height="1dp" />
+    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
     <ImageButton
         android:id="@+id/emoji_keyboard_delete"
