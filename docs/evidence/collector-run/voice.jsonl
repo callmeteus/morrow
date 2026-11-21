@@ -1,0 +1,1 @@
+{"audioPath":"audio/voice-e2e-001.wav","durationMs":1000,"expiresAt":1797879563167,"id":"voice-e2e-001","inferMs":1234,"locale":"pt","model":"ggml-tiny-q8_0-bin","rms":0.05,"sessionId":"sess-e2e-001","transcriptCleaned":"ola mundo","transcriptCorrected":"olá mundo","transcriptRaw":"ola mundo","ts":1700000000000}

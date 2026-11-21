@@ -40,6 +40,14 @@ public final class DictationController {
     private long lastPartialAt = 0;
     private volatile float peakRms = 0f;
 
+    private CorrectionTracker tracker;
+    private String sessionId = "";
+
+    public void setCollector(CorrectionTracker tracker, String sessionId) {
+        this.tracker = tracker;
+        this.sessionId = sessionId == null ? "" : sessionId;
+    }
+
     public boolean isListening() { return listening; }
 
     public void start(Listener l) {
@@ -76,10 +84,29 @@ public final class DictationController {
                 main.post(() -> { if (listener != null) listener.onFinal(""); });
                 return;
             }
+            long inferStart = System.currentTimeMillis();
             String text = VoiceEngine.transcribe(toFloat(pcm), "pt");
+            long inferMs = System.currentTimeMillis() - inferStart;
             String t = TranscriptCleaner.clean(text);
-            // Post-ASR pass: local dictionary correction (offline, no Google).
-            final String corrected = DictionaryCorrector.correct(t);
+
+            final long durationMs = pcm.length / Recorder.SAMPLE_RATE * 1000L;
+            CorrectionTracker tr = tracker;
+            final String corrected;
+            if (tr != null) {
+                final String voiceId = tr.sessionId() + "-" + java.util.UUID.randomUUID();
+                // The destination travels with the call: no global listener to
+                // install and clear, no order dependency with concurrent correct().
+                DictionaryCorrector.CorrectionListener destination =
+                        (raw, replacement, dist, freq) ->
+                                CollectorClient.postCorrection(tr.onAsrCorrection(
+                                        raw, replacement, dist, freq, voiceId,
+                                        System.currentTimeMillis()));
+                corrected = DictionaryCorrector.correct(t, destination);
+                CollectorClient.uploadVoice(voiceId, pcm, text, t, corrected, inferMs,
+                        rms, durationMs, "ggml-tiny-q8_0-bin", "pt", sessionId);
+            } else {
+                corrected = DictionaryCorrector.correct(t);
+            }
             final String finalText = TranscriptCleaner.isEmptySpeech(corrected) ? "" : corrected;
             main.post(() -> { if (listener != null) listener.onFinal(finalText); });
         });

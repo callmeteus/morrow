@@ -1,0 +1,1 @@
+{"sessionId":"sess-e2e-001","frequency":5000,"editDistance":1,"seq":1,"input":"ola","id":"corr-e2e-1","accepted":true,"voiceId":"voice-e2e-001","source":"voice","kind":"asr_word","candidate":"olá mundo","ts":1700000000201}

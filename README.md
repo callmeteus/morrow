@@ -256,3 +256,72 @@ emulator is required.
 Third-party components are vendored under their own licenses:
 whisper.cpp and ggml (MIT), OpenSwipe engine (MIT), and AOSP LatinIME
 (Apache 2.0). See each vendored directory for its license file.
+
+## Coleta de dataset (apenas builds de debug)
+
+O coletor em `packages/app/backend/` recebe, de builds **debug**, os dados brutos usados para
+melhorar o teclado: áudio WAV do ditado, o texto original do Whisper e o
+resultado da correção, gestos de swipe com o trace e a palavra decodificada, e
+eventos da faixa de sugestões (qual posição foi escolhida, sugestões ignoradas,
+bursts de backspace etc.). Nada disso é coletado em release, que não tem
+permissão `INTERNET`. Não há botão de consentimento: debug envia sempre.
+
+Os registros são gravados como JSONL em `/data` (com retenção de 30 dias) e
+exportados por `GET /v1/export`. O token é passado no header
+`X-Collector-Token`. Endpoints: `POST /v1/voice` (multipart `meta` + `audio`),
+`POST /v1/swipe`, `POST /v1/correction` e `GET /healthz`.
+
+### Execução local
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/run-collector.ps1
+```
+
+Isso escuta **apenas em `127.0.0.1:8080`**, sobre HTTP, com os dados em
+`%TEMP%\gboard-collector-local`. É somente para teste local. Para apontar o
+app debug para outro host, use o dialog "Voz: backend de transcrição" na tela
+de setup (campos de URL e token do coletor).
+
+### Deploy
+
+O serviço roda na **h-server-1** (Tailscale `100.69.33.118`) como Swarm service,
+com a imagem construída de `packages/app/backend/Dockerfile`. O Traefik em `c-oracle-server`
+publica `https://morrow.gti.dev` (porta 443, sem porta customizada) e encaminha
+para a porta publicada no routing mesh. Os manifests Terraform e as regras do
+Grafana ficam no repositório `gti-infra`, não aqui.
+
+Configuração que **não** versionamos (executar no `c-oracle-server`):
+
+1. `${HOME}/traefik/dynamic/routes.yml`: rota `morrow-collector` com
+   `Host(\`morrow.gti.dev\`)`, `entryPoints: [web, websecure]`, `tls: {}` e
+   upstream `http://100.87.110.100:<porta>`. O file provider recarrega sozinho.
+2. Cloudflare: CNAME `morrow.gti.dev` -> `server.gti.dev`, **proxied**, zona em
+   SSL **Full (strict)**. O Origin Certificate do Traefik precisa cobrir
+   `morrow.gti.dev` (use o wildcard `*.gti.dev`).
+3. O token `X-Collector-Token` vem de `secret/gti-infra/morrow-collector` via
+   `scripts/vault-env.sh` e é injetado no serviço pelo Terraform. Nunca entre
+   com o token no repositório.
+
+Verificação:
+
+```bash
+curl -H "X-Collector-Token: ..." https://morrow.gti.dev/healthz
+curl -H "X-Collector-Token: ..." http://100.69.33.118:<porta>/healthz   # via Tailscale
+```
+
+O coletor é um serviço de **debug**. Não publique a porta em roteador e não
+instale APKs de debug em aparelhos de terceiros: o token fica no APK e pode ser
+extraído.
+
+## Notas e limitações
+
+- O modelo `base` prioriza velocidade; para mais precisão em pt-BR troque o
+  asset por `ggml-small`/`ggml-medium` (aumentam RAM/tiempo, o código não
+  muda, apenas `MODEL_ASSET`/`MODEL_FILE` em `VoiceEngine.java`).
+- A transcrição parcial ao vivo (a cada ~2,5 s) usa o mesmo contexto; em
+  aparelhos muito modestos aumente `PARTIAL_EVERY_MS` em
+  `DictationController.java`.
+- O projeto replica o *comportamento* do Gboard (teclado + ditado local), não
+  o binário proprietário do Gboard (código Google sob licença proprietária ,
+  não pode ser redistribuído; por isso o REA documenta os pontos de
+  integração e este app os reimplementa de forma independente).

@@ -1,0 +1,7 @@
+{"accepted":true,"candidate":"olá mundo","editDistance":1,"expiresAt":1797879563233,"frequency":5000,"id":"corr-e2e-1","input":"ola","kind":"asr_word","seq":1,"sessionId":"sess-e2e-001","source":"voice","ts":1700000000201,"voiceId":"voice-e2e-001"}
+{"accepted":true,"expiresAt":1797879563252,"id":"corr-e2e-2","index":0,"kind":"suggestion_selected","latencyMs":420,"selected":"não","seq":2,"sessionId":"sess-e2e-001","source":"keyboard","ts":1700000000202}
+{"accepted":false,"expiresAt":1797879563270,"id":"corr-e2e-3","input":"não","kind":"suggestion_ignored","latencyMs":610,"seq":3,"sessionId":"sess-e2e-001","source":"keyboard","ts":1700000000203}
+{"accepted":false,"expiresAt":1797879563288,"id":"corr-e2e-4","input":"zebra","kind":"suggestion_missed","latencyMs":300,"seq":4,"sessionId":"sess-e2e-001","source":"keyboard","ts":1700000000204}
+{"expiresAt":1797879563307,"id":"corr-e2e-5","kind":"fallback_generic","seq":5,"sessionId":"sess-e2e-001","shown":["de","que","nao"],"source":"keyboard","ts":1700000000205}
+{"accepted":false,"expiresAt":1797879563325,"id":"corr-e2e-6","kind":"backspace_burst","prefix":"err","seq":6,"sessionId":"sess-e2e-001","source":"keyboard","ts":1700000000206}
+{"accepted":false,"candidate":"não","expiresAt":1797879563341,"id":"corr-e2e-7","input":"nao","kind":"swipe_failure","seq":7,"sessionId":"sess-e2e-001","source":"swipe","swipeId":"sw-e2e-001","ts":1700000000207}

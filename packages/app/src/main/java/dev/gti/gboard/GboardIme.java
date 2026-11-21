@@ -78,6 +78,13 @@ public class GboardIme extends InputMethodService {
     private final DictationController dictation = new DictationController();
     private final ExecutorService bg = Executors.newSingleThreadExecutor();
 
+    // Debug dataset collection (no-op in release via CollectorClient gate).
+    private CorrectionTracker tracker;
+    private String sessionId = "";
+    private String pendingSwipeId = null;
+    private String pendingSwipeWord = "";
+    private java.util.List<float[]> pendingSwipePoints = new java.util.ArrayList<>();
+
     private static final Map<Character, String[]> ACCENTS = new HashMap<>();
     static {
         ACCENTS.put('a', new String[]{"á", "à", "â", "ã", "ä"});
@@ -146,6 +153,11 @@ public class GboardIme extends InputMethodService {
         glideTracker = new GlideTracker(dp(6));
         glideTrail = glideTracker.path();
         glideResolver = new GlideKeyResolver();
+
+        CollectorClient.init(getApplicationContext());
+        sessionId = java.util.UUID.randomUUID().toString();
+        tracker = new CorrectionTracker(sessionId);
+        dictation.setCollector(tracker, sessionId);
     }
 
     @Override
@@ -289,14 +301,14 @@ public class GboardIme extends InputMethodService {
         back.setBackground(rounded(cAccent, dp(16)));
         back.setPadding(dp(2), dp(2), dp(2), dp(4));
         back.setLayoutParams(new LinearLayout.LayoutParams(dp(32), dp(32)) {{ leftMargin = dp(4); }});
-        back.setOnClickListener(v -> toast(getString(R.string.ime_back)));
+        back.setOnClickListener(v -> toast("Voltar"));
         toolbar.addView(back);
-        toolbar.addView(iconRes(R.drawable.ic_more, getString(R.string.ime_more_desc), v -> showMore()));
-        toolbar.addView(iconRes(R.drawable.ic_sticker, getString(R.string.ime_sticker_desc),
+        toolbar.addView(iconRes(R.drawable.ic_more, "More features", v -> showMore()));
+        toolbar.addView(iconRes(R.drawable.ic_sticker, "Sticker Keyboard",
                 v -> showEmojiPicker(v)));
-        toolbar.addView(iconRes(R.drawable.ic_gif, getString(R.string.ime_gif_desc), v -> toast("GIF")));
-        toolbar.addView(iconRes(R.drawable.ic_clipboard, getString(R.string.ime_clipboard_desc),
-                v -> toast(getString(R.string.ime_clipboard_desc))));
+        toolbar.addView(iconRes(R.drawable.ic_gif, "GIF Keyboard", v -> toast("GIF")));
+        toolbar.addView(iconRes(R.drawable.ic_clipboard, "Clipboard",
+                v -> toast("Área de transferência")));
         suggestionStrip.addView(toolbar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -321,7 +333,7 @@ public class GboardIme extends InputMethodService {
             s.setTypeface(null, i == 1 ? Typeface.BOLD : Typeface.NORMAL);
             // Default pt-BR words so the strip is never empty on focus; the
             // local LM replaces these as soon as updateSuggestions() runs.
-            s.setText(getResources().getStringArray(R.array.suggestion_defaults)[i]);
+            s.setText(new String[]{"de", "que", "não"}[i]);
             s.setPadding(dp(6), dp(4), dp(6), dp(4));
             s.setLayoutParams(new LinearLayout.LayoutParams(0,
                     ViewGroup.LayoutParams.MATCH_PARENT, 1f));
@@ -336,7 +348,7 @@ public class GboardIme extends InputMethodService {
         // Material microphone icon instead of a platform-dependent emoji.
         micKey.setCompoundDrawablesWithIntrinsicBounds(
                 ContextCompat.getDrawable(this, R.drawable.ic_mic), null, null, null);
-        micKey.setContentDescription(getString(R.string.ime_voice_input_desc));
+        micKey.setContentDescription("Voice input");
         micKey.setGravity(Gravity.CENTER);
         micKey.setBackground(rounded(cAccent, dp(20)));
         micKey.setLayoutParams(new LinearLayout.LayoutParams(dp(44), dp(44)));
@@ -464,7 +476,7 @@ public class GboardIme extends InputMethodService {
                 special("⌫", 1.5f, KeyType.BACK)));
         // Bottom row like Gboard: ?123 (green circle), emoji+comma, globe,
         // language-labeled space, period, Enter (green circle).
-        TextView globe = icon("🌐", v -> toast(getString(R.string.ime_language_name)));
+        TextView globe = icon("🌐", v -> toast("Idioma: Português (Brasil)"));
         globe.setTextColor(cKeyText); // Gboard globe is light, not blue
         // Gboard row4 weights: ?123(1.5) + ,(1) + emoji(1) + space(4) + .(1) + Enter(1.5) = 10
         page.addView(row(
@@ -613,6 +625,11 @@ public class GboardIme extends InputMethodService {
         if (ic == null) return;
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+        CorrectionTracker tr = tracker;
+        if (tr != null) {
+            CorrectionTracker.Event burst = tr.onBackspace(System.currentTimeMillis());
+            if (burst != null) CollectorClient.postCorrection(burst);
+        }
         updateSuggestions();
     }
 
@@ -773,6 +790,12 @@ public class GboardIme extends InputMethodService {
                     boolean wasGlide = gliding && tap.isGlide();
                     gliding = false;
                     tap.up();
+                    // Snapshot the traced points before the overlay is cleared.
+                    pendingSwipePoints = (gestureOverlay != null && gestureOverlay.getWidth() > 0
+                            && gestureOverlay.getHeight() > 0)
+                            ? gestureOverlay.snapshotNormalized(
+                                    gestureOverlay.getWidth(), gestureOverlay.getHeight())
+                            : new java.util.ArrayList<>();
                     clearGlideVisuals();
                     long held = System.currentTimeMillis() - downAt[0];
                     if (wasGlide && glideTrail.size() > 1) {
@@ -894,7 +917,10 @@ public class GboardIme extends InputMethodService {
                     bg.setColor(base);
                     if (cursor[0] < 0 && Math.abs(ev.getX() - start[0]) < dp(20)) {
                         InputConnection ic = getCurrentInputConnection();
-                        if (ic != null) ic.commitText(" ", 1);
+                        if (ic != null) {
+                            confirmWord(currentWordPrefix());
+                            ic.commitText(" ", 1);
+                        }
                         updateSuggestions();
                     }
                     return true;
@@ -960,6 +986,16 @@ public class GboardIme extends InputMethodService {
         }
         Log.i(TAG, "glide trail=\"" + trail + "\" -> \"" + word
                 + "\" candidates=" + candidates);
+
+        // Debug dataset: record the gesture so failed glides can be studied.
+        pendingSwipeWord = word;
+        if (tracker != null) {
+            String kb = (gestureOverlay != null
+                    ? gestureOverlay.getWidth() + "x" + gestureOverlay.getHeight() : "0x0");
+            pendingSwipeId = CollectorClient.postSwipe(
+                    sessionId, trail, word, candidates, kb, pendingSwipePoints);
+        }
+
         // Gboard commits the decoded word plus a trailing space so the next
         // word starts cleanly.
         ic.commitText(word + " ", 1);
@@ -1029,10 +1065,10 @@ public class GboardIme extends InputMethodService {
             case COMMA: ic.commitText(",", 1); updateSuggestions(); break;
             case PERIOD: ic.commitText(".", 1); updateSuggestions(); break;
             case BACK:
-                deleteOne();
-                updateSuggestions();
+                deleteOne(); // already refreshes suggestions
                 break;
             case ENTER:
+                confirmWord(currentWordPrefix());
                 ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
                 break;
@@ -1067,7 +1103,7 @@ public class GboardIme extends InputMethodService {
     private void switchSymbols() { showPage(symbolPage == 0 ? 1 : 0); }
 
     private void showMore() {
-        Toast.makeText(this, getString(R.string.ime_more_features),
+        Toast.makeText(this, "Mais recursos: dicionário local + STT offline",
                 Toast.LENGTH_SHORT).show();
     }
 
@@ -1116,7 +1152,7 @@ public class GboardIme extends InputMethodService {
         abc.setOnClickListener(v -> showPage(0));
         header.addView(abc);
         TextView title = new TextView(this);
-        title.setText(getString(R.string.ime_emoji_title));
+        title.setText("Emoji");
         title.setTextColor(cStripText);
         title.setTextSize(14);
         header.addView(title);
@@ -1168,11 +1204,20 @@ public class GboardIme extends InputMethodService {
                 words = DictionaryCorrector.suggest(prefix, 3);
             }
             Log.i(TAG, "suggest prefix=\"" + prefix + "\" -> " + words);
-            final List<String> shown = words.isEmpty()
+            final boolean fallback = words.isEmpty();
+            final List<String> shown = fallback
                     ? java.util.Arrays.asList("de", "que", "não") : words;
             main.post(() -> {
                 for (int i = 0; i < 3; i++) {
                     suggestions[i].setText(i < shown.size() ? shown.get(i) : "");
+                }
+                CorrectionTracker tr = tracker;
+                if (tr != null) {
+                    long now = System.currentTimeMillis();
+                    tr.onSuggestionsShown(prefix, shown, now);
+                    if (fallback) {
+                        CollectorClient.postCorrection(tr.onFallbackGeneric(now));
+                    }
                 }
             });
         });
@@ -1212,7 +1257,35 @@ public class GboardIme extends InputMethodService {
             ic.deleteSurroundingText(prefix.length(), 0);
         }
         ic.commitText(w + " ", 1);
+        CorrectionTracker tr = tracker;
+        if (tr != null) {
+            CollectorClient.postCorrection(tr.onSuggestionSelected(idx, System.currentTimeMillis()));
+        }
+        // A swipe was superseded by a suggestion tap: no failure to attribute.
+        clearPendingSwipe();
         updateSuggestions();
+    }
+
+    /** One place for the word-confirm decision shared by space and enter. */
+    private void confirmWord(String typed) {
+        CorrectionTracker tr = tracker;
+        if (tr == null) {
+            clearPendingSwipe();
+            return;
+        }
+        CorrectionTracker.WordCommit commit = tr.onWordCommitted(
+                typed, pendingSwipeWord, pendingSwipeId, System.currentTimeMillis());
+        if (commit != null) {
+            for (CorrectionTracker.Event event : commit.events) {
+                CollectorClient.postCorrection(event);
+            }
+            if (commit.clearPendingSwipe) clearPendingSwipe();
+        }
+    }
+
+    private void clearPendingSwipe() {
+        pendingSwipeId = null;
+        pendingSwipeWord = "";
     }
 
     // ---- microphone / dictation -------------------------------------------
@@ -1221,11 +1294,11 @@ public class GboardIme extends InputMethodService {
         refreshPermissionState();
         if (!micPermissionGranted) {
             requestMicPermission();
-            toast(getString(R.string.ime_mic_permission));
+            toast("Permita o microfone para ditado por voz");
             return;
         }
         if (!engineReady) {
-            toast(getString(R.string.ime_model_preparing));
+            toast("Preparando modelo de voz…");
             return;
         }
         dictationBar.setVisibility(View.VISIBLE);
@@ -1255,7 +1328,7 @@ public class GboardIme extends InputMethodService {
         @Override public void run() {
             if (!transcribing) return;
             dots = (dots + 1) % 4;
-            StringBuilder sb = new StringBuilder(getString(R.string.ime_transcribing));
+            StringBuilder sb = new StringBuilder("Transcrevendo");
             for (int i = 0; i < dots; i++) sb.append('.');
             transcript.setText(sb.toString());
             main.postDelayed(this, 350);
@@ -1266,7 +1339,7 @@ public class GboardIme extends InputMethodService {
     private final DictationController.Listener dictationListener = new DictationController.Listener() {
         @Override public void onPartial(String text) {
             if (transcribing) return;
-            transcript.setText(text.isEmpty() ? getString(R.string.ime_listening_hint)
+            transcript.setText(text.isEmpty() ? "Ouvindo… solte o 🎤 ou toque ✕"
                     : text);
         }
         @Override public void onTranscribing() {
@@ -1279,7 +1352,7 @@ public class GboardIme extends InputMethodService {
             transcribing = false;
             main.removeCallbacks(transcribingAnim);
             if (text.isEmpty()) {
-                transcript.setText(getString(R.string.ime_speech_not_detected));
+                transcript.setText("Nenhuma fala detectada");
             } else {
                 transcript.setText(text);
                 InputConnection ic = getCurrentInputConnection();
@@ -1301,7 +1374,7 @@ public class GboardIme extends InputMethodService {
             if (listening) {
                 transcribing = false;
                 waveform.setActive(true);
-                transcript.setText(getString(R.string.ime_listening_hint));
+                transcript.setText("Ouvindo… solte o 🎤 ou toque ✕");
             } else {
                 waveform.setActive(false);
             }
@@ -1346,7 +1419,7 @@ public class GboardIme extends InputMethodService {
                 Log.i(TAG, "Gboard IME ready (local STT + decoder + suggestions)");
             } catch (Exception e) {
                 Log.e(TAG, "engine init failed: " + e.getMessage());
-                main.post(() -> toast(getString(R.string.ime_model_error, e.getMessage())));
+                main.post(() -> toast("Falha ao carregar modelo: " + e.getMessage()));
             }
         });
     }

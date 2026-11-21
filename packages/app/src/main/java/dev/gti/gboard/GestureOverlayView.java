@@ -41,11 +41,21 @@ public class GestureOverlayView extends View {
         setWillNotDraw(false);
     }
 
-    /** Adds a trail point in this view's local coordinates. */
+    /** Adds a trail point in this view's local coordinates, with a timestamp. */
     public void addPoint(float x, float y) {
-        points.add(new Point(x, y));
+        points.add(new Point(x, y, System.currentTimeMillis()));
         if (points.size() > 120) points.remove(0);
         invalidate();
+    }
+
+    /** Returns a snapshot of the trail as [x/width, y/height, timestampMs]. */
+    public List<float[]> snapshotNormalized(int width, int height) {
+        List<float[]> out = new ArrayList<>();
+        if (width <= 0 || height <= 0) return out;
+        for (Point p : points) {
+            out.add(new float[]{p.x / width, p.y / height, (float) p.t});
+        }
+        return out;
     }
 
     public void clear() {
@@ -78,6 +88,7 @@ public class GestureOverlayView extends View {
 
     private static final class Point {
         final float x, y;
-        Point(float x, float y) { this.x = x; this.y = y; }
+        final long t;
+        Point(float x, float y, long t) { this.x = x; this.y = y; this.t = t; }
     }
 }

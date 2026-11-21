@@ -1,0 +1,1 @@
+{"id":"voice-e2e-001","durationMs":1000,"sessionId":"sess-e2e-001","transcriptCorrected":"olá mundo","ts":1700000000000,"transcriptCleaned":"ola mundo","transcriptRaw":"ola mundo","model":"ggml-tiny-q8_0-bin","inferMs":1234,"locale":"pt","rms":0.05}
