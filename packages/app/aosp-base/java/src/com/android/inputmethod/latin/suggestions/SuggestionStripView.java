@@ -87,8 +87,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private static final String SENSITIVE_CLIPBOARD_LABEL = "\u2022\u2022\u2022\u2022\u2022\u2022";
 
     private final ViewGroup mSuggestionsStrip;
-    // gti.dev: Gboard's top shortcut row, shown while idle.
-    private final View mShortcutStrip;
     // gti.dev: the icon-only toolbar shown when no word is being composed (Gboard style).
     private final View mToolbar;
     private boolean mShowWordSuggestions = false;
@@ -98,13 +96,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private final ImageButton mSettingsKey;
     private final ImageButton mTranslateKey;
     private final ImageButton mClipboardKey;
-    // gti.dev: Gboard top shortcut row buttons.
-    private final View mShortcutAdd;
-    private final View mShortcutAbc;
-    private final View mShortcutEmoji;
-    private final View mShortcutAt;
-    private final View mShortcutEdit;
-    private final View mShortcutSend;
     private final int mDockedStripMargin;
     private final View mImportantNoticeStrip;
     private final InlineSuggestionsStrip mInlineSuggestionsStrip;
@@ -133,20 +124,17 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private static class StripVisibilityGroup {
         private final View mSuggestionStripView;
         private final View mToolbar;
-        private final View mShortcutStrip;
         private final View mSuggestionsStrip;
         private final View mImportantNoticeStrip;
         private final InlineSuggestionsStrip mInlineSuggestionsStrip;
         private final View mClipboardSuggestionStrip;
 
         public StripVisibilityGroup(final View suggestionStripView, final View toolbar,
-                final View shortcutStrip, final ViewGroup suggestionsStrip,
-                final View importantNoticeStrip,
+                final ViewGroup suggestionsStrip, final View importantNoticeStrip,
                 final InlineSuggestionsStrip inlineSuggestionsStrip,
                 final View clipboardSuggestionStrip) {
             mSuggestionStripView = suggestionStripView;
             mToolbar = toolbar;
-            mShortcutStrip = shortcutStrip;
             mSuggestionsStrip = suggestionsStrip;
             mImportantNoticeStrip = importantNoticeStrip;
             mInlineSuggestionsStrip = inlineSuggestionsStrip;
@@ -165,7 +153,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         // gti.dev: idle state - only the icon toolbar (Gboard has no suggestion
         // row until you actually start typing).
         public void showToolbar() {
-            mShortcutStrip.setVisibility(VISIBLE);
             mToolbar.setVisibility(VISIBLE);
             mSuggestionsStrip.setVisibility(INVISIBLE);
             mImportantNoticeStrip.setVisibility(INVISIBLE);
@@ -176,8 +163,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         public void showSuggestionsStrip(final boolean showsClipboardSuggestion) {
             final boolean showsInline = mInlineSuggestionsStrip.hasSuggestions();
             final boolean showsClipboard = !showsInline && showsClipboardSuggestion;
-            // gti.dev: Gboard hides the shortcut row once real suggestions appear.
-            mShortcutStrip.setVisibility(INVISIBLE);
             mToolbar.setVisibility(INVISIBLE);
             mSuggestionsStrip.setVisibility(showsInline || showsClipboard ? INVISIBLE : VISIBLE);
             mImportantNoticeStrip.setVisibility(INVISIBLE);
@@ -186,7 +171,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         }
 
         public void showImportantNoticeStrip() {
-            mShortcutStrip.setVisibility(INVISIBLE);
             mToolbar.setVisibility(INVISIBLE);
             mSuggestionsStrip.setVisibility(INVISIBLE);
             mImportantNoticeStrip.setVisibility(VISIBLE);
@@ -220,27 +204,19 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         inflater.inflate(R.layout.suggestions_strip, this);
 
         mSuggestionsStrip = (ViewGroup)findViewById(R.id.suggestions_strip);
-        mShortcutStrip = findViewById(R.id.suggestions_shortcut_strip);
         mToolbar = findViewById(R.id.suggestions_strip_toolbar);
         mVoiceKey = (ImageButton)findViewById(R.id.suggestions_strip_voice_key);
         mMoreKey = (ImageButton)findViewById(R.id.suggestions_strip_more_key);
         mSettingsKey = (ImageButton)findViewById(R.id.suggestions_strip_settings_key);
         mTranslateKey = (ImageButton)findViewById(R.id.suggestions_strip_translate_key);
         mClipboardKey = (ImageButton)findViewById(R.id.suggestions_strip_clipboard_key);
-        mShortcutAdd = findViewById(R.id.shortcut_add);
-        mShortcutAbc = findViewById(R.id.shortcut_abc);
-        mShortcutEmoji = findViewById(R.id.shortcut_emoji);
-        mShortcutAt = findViewById(R.id.shortcut_at);
-        mShortcutEdit = findViewById(R.id.shortcut_edit);
-        mShortcutSend = findViewById(R.id.shortcut_send);
         mDockedStripMargin =
                 ((MarginLayoutParams) mSuggestionsStrip.getLayoutParams()).getMarginStart();
         mImportantNoticeStrip = findViewById(R.id.important_notice_strip);
         mInlineSuggestionsStrip = findViewById(R.id.inline_suggestions_strip);
         mClipboardSuggestionStrip = findViewById(R.id.clipboard_suggestion_strip);
-        mStripVisibilityGroup = new StripVisibilityGroup(this, mToolbar, mShortcutStrip,
-                mSuggestionsStrip, mImportantNoticeStrip, mInlineSuggestionsStrip,
-                mClipboardSuggestionStrip);
+        mStripVisibilityGroup = new StripVisibilityGroup(this, mToolbar, mSuggestionsStrip,
+                mImportantNoticeStrip, mInlineSuggestionsStrip, mClipboardSuggestionStrip);
 
         for (int pos = 0; pos < SuggestedWords.MAX_SUGGESTIONS; pos++) {
             final TextView word = new TextView(context, null, R.attr.suggestionWordStyle);
@@ -285,16 +261,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         for (final ImageButton key : new ImageButton[] {
                 mMoreKey, mSettingsKey, mTranslateKey, mClipboardKey }) {
             key.setImageTintList(toolbarTint);
-            key.setOnClickListener(this);
-        }
-        // gti.dev: top shortcut row follows the Gboard arrangement.
-        ((ImageButton)mShortcutAdd).setImageTintList(toolbarTint);
-        ((ImageButton)mShortcutEmoji).setImageTintList(toolbarTint);
-        ((ImageButton)mShortcutEdit).setImageTintList(toolbarTint);
-        ((ImageButton)mShortcutSend).setImageTintList(toolbarTint);
-        for (final View key : new View[] {
-                mShortcutAdd, mShortcutAbc, mShortcutEmoji, mShortcutAt,
-                mShortcutEdit, mShortcutSend }) {
             key.setOnClickListener(this);
         }
     }
@@ -738,37 +704,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         if (view == mVoiceKey || view == mImportantNoticeStrip) {
             // gti.dev: tapping the mic or the "Fale agora" label toggles dictation.
             mListener.onCodeInput(Constants.CODE_SHORTCUT,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        // gti.dev: Gboard top shortcut row.
-        if (view == mShortcutAdd || view == mShortcutEdit) {
-            mListener.onCodeInput(Constants.CODE_TOOLS,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mShortcutAbc) {
-            mListener.onCodeInput(Constants.CODE_SETTINGS,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mShortcutEmoji) {
-            mListener.onCodeInput(Constants.CODE_EMOJI,
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mShortcutAt) {
-            mListener.onCodeInput('@',
-                    Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
-                    false /* isKeyRepeat */);
-            return;
-        }
-        if (view == mShortcutSend) {
-            mListener.onCodeInput(Constants.CODE_ENTER,
                     Constants.SUGGESTION_STRIP_COORDINATE, Constants.SUGGESTION_STRIP_COORDINATE,
                     false /* isKeyRepeat */);
             return;
