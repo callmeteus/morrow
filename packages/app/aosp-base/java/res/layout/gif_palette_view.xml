@@ -41,11 +41,11 @@
             android:contentDescription="@string/spoken_description_back" />
     </LinearLayout>
 
+    <!-- gti.dev: fixed height keeps the panel keyboard-sized instead of fullscreen. -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gif_grid"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
+        android:layout_height="280dp"
         android:padding="8dp"
         android:clipToPadding="false" />
 

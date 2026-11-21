@@ -88,7 +88,7 @@
             android:layout_height="match_parent"
             android:hapticFeedbackEnabled="false"
             android:soundEffectsEnabled="false" />
-        <!-- gti.dev: Gboard-style action bar tabs (GIF, stickers, kaomoji). -->
+        <!-- gti.dev: Gboard-style action bar tabs (GIF, kaomoji). -->
         <TextView
             android:id="@+id/emoji_keyboard_gif"
             android:layout_width="0dip"
@@ -101,17 +101,6 @@
             android:textStyle="bold"
             android:hapticFeedbackEnabled="false"
             android:soundEffectsEnabled="false" />
-        <ImageButton
-            android:id="@+id/emoji_keyboard_sticker"
-            android:layout_width="0dip"
-            android:layout_weight="0.13"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_sticker"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside"
-            android:hapticFeedbackEnabled="false"
-            android:soundEffectsEnabled="false"
-            android:contentDescription="@string/sticker_tab_label" />
         <TextView
             android:id="@+id/emoji_keyboard_kaomoji"
             android:layout_width="0dip"

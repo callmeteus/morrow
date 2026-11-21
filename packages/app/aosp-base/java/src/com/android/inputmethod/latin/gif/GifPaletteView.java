@@ -5,8 +5,9 @@
 package com.android.inputmethod.latin.gif;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
+import android.graphics.drawable.AnimatedImageDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
@@ -28,9 +29,11 @@ import com.android.inputmethod.keyboard.KeyboardActionListener;
 import com.android.inputmethod.latin.R;
 import com.android.inputmethod.latin.common.Constants;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -132,15 +135,16 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                 mKeyboardActionListener.onCodeInput(Constants.CODE_ALPHA_FROM_EMOJI,
                         Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
             });
-            loadBitmap(holder.image, gif.previewUrl);
+            // gti.dev: load the animated source so GIFs play in the grid, like Gboard.
+            loadBitmap(holder.image, gif.fullUrl);
         }
 
         @Override public int getItemCount() { return mGifs.size(); }
 
         private void loadBitmap(final ImageView view, final String url) {
-            view.setImageBitmap(null);
+            view.setImageDrawable(null);
             mExecutor.execute(() -> {
-                Bitmap bmp = null;
+                Drawable drawable = null;
                 HttpURLConnection conn = null;
                 try {
                     conn = (HttpURLConnection) new URL(url).openConnection();
@@ -148,16 +152,30 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                     conn.setReadTimeout(6000);
                     conn.setRequestProperty("User-Agent", "MorrowKeyboard/1.0");
                     if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        try (InputStream in = conn.getInputStream()) {
-                            bmp = BitmapFactory.decodeStream(in);
+                        final byte[] bytes;
+                        try (InputStream in = conn.getInputStream();
+                             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                            final byte[] buf = new byte[8192];
+                            int n;
+                            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                            bytes = out.toByteArray();
                         }
+                        // gti.dev: ImageDecoder yields an AnimatedImageDrawable for GIF/WebP,
+                        // so the thumbnail animates. Static images fall back gracefully.
+                        drawable = ImageDecoder.decodeDrawable(
+                                ImageDecoder.createSource(ByteBuffer.wrap(bytes)));
                     }
                 } catch (Exception ignored) {
                 } finally {
                     if (conn != null) conn.disconnect();
                 }
-                final Bitmap result = bmp;
-                mMainHandler.post(() -> view.setImageBitmap(result));
+                final Drawable result = drawable;
+                mMainHandler.post(() -> {
+                    view.setImageDrawable(result);
+                    if (result instanceof AnimatedImageDrawable) {
+                        ((AnimatedImageDrawable) result).start();
+                    }
+                });
             });
         }
     }

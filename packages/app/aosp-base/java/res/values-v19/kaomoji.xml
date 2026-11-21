@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: rich ASCII/kaomoji emotes for the emoticons tab. -->
+<resources>
+    <array name="morrow_kaomoji" format="string">
+        <item>(╯°□°)╯︵ ┻━┻</item>
+        <item>┬─┬ノ( º _ ºノ)</item>
+        <item>(¬_¬)</item>
+        <item>(╬ ಠ益ಠ)</item>
+        <item>(ಠ_ಠ)</item>
+        <item>(◉‿◉)</item>
+        <item>(◕‿◕)</item>
+        <item>ʕ•ᴥ•ʔ</item>
+        <item>(つ✧ω✧)つ</item>
+        <item>(づ｡◕‿‿◕｡)づ</item>
+        <item>(◕ᴗ◕✿)</item>
+        <item>(^‿^)</item>
+        <item>(^_^)</item>
+        <item>(°ロ°)☝</item>
+        <item>T_T</item>
+        <item>QAQ</item>
+        <item>OwO</item>
+        <item>UwU</item>
+        <item>X_X</item>
+        <item>-_-</item>
+        <item>0_0</item>
+        <item>@_@</item>
+        <item>:-)</item>
+        <item>:-D</item>
+        <item>;-)</item>
+        <item>:-P</item>
+        <item>:-O</item>
+        <item>B-)</item>
+        <item>O:-)</item>
+        <item>:D</item>
+        <item>:P</item>
+        <item>xD</item>
+        <item>^^</item>
+        <item>≧▽≦</item>
+        <item>(ㄒoㄒ)</item>
+        <item>(つ﹏⊂)</item>
+        <item>ヽ(´▽`)/</item>
+        <item>(∩_∩)</item>
+        <item>(=^･ω･^=)</item>
+        <item>٩(◕‿◕)۶</item>
+    </array>
+</resources>
