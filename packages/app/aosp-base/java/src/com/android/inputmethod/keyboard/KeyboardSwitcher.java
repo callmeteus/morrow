@@ -645,6 +645,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mTranslationPaletteView.setKeyboardActionListener(mLatinIME);
         mToolsPaletteView.setKeyboardActionListener(mLatinIME);
         mGifPaletteView.setKeyboardActionListener(mLatinIME);
+        mGifPaletteView.setGifCommitListener(mLatinIME::commitGif);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {

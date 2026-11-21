@@ -1559,6 +1559,21 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         }
     }
 
+    /**
+     * gti.dev: commit a selected GIF as rich content into the focused editor.
+     * Falls back to inserting the link as text when the editor does not accept images.
+     */
+    public void commitGif(final String url, final String title) {
+        final android.view.inputmethod.InputConnection ic = getCurrentInputConnection();
+        if (ic == null) return;
+        com.android.inputmethod.latin.gif.GifInserter.insert(this, ic, getCurrentInputEditorInfo(),
+                url, inserted -> {
+            if (!inserted) {
+                ic.commitText(url + " ", 1);
+            }
+        });
+    }
+
     @Override
     public void toggleFloatingKeyboard() {
         FloatingKeyboardUtils.toggleFloatingKeyboard(

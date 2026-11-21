@@ -98,6 +98,17 @@
              android:label="@string/dictionary_service_name">
         </service>
 
+        <!-- gti.dev: serves downloaded GIFs to the editor via commitContent. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.giffileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/gif_file_paths" />
+        </provider>
+
         <!-- Activities -->
         <activity android:name=".setup.SetupActivity"
              android:theme="@style/platformActivityTheme"

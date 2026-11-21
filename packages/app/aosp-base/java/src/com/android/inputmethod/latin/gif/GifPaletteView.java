@@ -39,6 +39,13 @@ import java.util.concurrent.Executors;
 public final class GifPaletteView extends LinearLayout implements View.OnClickListener {
     private KeyboardActionListener mKeyboardActionListener =
             KeyboardActionListener.EMPTY_LISTENER;
+    private GifCommitListener mGifCommitListener = null;
+
+    /** Callback invoked when the user selects a GIF. */
+    public interface GifCommitListener {
+        void onGifSelected(String url, String title);
+    }
+
     private final List<GifJifClient.Gif> mGifs = new ArrayList<>();
     private final GifAdapter mAdapter = new GifAdapter();
     private final ExecutorService mExecutor = Executors.newFixedThreadPool(4);
@@ -86,6 +93,10 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         mKeyboardActionListener = listener;
     }
 
+    public void setGifCommitListener(final GifCommitListener listener) {
+        mGifCommitListener = listener;
+    }
+
     @Override
     public void onClick(final View v) {
         if (v.getId() == R.id.gif_back_key) {
@@ -112,10 +123,11 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         @Override public void onBindViewHolder(final Vh holder, final int position) {
             final GifJifClient.Gif gif = mGifs.get(position);
             holder.itemView.setOnClickListener(v -> {
-                // GIFs can't be inserted as images through this IME yet, so commit
-                // the GIF's source link as text (Gboard inserts the animated image).
-                final String link = gif.fullUrl + " ";
-                mKeyboardActionListener.onTextInput(link);
+                if (mGifCommitListener != null) {
+                    mGifCommitListener.onGifSelected(gif.fullUrl, gif.title);
+                } else {
+                    mKeyboardActionListener.onTextInput(gif.fullUrl + " ");
+                }
                 mKeyboardActionListener.onCodeInput(Constants.CODE_ALPHA_FROM_EMOJI,
                         Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
             });
