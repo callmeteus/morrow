@@ -58,79 +58,71 @@ public class SetupActivity extends AppCompatActivity {
                 engineReady = true;
                 Log.i(TAG, "WAV-SELFTEST: engine ready (dict_size=" + DictionaryCorrector.size() + ")");
                 runOnUiThread(() -> {
-                    status.append("\n• Modelo de voz carregado (Whisper base, local).");
-                    status.append("\n• Dicionário pt-BR local: " + DictionaryCorrector.size() + " palavras.");
+                    status.append(getString(R.string.status_model_loaded));
+                    status.append(getString(R.string.status_dictionary_loaded, DictionaryCorrector.size()));
                 });
                 if (autoWav) {
                     runOnUiThread(this::runWavSelfTest);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "WAV-SELFTEST: engine init failed: " + e);
-                runOnUiThread(() -> status.append("\n• Falha ao carregar modelo: " + e.getMessage()));
+                runOnUiThread(() -> status.append(getString(R.string.status_model_error, e.getMessage())));
             }
         });
     }
 
     private TextView buildUi() {
         TextView title = new TextView(this);
-        title.setText("Morrow · Voz local (offline)");
+        title.setText(getString(R.string.setup_title));
         title.setTextSize(22);
         title.setTextColor(Color.WHITE);
         title.setPadding(dp(24), dp(24), dp(24), dp(8));
 
         TextView desc = new TextView(this);
-        desc.setText(
-            "Morrow: teclado com ditado por voz 100% local (Whisper embarcado).\n\n" +
-            "1. Habilite o teclado nas configurações de entrada.\n" +
-            "2. Conceda a permissão de microfone.\n" +
-            "3. Use o botão de teste abaixo para validar o STT local.\n\n" +
-            "Dica: toque DUAS VEZES rápido na tecla Shift (seta) para ligar o " +
-            "CAPS LOCK (tudo em maiúsculas). A seta fica com um traço embaixo " +
-            "quando está ligado; toque duas vezes de novo para desligar.\n\n" +
-            "Nenhuma chamada é feita ao serviço de voz do Google.");
+        desc.setText(getString(R.string.setup_description));
         desc.setTextColor(Color.parseColor("#DADCE0"));
         desc.setPadding(dp(24), 0, dp(24), dp(16));
 
         Button enable = new Button(this);
-        enable.setText("1) Habilitar teclado");
+        enable.setText(getString(R.string.setup_enable_keyboard));
         enable.setOnClickListener(v -> {
             startActivity(new Intent(android.provider.Settings.ACTION_INPUT_METHOD_SETTINGS));
         });
 
         Button perm = new Button(this);
-        perm.setText("2) Conceder microfone");
+        perm.setText(getString(R.string.setup_grant_mic));
         perm.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
                     != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 2);
             } else {
-                Toast.makeText(this, "Microfone já permitido", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.setup_mic_already_allowed), Toast.LENGTH_SHORT).show();
             }
             refreshPermission();
         });
 
         Button test = new Button(this);
-        test.setText("3) Testar ditado local (fale ~4 s)");
+        test.setText(getString(R.string.setup_test_dictation));
         test.setOnClickListener(v -> runSelfTest());
 
         Button wav = new Button(this);
-        wav.setText("4) Testar WAV (sem microfone)");
+        wav.setText(getString(R.string.setup_test_wav));
         wav.setOnClickListener(v -> runWavSelfTest());
 
         EditText campo = new EditText(this);
-        campo.setHint("5) Toque aqui para testar o teclado");
+        campo.setHint(getString(R.string.setup_test_field_hint));
         campo.setTextSize(16);
         campo.setPadding(dp(16), dp(12), dp(16), dp(12));
 
         Button voiceCfg = new Button(this);
-        voiceCfg.setText("6) Configurar voz (local / servidor OpenAI)");
+        voiceCfg.setText(getString(R.string.setup_configure_voice));
         voiceCfg.setOnClickListener(v -> showVoiceConfigDialog());
 
         status = new TextView(this);
         status.setTextColor(Color.parseColor("#8AB4F8"));
         status.setTextSize(13);
         status.setPadding(dp(24), dp(16), dp(24), dp(24));
-        status.setText("Inicializando…");
+        status.setText(getString(R.string.setup_initializing));
 
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
@@ -167,54 +159,49 @@ public class SetupActivity extends AppCompatActivity {
         box.setPadding(pad, pad, pad, 0);
 
         final CheckBox useExternal = new CheckBox(this);
-        useExternal.setText("Usar servidor externo (desmarcado = 100% local offline)");
+        useExternal.setText(getString(R.string.voice_use_external));
         useExternal.setChecked(prefs.getBoolean(K_USE, false));
         box.addView(useExternal);
 
         final EditText url = new EditText(this);
-        url.setHint("URL base (ex: http://100.84.51.1:8000/v1)");
+        url.setHint(getString(R.string.voice_base_url_hint));
         url.setText(prefs.getString(K_URL, "http://100.84.51.1:8000/v1"));
         box.addView(url);
 
         final EditText key = new EditText(this);
-        key.setHint("API key (deixe vazio se nao precisar)");
+        key.setHint(getString(R.string.voice_api_key_hint));
         key.setText(prefs.getString(K_KEY, ""));
         box.addView(key);
 
         final EditText model = new EditText(this);
-        model.setHint("Modelo (ex: whisper-1)");
+        model.setHint(getString(R.string.voice_model_hint));
         model.setText(prefs.getString(K_MODEL, "whisper-1"));
         box.addView(model);
 
         final EditText lang = new EditText(this);
-        lang.setHint("Idioma (pt)");
+        lang.setHint(getString(R.string.voice_language_hint));
         lang.setText(prefs.getString(K_LANG, "pt"));
         box.addView(lang);
 
         final CheckBox diagnostics = new CheckBox(this);
-        diagnostics.setText("Gravar diagnostico de swipe (gesto + resultado + palavra que eu digitar)");
+        diagnostics.setText(getString(R.string.voice_swipe_diagnostics));
         diagnostics.setChecked(prefs.getBoolean("gti_swipe_diagnostics", false));
         box.addView(diagnostics);
 
         final CheckBox usageLog = new CheckBox(this);
-        usageLog.setText("Registrar dados de uso no aparelho (swipe, voz, teclas e correcoes)");
+        usageLog.setText(getString(R.string.voice_usage_log));
         usageLog.setChecked(prefs.getBoolean("gti_usage_log", true));
         box.addView(usageLog);
 
         TextView hint = new TextView(this);
-        hint.setText("Compativel com OpenAI / localai / faster-whisper-server / Speaches. "
-                + "O teclado tenta o servidor e, se falhar, volta para o Whisper local.\n\n"
-                + "Diagnostico: salvo apenas no aparelho em "
-                + "/data/data/com.android.inputmethod.latin/files/swipe_diagnostics.jsonl\n\n"
-                + "Dados de uso: salvos apenas no aparelho em "
-                + "/data/data/com.android.inputmethod.latin/cache/usage/usage_events.jsonl");
+        hint.setText(getString(R.string.voice_config_hint));
         hint.setPadding(0, dp(8), 0, 0);
         box.addView(hint);
 
         new AlertDialog.Builder(this)
-                .setTitle("Voz: backend de transcricao")
+                .setTitle(getString(R.string.voice_config_title))
                 .setView(box)
-                .setPositiveButton("Salvar", (d, which) -> {
+                .setPositiveButton(getString(R.string.save), (d, which) -> {
                     prefs.edit()
                             .putBoolean(K_USE, useExternal.isChecked())
                             .putString(K_URL, url.getText().toString().trim())
@@ -224,15 +211,15 @@ public class SetupActivity extends AppCompatActivity {
                             .putBoolean("gti_swipe_diagnostics", diagnostics.isChecked())
                             .putBoolean("gti_usage_log", usageLog.isChecked())
                             .apply();
-                    status.append("\nDiagnostico de swipe: "
-                            + (diagnostics.isChecked() ? "ATIVADO" : "desativado") + ".");
-                    status.append("\nRegistro de uso: "
-                            + (usageLog.isChecked() ? "ATIVADO" : "desativado") + ".");
-                    status.append("\nConfiguracao de voz salva. "
-                            + (useExternal.isChecked() ? "Servidor externo ativado (com fallback local)."
-                                                       : "Modo local offline ativado."));
+                    status.append(getString(R.string.status_swipe_diagnostics,
+                            getString(diagnostics.isChecked() ? R.string.enabled : R.string.disabled)));
+                    status.append(getString(R.string.status_usage_log,
+                            getString(usageLog.isChecked() ? R.string.enabled : R.string.disabled)));
+                    status.append(getString(R.string.status_voice_config_saved,
+                            getString(useExternal.isChecked() ? R.string.voice_external_enabled
+                                                              : R.string.voice_local_enabled)));
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show();
     }
 
@@ -240,10 +227,10 @@ public class SetupActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 2);
-            status.append("\n• Conceda o microfone e tente de novo.");
+            status.append(getString(R.string.status_grant_mic_retry));
             return;
         }
-        status.append("\n• Gravando 4 s… (fale em português)");
+        status.append(getString(R.string.status_recording));
         final Recorder recorder = new Recorder();
         final short[] buf = new short[Recorder.SAMPLE_RATE * 4];
         final int[] len = {0};
@@ -267,11 +254,12 @@ public class SetupActivity extends AppCompatActivity {
             final String r = raw == null ? "" : raw.trim();
             final String fixed = DictionaryCorrector.correct(r);
             runOnUiThread(() -> {
-                status.append("\n• Reconhecimento local: “" + (r.isEmpty() ? "(vazio)" : r) + "”");
+                status.append(getString(R.string.status_local_recognition,
+                        r.isEmpty() ? getString(R.string.empty_transcript) : r));
                 if (fixed != null && !fixed.equals(r)) {
-                    status.append("\n• Com dicionário local: “" + fixed + "”");
+                    status.append(getString(R.string.status_corrected, fixed));
                 }
-                status.append("\n• (Executado no dispositivo, sem Google STT.)");
+                status.append(getString(R.string.status_on_device_note));
             });
         });
     }
@@ -285,7 +273,7 @@ public class SetupActivity extends AppCompatActivity {
      * reports inference time / RTF, so latency can be verified without a mic.
      */
     private void runWavSelfTest() {
-        status.append("\n• Procurando .wav no storage externo do app…");
+        status.append(getString(R.string.status_searching_wav));
         bg.submit(() -> {
             try {
                 File dir = getExternalFilesDir(null);
@@ -300,8 +288,7 @@ public class SetupActivity extends AppCompatActivity {
                     }
                 }
                 if (best == null) {
-                    runOnUiThread(() -> status.append(
-                            "\n• Nenhum .wav. Envie com:\n  adb push x.wav /sdcard/Android/data/dev.gti.gboard/files/"));
+                    runOnUiThread(() -> status.append(getString(R.string.status_no_wav)));
                     return;
                 }
                 final File wavFile = best;
@@ -319,16 +306,17 @@ public class SetupActivity extends AppCompatActivity {
                         + " infer_ms=" + infer + " rtf=" + String.format("%.2f", rtf)
                         + " raw=\"" + r + "\" corrected=\"" + fixed + "\"");
                 runOnUiThread(() -> {
-                    status.append("\n• WAV " + wavFile.getName() + " ("
-                            + String.format("%.1f", secs) + " s): inferência "
-                            + infer + " ms (RTF " + String.format("%.2f", rtf) + ")");
-                    status.append("\n• Reconhecimento local: “" + (r.isEmpty() ? "(vazio)" : r) + "”");
+                    status.append(getString(R.string.status_wav_result,
+                            wavFile.getName(), String.format("%.1f", secs), infer,
+                            String.format("%.2f", rtf)));
+                    status.append(getString(R.string.status_local_recognition,
+                        r.isEmpty() ? getString(R.string.empty_transcript) : r));
                     if (fixed != null && !fixed.equals(r)) {
-                        status.append("\n• Com dicionário local: “" + fixed + "”");
+                        status.append(getString(R.string.status_corrected, fixed));
                     }
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> status.append("\n• WAV test error: " + e.getMessage()));
+                runOnUiThread(() -> status.append(getString(R.string.status_wav_error, e.getMessage())));
             }
         });
     }
@@ -344,7 +332,8 @@ public class SetupActivity extends AppCompatActivity {
                 == PackageManager.PERMISSION_GRANTED;
         runOnUiThread(() -> {
             if (status != null) {
-                status.append("\n• Microfone: " + (ok ? "permitido" : "negado"));
+                status.append(getString(R.string.status_microphone,
+                        getString(ok ? R.string.mic_allowed : R.string.mic_denied)));
             }
         });
     }

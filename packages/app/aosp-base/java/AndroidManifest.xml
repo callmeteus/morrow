@@ -65,6 +65,7 @@
 
     <application android:label="@string/english_ime_name"
          android:icon="@mipmap/ic_launcher"
+         android:localeConfig="@xml/locale_config"
          android:supportsRtl="true"
          android:allowBackup="true"
          android:defaultToDeviceProtectedStorage="true"

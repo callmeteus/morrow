@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Morrow</string>
+    <string name="ime_name">Morrow</string>
+    <string name="accessibility_desc">Herramienta de desarrollo: vuelca la jerarquía de la ventana del teclado.</string>
+    <string name="setup_title">Morrow - Voz local (sin conexión)</string>
+    <string name="setup_description">Morrow: teclado con dictado por voz 100% local (Whisper integrado).\n\n1. Habilita el teclado en los ajustes de entrada.\n2. Concede el permiso de micrófono.\n3. Usa el botón de prueba inferior para validar el STT local.\n\nConsejo: toca DOS VECES rápido la tecla Shift (flecha) para activar el BLOQUEO DE MAYÚSCULAS (todo en mayúsculas). La flecha muestra una línea debajo cuando está activado; toca dos veces de nuevo para desactivarlo.\n\nNo se realizan llamadas al servicio de voz de Google.</string>
+    <string name="setup_enable_keyboard">1) Habilitar teclado</string>
+    <string name="setup_grant_mic">2) Conceder micrófono</string>
+    <string name="setup_test_dictation">3) Probar dictado local (habla ~4 s)</string>
+    <string name="setup_test_wav">4) Probar WAV (sin micrófono)</string>
+    <string name="setup_test_field_hint">5) Toca aquí para probar el teclado</string>
+    <string name="setup_configure_voice">6) Configurar voz (local / servidor OpenAI)</string>
+    <string name="setup_initializing">Inicializando...</string>
+    <string name="setup_mic_already_allowed">Micrófono ya permitido</string>
+    <string name="voice_use_external">Usar servidor externo (sin marcar = 100% local sin conexión)</string>
+    <string name="voice_base_url_hint">URL base (p. ej. http://100.84.51.1:8000/v1)</string>
+    <string name="voice_api_key_hint">Clave de API (deja vacío si no hace falta)</string>
+    <string name="voice_model_hint">Modelo (p. ej. whisper-1)</string>
+    <string name="voice_language_hint">Idioma (pt)</string>
+    <string name="voice_swipe_diagnostics">Registrar diagnósticos de deslizamiento (gesto + resultado + palabra que escribí)</string>
+    <string name="voice_usage_log">Registrar datos de uso en el dispositivo (deslizamiento, voz, teclas y correcciones)</string>
+    <string name="voice_config_hint">Compatible con OpenAI / localai / faster-whisper-server / Speaches. El teclado intenta el servidor y, si falla, vuelve a Whisper local.\n\nDiagnósticos: guardado solo en el dispositivo en /data/data/com.android.inputmethod.latin/files/swipe_diagnostics.jsonl\n\nDatos de uso: guardados solo en el dispositivo en /data/data/com.android.inputmethod.latin/cache/usage/usage_events.jsonl</string>
+    <string name="voice_config_title">Voz: backend de transcripción</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="enabled">ACTIVADO</string>
+    <string name="disabled">desactivado</string>
+    <string name="mic_allowed">permitido</string>
+    <string name="mic_denied">denegado</string>
+    <string name="status_swipe_diagnostics">\nDiagnósticos de deslizamiento: %1$s.</string>
+    <string name="status_usage_log">\nRegistro de uso: %1$s.</string>
+    <string name="status_voice_config_saved">\nConfiguración de voz guardada. %1$s</string>
+    <string name="voice_external_enabled">Servidor externo activado (con respaldo local).</string>
+    <string name="voice_local_enabled">Modo local sin conexión activado.</string>
+    <string name="status_grant_mic_retry">\n- Concede el permiso de micrófono e inténtalo de nuevo.</string>
+    <string name="status_recording">\n- Grabando 4 s... (habla en español)</string>
+    <string name="status_local_recognition">\n- Reconocimiento local: \"%1$s\"</string>
+    <string name="status_corrected">\n- Con diccionario local: \"%1$s\"</string>
+    <string name="status_on_device_note">\n- (Ejecutado en el dispositivo, sin Google STT.)</string>
+    <string name="status_searching_wav">\n- Buscando .wav en el almacenamiento externo de la app...</string>
+    <string name="status_no_wav">\n- No hay .wav. Envía uno con:\n  adb push x.wav /sdcard/Android/data/dev.gti.gboard/files/</string>
+    <string name="status_wav_result">\n- WAV %1$s (%2$s s): inferencia %3$d ms (RTF %4$s)</string>
+    <string name="status_wav_error">\n- Error en la prueba WAV: %1$s</string>
+    <string name="status_microphone">\n- Micrófono: %1$s</string>
+    <string name="status_model_loaded">\n- Modelo de voz cargado (Whisper base, local).</string>
+    <string name="status_dictionary_loaded">\n- Diccionario local pt-BR: %1$d palabras.</string>
+    <string name="status_model_error">\n- Error al cargar el modelo: %1$s</string>
+    <string name="empty_transcript">(vacío)</string>
+    <string name="ime_more_features">Más funciones: diccionario local + STT sin conexión</string>
+    <string name="ime_emoji_title">Emoji</string>
+    <string name="ime_transcribing">Transcribiendo</string>
+    <string name="ime_listening_hint">Escuchando... suelta el 🎤 o toca ✕</string>
+    <string name="ime_speech_not_detected">No se detectó voz</string>
+    <string name="ime_back">Atrás</string>
+    <string name="ime_more_desc">Más funciones</string>
+    <string name="ime_sticker_desc">Teclado de pegatinas</string>
+    <string name="ime_gif_desc">Teclado de GIFs</string>
+    <string name="ime_clipboard_desc">Portapapeles</string>
+    <string name="ime_voice_input_desc">Entrada de voz</string>
+    <string name="ime_language_name">Idioma: Portugués (Brasil)</string>
+    <string name="ime_mic_permission">Permite el micrófono para el dictado por voz</string>
+    <string name="ime_model_preparing">Preparando modelo de voz...</string>
+    <string name="ime_model_error">Error al cargar el modelo: %1$s</string>
+    <string-array name="suggestion_defaults">
+        <item>de</item>
+        <item>que</item>
+        <item>no</item>
+    </string-array>
+</resources>

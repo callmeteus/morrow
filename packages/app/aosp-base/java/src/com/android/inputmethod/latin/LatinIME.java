@@ -1793,10 +1793,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 // gti.dev: show the STOP button as soon as the mic is open, not only
                 // after speech is detected, like Gboard's ready-to-listen state.
                 final boolean active = "ready".equals(state) || "listening".equals(state);
-                final String status = "ready".equals(state) ? "Pronto para ouvir. Toque para parar"
-                        : "listening".equals(state) ? "Ouvindo..."
-                        : "transcribing".equals(state) ? "Transcrevendo..."
-                        : "error".equals(state) ? "Falha ao abrir o microfone" : null;
+                final String status = "ready".equals(state)
+                        ? getString(R.string.voice_ready)
+                        : "listening".equals(state) ? getString(R.string.voice_listening)
+                        : "transcribing".equals(state) ? getString(R.string.voice_transcribing)
+                        : "error".equals(state) ? getString(R.string.voice_mic_error) : null;
                 mHandler.post(() -> {
                     if (mSuggestionStripView != null) {
                         mSuggestionStripView.setVoiceInputActive(active);

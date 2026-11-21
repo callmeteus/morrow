@@ -2,5 +2,69 @@
 <resources>
     <string name="app_name">Morrow</string>
     <string name="ime_name">Morrow</string>
-    <string name="accessibility_desc">Ferramenta de desenvolvimento: despeja a hierarquia da janela do teclado.</string>
+    <string name="accessibility_desc">Development tool: dumps the keyboard window hierarchy.</string>
+    <string name="setup_title">Morrow - Local voice (offline)</string>
+    <string name="setup_description">Morrow: keyboard with 100% local voice dictation (embedded Whisper).\n\n1. Enable the keyboard in input settings.\n2. Grant the microphone permission.\n3. Use the test button below to validate local STT.\n\nTip: quickly tap SHIFT (arrow) TWICE to turn on CAPS LOCK (all uppercase). The arrow shows an underline when it is on; tap twice again to turn it off.\n\nNo calls are made to Google\'s speech service.</string>
+    <string name="setup_enable_keyboard">1) Enable keyboard</string>
+    <string name="setup_grant_mic">2) Grant microphone</string>
+    <string name="setup_test_dictation">3) Test local dictation (speak ~4 s)</string>
+    <string name="setup_test_wav">4) Test WAV (no microphone)</string>
+    <string name="setup_test_field_hint">5) Tap here to test the keyboard</string>
+    <string name="setup_configure_voice">6) Configure voice (local / OpenAI server)</string>
+    <string name="setup_initializing">Initializing...</string>
+    <string name="setup_mic_already_allowed">Microphone already allowed</string>
+    <string name="voice_use_external">Use external server (unchecked = 100% local offline)</string>
+    <string name="voice_base_url_hint">Base URL (e.g. http://100.84.51.1:8000/v1)</string>
+    <string name="voice_api_key_hint">API key (leave empty if not needed)</string>
+    <string name="voice_model_hint">Model (e.g. whisper-1)</string>
+    <string name="voice_language_hint">Language (pt)</string>
+    <string name="voice_swipe_diagnostics">Log swipe diagnostics (gesture + result + word I typed)</string>
+    <string name="voice_usage_log">Log usage data on device (swipe, voice, keys and corrections)</string>
+    <string name="voice_config_hint">Compatible with OpenAI / localai / faster-whisper-server / Speaches. The keyboard tries the server and, if it fails, falls back to local Whisper.\n\nDiagnostics: saved only on the device at /data/data/com.android.inputmethod.latin/files/swipe_diagnostics.jsonl\n\nUsage data: saved only on the device at /data/data/com.android.inputmethod.latin/cache/usage/usage_events.jsonl</string>
+    <string name="voice_config_title">Voice: transcription backend</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="enabled">ENABLED</string>
+    <string name="disabled">disabled</string>
+    <string name="mic_allowed">allowed</string>
+    <string name="mic_denied">denied</string>
+    <string name="status_swipe_diagnostics">\nSwipe diagnostics: %1$s.</string>
+    <string name="status_usage_log">\nUsage logging: %1$s.</string>
+    <string name="status_voice_config_saved">\nVoice configuration saved. %1$s</string>
+    <string name="voice_external_enabled">External server enabled (with local fallback).</string>
+    <string name="voice_local_enabled">Offline local mode enabled.</string>
+    <string name="status_grant_mic_retry">\n- Grant the microphone permission and try again.</string>
+    <string name="status_recording">\n- Recording 4 s... (speak in your language)</string>
+    <string name="status_local_recognition">\n- Local recognition: \"%1$s\"</string>
+    <string name="status_corrected">\n- With local dictionary: \"%1$s\"</string>
+    <string name="status_on_device_note">\n- (Run on the device, no Google STT.)</string>
+    <string name="status_searching_wav">\n- Looking for .wav in the app external storage...</string>
+    <string name="status_no_wav">\n- No .wav found. Send one with:\n  adb push x.wav /sdcard/Android/data/dev.gti.gboard/files/</string>
+    <string name="status_wav_result">\n- WAV %1$s (%2$s s): inference %3$d ms (RTF %4$s)</string>
+    <string name="status_wav_error">\n- WAV test error: %1$s</string>
+    <string name="status_microphone">\n- Microphone: %1$s</string>
+    <string name="status_model_loaded">\n- Voice model loaded (Whisper base, local).</string>
+    <string name="status_dictionary_loaded">\n- Local pt-BR dictionary: %1$d words.</string>
+    <string name="status_model_error">\n- Failed to load model: %1$s</string>
+    <string name="empty_transcript">(empty)</string>
+    <string name="ime_more_features">More features: local dictionary + offline STT</string>
+    <string name="ime_emoji_title">Emoji</string>
+    <string name="ime_transcribing">Transcribing</string>
+    <string name="ime_listening_hint">Listening... release the mic or tap X</string>
+    <string name="ime_speech_not_detected">No speech detected</string>
+    <string name="ime_back">Back</string>
+    <string name="ime_more_desc">More features</string>
+    <string name="ime_sticker_desc">Sticker keyboard</string>
+    <string name="ime_gif_desc">GIF keyboard</string>
+    <string name="ime_clipboard_desc">Clipboard</string>
+    <string name="ime_voice_input_desc">Voice input</string>
+    <string name="ime_language_name">Language: Portuguese (Brazil)</string>
+    <string name="ime_mic_permission">Allow the microphone for voice dictation</string>
+    <string name="ime_model_preparing">Preparing voice model...</string>
+    <string name="ime_model_error">Failed to load model: %1$s</string>
+    <string-array name="suggestion_defaults">
+        <item>the</item>
+        <item>and</item>
+        <item>you</item>
+    </string-array>
 </resources>

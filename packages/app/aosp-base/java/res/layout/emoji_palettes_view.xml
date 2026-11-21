@@ -111,7 +111,7 @@
             android:scaleType="centerInside"
             android:hapticFeedbackEnabled="false"
             android:soundEffectsEnabled="false"
-            android:contentDescription="Stickers" />
+            android:contentDescription="@string/sticker_tab_label" />
         <TextView
             android:id="@+id/emoji_keyboard_kaomoji"
             android:layout_width="0dip"

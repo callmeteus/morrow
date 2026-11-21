@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Morrow-specific UI strings, Brazilian Portuguese. -->
+<resources>
+    <!-- Clipboard panel -->
+    <string name="clipboard_panel_title">Área de transferência</string>
+    <string name="clipboard_panel_recent">Recentes</string>
+    <string name="clipboard_panel_clear">Limpar histórico</string>
+    <string name="clipboard_panel_empty">Nada copiado ainda</string>
+
+    <!-- Translation panel -->
+    <string name="translate_detect_language">Detectar o idioma</string>
+    <string name="translate_english">Inglês</string>
+    <string name="translate_swap">Trocar idiomas</string>
+    <string name="translate_type_here">Digite aqui para traduzir</string>
+    <string name="translation_lang_portuguese">Português</string>
+
+    <!-- Tools grid -->
+    <string name="tools_panel_title">Ferramentas</string>
+    <string name="tools_item_translate">Traduzir</string>
+    <string name="tools_item_clipboard">Área de transferência</string>
+    <string name="tools_item_emoji">Emoji</string>
+    <string name="tools_item_settings">Configurações</string>
+    <string name="tools_item_one_handed">Uma mão só</string>
+    <string name="tools_item_text_mode">Modo de texto</string>
+    <string name="tools_item_share">Compartilhar o Gboard</string>
+    <string name="tools_item_resize">Redimensionar</string>
+    <string name="tools_item_floating">Flutuante</string>
+
+    <!-- GIF picker -->
+    <string name="gif_search_hint">Buscar GIFs</string>
+    <string name="gif_searching">Buscando...</string>
+    <string name="gif_no_results">Nenhum GIF encontrado</string>
+    <string name="sticker_tab_label">Adesivos</string>
+
+    <!-- Voice dictation status -->
+    <string name="voice_ready">Pronto para ouvir. Toque para parar</string>
+    <string name="voice_listening">Ouvindo...</string>
+    <string name="voice_transcribing">Transcrevendo...</string>
+    <string name="voice_mic_error">Falha ao abrir o microfone</string>
+</resources>

@@ -580,26 +580,5 @@ Tip: You can download and remove dictionaries by going to &lt;b>Languages&#160;&
          This resource is copied from packages/apps/Settings/res/values/strings.xml -->
     <!-- This resource is corresponding to msgid="5433275485499039199" -->
     <string name="user_dict_fast_scroll_alphabet">\u0020ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
-    <!-- gti.dev: Gboard-style clipboard history panel. -->
-    <string name="clipboard_panel_title">Área de transferência</string>
-    <string name="clipboard_panel_recent">Recentes</string>
-    <string name="clipboard_panel_clear">Limpar histórico</string>
-    <string name="clipboard_panel_empty">Nada copiado ainda</string>
-    <!-- gti.dev: Gboard-style translation panel. -->
-    <string name="translate_detect_language">Detectar o idioma</string>
-    <string name="translate_english">Inglês</string>
-    <string name="translate_swap">Trocar idiomas</string>
-    <string name="translate_type_here">Digite aqui para traduzir</string>
-    <string name="translation_lang_portuguese">Português</string>
-    <!-- gti.dev: Gboard-style tools grid. -->
-    <string name="tools_panel_title">Ferramentas</string>
-    <string name="tools_item_translate">Traduzir</string>
-    <string name="tools_item_clipboard">Área de transferência</string>
-    <string name="tools_item_emoji">Emoji</string>
-    <string name="tools_item_settings">Configurações</string>
-    <string name="tools_item_one_handed">Uma mão só</string>
-    <string name="tools_item_text_mode">Modo de texto</string>
-    <string name="tools_item_share">Compartilhar o Gboard</string>
-    <string name="tools_item_resize">Redimensionar</string>
-    <string name="tools_item_floating">Flutuante</string>
+    <!-- gti.dev: Morrow-specific UI strings live in strings-morrow.xml. -->
 </resources>

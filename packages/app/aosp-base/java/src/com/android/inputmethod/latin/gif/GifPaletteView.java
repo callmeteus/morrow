@@ -77,14 +77,15 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
 
     private void load(final String query) {
         final String q = query.trim().isEmpty() ? "happy" : query.trim();
-        mStatus.setText("Searching...");
+        mStatus.setText(R.string.gif_searching);
         mExecutor.execute(() -> {
             final List<GifJifClient.Gif> found = GifJifClient.search(q);
             mMainHandler.post(() -> {
                 mGifs.clear();
                 mGifs.addAll(found);
                 mAdapter.notifyDataSetChanged();
-                mStatus.setText(found.isEmpty() ? "No GIFs found" : "");
+                mStatus.setText(found.isEmpty()
+                        ? getResources().getString(R.string.gif_no_results) : "");
             });
         });
     }
