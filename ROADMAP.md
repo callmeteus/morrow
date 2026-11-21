@@ -10,6 +10,8 @@
   priority: medium · status: planned · added: 2026-11-21
 - [ ] **R-014** Move the project to the gtihq organization
   priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-015** Add more keyboard themes
+  priority: medium · status: planned · added: 2026-11-21
 ## Deferred
 
 ## Done
