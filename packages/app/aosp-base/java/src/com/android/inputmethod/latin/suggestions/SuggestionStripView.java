@@ -360,14 +360,15 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         if (mStripVisibilityGroup.isShowingImportantNoticeStrip()) {
             return;
         }
-        if (mInlineSuggestionsStrip.hasSuggestions() || shouldShowClipboardSuggestion()) {
-            mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
-        } else if (mShowWordSuggestions) {
-            // Typing: word suggestions replace the toolbar.
-            mStripVisibilityGroup.showSuggestionsStrip(false /* showsClipboardSuggestion */);
-        } else {
-            // Idle: Gboard-style toolbar only, no suggestion row.
+        // gti.dev: match the Gboard reference - when the editor is empty the
+        // icon toolbar (grid, gear, translate, clipboard, mic) is always shown.
+        // A clipboard chip must not replace it.
+        if (!mShowWordSuggestions && !mInlineSuggestionsStrip.hasSuggestions()) {
             mStripVisibilityGroup.showToolbar();
+        } else if (mInlineSuggestionsStrip.hasSuggestions() || shouldShowClipboardSuggestion()) {
+            mStripVisibilityGroup.showSuggestionsStrip(shouldShowClipboardSuggestion());
+        } else {
+            mStripVisibilityGroup.showSuggestionsStrip(false /* showsClipboardSuggestion */);
         }
     }
 

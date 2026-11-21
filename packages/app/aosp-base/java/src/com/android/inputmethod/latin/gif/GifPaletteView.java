@@ -108,7 +108,9 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                     && mSearchRequestListener != null) {
                 mSearchRequestListener.run();
             }
-            return false; // let the EditText keep normal focus/cursor behaviour
+            // gti.dev: consume the touch so it never falls through to the app
+            // window behind the IME. Text is routed in via appendSearchText().
+            return true;
         });
         mSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
