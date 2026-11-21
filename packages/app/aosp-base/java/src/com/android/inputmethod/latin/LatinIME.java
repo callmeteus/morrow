@@ -1468,40 +1468,33 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 return com.android.inputmethod.latin.common.Constants.TextUtils.CAP_MODE_OFF;
             }
         }
-        // gti.dev: after deleting everything the RichInputConnection's cached
-        // text before the cursor can be stale, so getCursorCapsMode returns OFF
-        // and the keyboard stays lowercase. When the editor is actually empty
-        // (start of text), force FIRST-LETTER capitalization so the next letter
-        // is uppercase, like Gboard. Also covers "after a period" (empty sentence).
+        // gti.dev: read the editor text directly. The cached text in
+        // RichInputConnection goes stale after deleting everything or typing a
+        // trailing space, which left the keyboard lowercase and missed ". ".
         // Do NOT include CAP_MODE_CHARACTERS: KeyboardState maps it to SHIFT_LOCKED
         // (all letters upper) and InputLogic.getActualCapsMode maps it to
         // CAPS_MODE_AUTO_SHIFT_LOCKED, which made swipe output ALL uppercase.
         if (mInputLogic.mConnection != null) {
-            final CharSequence before = mInputLogic.mConnection.getTextBeforeCursor(8, 0);
+            final CharSequence before = mInputLogic.mConnection.getTextBeforeCursorDirect(8);
             final String s = before == null ? "" : before.toString();
-            // Empty editor: force first-letter capitalization (start of text).
-            if (s.isEmpty()) {
-                return android.text.TextUtils.CAP_MODE_WORDS
-                        | android.text.TextUtils.CAP_MODE_SENTENCES;
-            }
-            // Right after a sentence-ending punctuation (., !, ?) or a newline,
-            // optionally followed by spaces: force first-letter capitalization.
-            // The cached getCursorCapsMode often misses this on Samsung.
+            final int cap = android.text.TextUtils.CAP_MODE_WORDS
+                    | android.text.TextUtils.CAP_MODE_SENTENCES;
+            // Rule 1: start of sentence / empty editor (covers delete-all).
+            if (s.isEmpty()) return cap;
+            // Rule 3: newline (directly, or followed by spaces).
             final char lastChar = s.charAt(s.length() - 1);
-            if (lastChar == '\n' || lastChar == '\r') {
-                return android.text.TextUtils.CAP_MODE_WORDS
-                        | android.text.TextUtils.CAP_MODE_SENTENCES;
-            }
+            if (lastChar == '\n' || lastChar == '\r') return cap;
+            // Skip trailing whitespace; find the last non-space character.
             int k = s.length() - 1;
             while (k >= 0 && Character.isWhitespace(s.charAt(k))) k--;
-            // gti.dev: only capitalise after ". " (punctuation followed by a space),
-            // like Gboard. A bare "www." or "Olá." must NOT capitalise.
-            final boolean spaceAfterPunct = k >= 0 && k < s.length() - 1;
-            if (spaceAfterPunct
-                    && (s.charAt(k) == '.' || s.charAt(k) == '!' || s.charAt(k) == '?')) {
-                return android.text.TextUtils.CAP_MODE_WORDS
-                        | android.text.TextUtils.CAP_MODE_SENTENCES;
-            }
+            if (k < 0) return cap;
+            final char c = s.charAt(k);
+            // Rule 3: newline followed by spaces.
+            if (c == '\n' || c == '\r') return cap;
+            // Rule 2: punctuation followed by at least one space.
+            // A bare "www." or "Olá." must NOT capitalise.
+            final boolean spaceAfterPunct = k < s.length() - 1;
+            if (spaceAfterPunct && (c == '.' || c == '!' || c == '?')) return cap;
         }
         return caps;
     }

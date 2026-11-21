@@ -429,6 +429,17 @@ public final class RichInputConnection implements PrivateCommandPerformer {
                 n, flags);
     }
 
+    /**
+     * gti.dev: read text before the cursor straight from the editor, bypassing
+     * the local cache. The cache can be stale right after deleting all text or
+     * typing a trailing space, which broke auto-capitalization.
+     */
+    public CharSequence getTextBeforeCursorDirect(final int n) {
+        return getTextBeforeCursorAndDetectLaggyConnection(
+                OPERATION_GET_TEXT_BEFORE_CURSOR,
+                SLOW_INPUT_CONNECTION_ON_PARTIAL_RELOAD_MS, n, 0);
+    }
+
     private CharSequence getTextBeforeCursorAndDetectLaggyConnection(
             final int operation, final long timeout, final int n, final int flags) {
         mIC = mParent.getCurrentInputConnection();
