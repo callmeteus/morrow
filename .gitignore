@@ -27,3 +27,7 @@ releases/*/*.bin
 # Gradle/JVM crash logs (local only)
 packages/app/aosp-base/hs_err_pid*.log
 packages/app/aosp-base/replay_pid*.log
+
+# Stillmark
+.stillmark/plans/
+.stillmark/learnings/design/
