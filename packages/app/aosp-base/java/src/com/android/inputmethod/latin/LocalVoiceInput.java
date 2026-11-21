@@ -17,6 +17,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -124,9 +125,11 @@ public final class LocalVoiceInput {
             l.onFinal("");
             return;
         }
-        final short[] buf = new short[SAMPLE_RATE * 30];
+        // gti.dev: growable buffer so long dictations are never cut off. Start
+        // at 30s and double as needed (bounded to avoid unbounded memory).
+        final short[][] bufRef = { new short[SAMPLE_RATE * 30] };
         final int[] len = {0};
-        pendingBuffer = buf;
+        pendingBuffer = bufRef[0];
         try {
             recorder.startRecording();
         } catch (Exception e) {
@@ -156,8 +159,16 @@ public final class LocalVoiceInput {
             while (recording && !stopRequested) {
                 int n = recorder.read(chunk, 0, chunk.length);
                 if (n <= 0) continue;
-                if (len[0] + n < buf.length) {
-                    System.arraycopy(chunk, 0, buf, len[0], n);
+                if (len[0] + n > bufRef[0].length) {
+                    final int newCap = Math.min(SAMPLE_RATE * 300,
+                            Math.max(bufRef[0].length * 2, len[0] + n));
+                    if (len[0] + n <= newCap) {
+                        bufRef[0] = Arrays.copyOf(bufRef[0], newCap);
+                        pendingBuffer = bufRef[0];
+                    }
+                }
+                if (len[0] + n <= bufRef[0].length) {
+                    System.arraycopy(chunk, 0, bufRef[0], len[0], n);
                     len[0] += n;
                     pendingLen = len[0];
                 }
@@ -272,9 +283,15 @@ public final class LocalVoiceInput {
                         @Override public String call() { return transcribe(pcm, plen); }
                     });
                     try {
-                        return future.get(35, TimeUnit.SECONDS);
+                        // gti.dev: remote backend or multi-chunk local inference can
+                        // take longer for long dictations; scale the timeout.
+                        final int chunkSec = 25;
+                        final int chunks = Math.max(1,
+                                (plen + SAMPLE_RATE * chunkSec - 1) / (SAMPLE_RATE * chunkSec));
+                        final long timeoutSec = Math.max(35L, 20L * chunks);
+                        return future.get(timeoutSec, TimeUnit.SECONDS);
                     } catch (TimeoutException te) {
-                        Log.e(TAG, "transcribe TIMEOUT after 35s");
+                        Log.e(TAG, "transcribe TIMEOUT");
                         future.cancel(true);
                         return "";
                     }
@@ -300,50 +317,46 @@ public final class LocalVoiceInput {
             }
         }
         if (ctx == 0) return "";
-        // gti.dev: trim leading/trailing silence and cap length. With a noisy
-        // background the recording can run 18s; sending all of it made
-        // whisper_full exceed the 18s timeout and return nothing. Keep only the
-        // loudest 8s window and transcribe that.
-        final int maxSamples = SAMPLE_RATE * 8;
-        int start = 0;
-        if (len > maxSamples) {
-            // find the 8s window with the highest total energy
-            double bestEnergy = -1;
-            final int window = 1600; // 100ms
-            for (int s = 0; s + maxSamples <= len; s += window) {
-                double e = 0;
-                for (int i = s; i < s + maxSamples; i += 40) {
-                    final double v = pcm[i] / 32768.0;
-                    e += v * v;
-                }
-                if (e > bestEnergy) { bestEnergy = e; start = s; }
-            }
-        }
-        final int useLen = Math.min(len - start, maxSamples);
-        // Measure RMS and apply gentle automatic gain (Samsung MIC captures low).
-        double sumSq = 0.0;
-        for (int i = 0; i < useLen; i++) {
-            final double s = pcm[start + i] / 32768.0;
-            sumSq += s * s;
-        }
-        final double rms = Math.sqrt(sumSq / useLen);
-        float gain = 1.0f;
-        if (rms > 1e-5 && rms < 0.05) {
-            gain = (float) Math.min(6.0, 0.10 / rms); // capped at 6x to avoid distortion
-        }
-        final float[] f = new float[useLen];
-        for (int i = 0; i < useLen; i++) {
-            f[i] = (float) Math.max(-1.0, Math.min(1.0, (pcm[start + i] / 32768f) * gain));
-        }
-        Log.i(TAG, "transcribe len=" + useLen + " rms=" + String.format("%.5f", rms)
-                + " gain=" + String.format("%.2f", gain));
+        // gti.dev: transcribe the ENTIRE recording so long dictations are not cut
+        // off. Whisper processes 30s mel windows internally and collect_text()
+        // joins all segments, so feeding all samples is safe. We split into
+        // 25s chunks anyway to bound per-call latency and avoid native hangs.
+        final int chunkSize = SAMPLE_RATE * 25;
+        final StringBuilder result = new StringBuilder();
         try {
-            String t = nativeTranscribe(ctx, f, "pt", 4);
-            Log.i(TAG, "transcribe result=\"" + t + "\"");
-            return t == null ? "" : t.trim();
+            for (int offset = 0; offset < len; offset += chunkSize) {
+                final int useLen = Math.min(chunkSize, len - offset);
+                // Measure RMS and apply gentle automatic gain (Samsung MIC captures low).
+                double sumSq = 0.0;
+                for (int i = 0; i < useLen; i++) {
+                    final double s = pcm[offset + i] / 32768.0;
+                    sumSq += s * s;
+                }
+                final double rms = Math.sqrt(sumSq / useLen);
+                float gain = 1.0f;
+                if (rms > 1e-5 && rms < 0.05) {
+                    gain = (float) Math.min(6.0, 0.10 / rms);
+                }
+                final float[] f = new float[useLen];
+                for (int i = 0; i < useLen; i++) {
+                    f[i] = (float) Math.max(-1.0,
+                            Math.min(1.0, (pcm[offset + i] / 32768f) * gain));
+                }
+                Log.i(TAG, "transcribe chunk offset=" + offset + " len=" + useLen
+                        + " rms=" + String.format("%.5f", rms)
+                        + " gain=" + String.format("%.2f", gain));
+                final String t = nativeTranscribe(ctx, f, "pt", 4);
+                if (t != null && !t.trim().isEmpty()) {
+                    if (result.length() > 0) result.append(' ');
+                    result.append(t.trim());
+                }
+            }
+            final String out = result.toString();
+            Log.i(TAG, "transcribe result=\"" + out + "\"");
+            return out;
         } catch (Exception e) {
             Log.e(TAG, "transcribe failed: " + e.getMessage());
-            return "";
+            return result.toString();
         }
     }
 

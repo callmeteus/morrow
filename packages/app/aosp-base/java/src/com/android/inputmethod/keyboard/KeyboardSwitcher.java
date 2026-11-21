@@ -387,6 +387,10 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         return mGifPaletteView != null && mGifPaletteView.isShown();
     }
 
+    public com.android.inputmethod.latin.gif.GifPaletteView getGifPaletteView() {
+        return mGifPaletteView;
+    }
+
     /** gti.dev: show the Gboard-style translation panel. */
     public void setTranslationKeyboard() {
         if (DEBUG_ACTION) {
@@ -654,6 +658,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mToolsPaletteView.setKeyboardActionListener(mLatinIME);
         mGifPaletteView.setKeyboardActionListener(mLatinIME);
         mGifPaletteView.setGifCommitListener(mLatinIME::commitGif);
+        mGifPaletteView.setSearchRequestListener(mLatinIME::startGifSearch);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {

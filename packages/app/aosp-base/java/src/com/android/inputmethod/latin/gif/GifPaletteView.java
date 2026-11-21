@@ -67,6 +67,7 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
 
     private EditText mSearch;
     private TextView mStatus;
+    private Runnable mSearchRequestListener = null;
 
     public GifPaletteView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -82,6 +83,16 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
         grid.setAdapter(mAdapter);
         findViewById(R.id.gif_back_key).setOnClickListener(this);
         setupActionBar();
+        // gti.dev: an EditText inside an IME cannot raise the software keyboard
+        // on its own. Ask LatinIME to show the normal keyboard and route typed
+        // text back here, the way Gboard handles GIF search.
+        mSearch.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == android.view.MotionEvent.ACTION_DOWN
+                    && mSearchRequestListener != null) {
+                mSearchRequestListener.run();
+            }
+            return false; // let the EditText keep normal focus/cursor behaviour
+        });
         mSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
@@ -148,6 +159,24 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                     com.android.inputmethod.keyboard.internal.KeyboardIconsSet.NAME_DELETE_KEY);
             if (res != 0) delete.setImageResource(res);
         }
+    }
+
+    public void setSearchRequestListener(final Runnable listener) {
+        mSearchRequestListener = listener;
+    }
+
+    /** gti.dev: called by LatinIME while the normal keyboard types into the search field. */
+    public void appendSearchText(final String text) {
+        mSearch.append(text);
+    }
+
+    public void deleteSearchText() {
+        final Editable e = mSearch.getText();
+        if (e != null && e.length() > 0) e.delete(e.length() - 1, e.length());
+    }
+
+    public String getSearchText() {
+        return mSearch.getText().toString();
     }
 
     public void setKeyboardActionListener(final KeyboardActionListener listener) {

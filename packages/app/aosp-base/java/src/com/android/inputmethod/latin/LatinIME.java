@@ -1745,10 +1745,44 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         }
     }
 
+    // gti.dev: true while the normal keyboard types into the GIF search field.
+    private boolean mGifSearchActive = false;
+
+    /** gti.dev: show the normal keyboard to type a GIF search query. */
+    public void startGifSearch() {
+        mGifSearchActive = true;
+        mKeyboardSwitcher.loadKeyboard(getCurrentInputEditorInfo(), mSettings.getCurrent(),
+                getCurrentAutoCapsState(), getCurrentRecapitalizeState());
+    }
+
+    private void finishGifSearch() {
+        mGifSearchActive = false;
+        mKeyboardSwitcher.setGifKeyboard();
+    }
+
     // Implementation of {@link KeyboardActionListener}.
     @Override
     public void onCodeInput(final int codePoint, final int x, final int y,
             final boolean isKeyRepeat) {
+        // gti.dev: route typing into the GIF search field instead of the editor.
+        if (mGifSearchActive) {
+            final com.android.inputmethod.latin.gif.GifPaletteView palette =
+                    mKeyboardSwitcher.getGifPaletteView();
+            if (palette == null) {
+                mGifSearchActive = false;
+            } else if (codePoint == Constants.CODE_DELETE) {
+                palette.deleteSearchText();
+            } else if (codePoint == Constants.CODE_ENTER
+                    || codePoint == Constants.CODE_ACTION_NEXT) {
+                finishGifSearch();
+            } else if (codePoint > 0 && Character.isValidCodePoint(codePoint)
+                    && Constants.isLetterCode(codePoint) && codePoint != Constants.CODE_SPACE) {
+                palette.appendSearchText(new String(Character.toChars(codePoint)));
+            } else if (codePoint == Constants.CODE_SPACE) {
+                palette.appendSearchText(" ");
+            }
+            return;
+        }
         noteDiagnosticTyped(codePoint);
         if (UsageLog.get() != null && !isKeyRepeat) {
             UsageLog.get().key(codePoint, null);

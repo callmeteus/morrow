@@ -12,6 +12,12 @@
   priority: medium · status: planned · added: 2026-11-21
 - [ ] **R-015** Add more keyboard themes
   priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-016** Learn from the user's typing to personalize suggestions and corrections over time, on device
+  priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-017** Publish the APKs built in Forgejo as GitHub releases
+  priority: medium · status: planned · added: 2026-11-21
+- [ ] **R-018** Learn from swipe gestures while maintaining the dictionary, and optionally collect in-app tap coordinates (x, y) as metrics
+  priority: medium · status: planned · added: 2026-11-21
 ## Deferred
 
 ## Done
