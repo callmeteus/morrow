@@ -1,6 +1,7 @@
 package dev.gti.gboard;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -76,5 +77,41 @@ public final class Wav {
             }
             return out;
         }
+    }
+
+    /** Writes 16 kHz mono 16-bit PCM samples as a canonical 44-byte-header WAV. */
+    public static void write16kMono(short[] pcm, File out) throws IOException {
+        int sampleCount = pcm == null ? 0 : pcm.length;
+        int dataBytes = sampleCount * 2;
+        try (FileOutputStream fos = new FileOutputStream(out)) {
+            fos.write("RIFF".getBytes("US-ASCII"));
+            writeLe32(fos, 36 + dataBytes);          // RIFF size
+            fos.write("WAVE".getBytes("US-ASCII"));
+            fos.write("fmt ".getBytes("US-ASCII"));
+            writeLe32(fos, 16);                       // fmt chunk size
+            writeLe16(fos, 1);                        // PCM
+            writeLe16(fos, 1);                        // mono
+            writeLe32(fos, 16000);                    // sample rate
+            writeLe32(fos, 16000 * 2);               // byte rate
+            writeLe16(fos, 2);                        // block align
+            writeLe16(fos, 16);                       // bits per sample
+            fos.write("data".getBytes("US-ASCII"));
+            writeLe32(fos, dataBytes);
+            for (int i = 0; i < sampleCount; i++) {
+                writeLe16(fos, pcm[i]);
+            }
+        }
+    }
+
+    private static void writeLe16(FileOutputStream fos, int v) throws IOException {
+        fos.write(v & 0xff);
+        fos.write((v >> 8) & 0xff);
+    }
+
+    private static void writeLe32(FileOutputStream fos, int v) throws IOException {
+        fos.write(v & 0xff);
+        fos.write((v >> 8) & 0xff);
+        fos.write((v >> 16) & 0xff);
+        fos.write((v >> 24) & 0xff);
     }
 }

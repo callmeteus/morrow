@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.text.TextUtils;
 
-import java.text.Normalizer;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +38,18 @@ public final class DictionaryCorrector {
     private static final Map<String, String> DISPLAY = new HashMap<>();
     private static volatile boolean loaded = false;
 
+    /** Debug-only hook: notified whenever a token is actually replaced. */
+    public interface CorrectionListener {
+        void onCorrection(String raw, String replacement, int distance, int frequency);
+    }
+    private static volatile CorrectionListener correctionListener;
+
     private DictionaryCorrector() {}
+
+    /** Install (or clear with null) the dataset correction listener. */
+    public static void setCorrectionListener(CorrectionListener listener) {
+        correctionListener = listener;
+    }
 
     public static synchronized void load(Context context) {
         if (loaded) return;
@@ -106,6 +115,15 @@ public final class DictionaryCorrector {
 
     /** Corrects a whole transcription; unknown short tokens are left alone. */
     public static String correct(String text) {
+        return correct(text, null);
+    }
+
+    /**
+     * Corrects a transcription and reports each replacement to {@code listener}
+     * passed in by the caller, instead of relying on a global listener that
+     * depends on call order. The listener argument is optional.
+     */
+    public static String correct(String text, CorrectionListener listener) {
         if (!loaded || TextUtils.isEmpty(text)) return text;
         StringBuilder out = new StringBuilder(text.length());
         int n = text.length();
@@ -115,7 +133,7 @@ public final class DictionaryCorrector {
             if (Character.isLetterOrDigit(c)) {
                 int start = i;
                 while (i < n && Character.isLetterOrDigit(text.charAt(i))) i++;
-                out.append(fixToken(text.substring(start, i)));
+                out.append(fixToken(text.substring(start, i), listener));
             } else {
                 out.append(c);
                 i++;
@@ -125,6 +143,10 @@ public final class DictionaryCorrector {
     }
 
     private static String fixToken(String raw) {
+        return fixToken(raw, null);
+    }
+
+    private static String fixToken(String raw, CorrectionListener listener) {
         String key = fold(raw);
         if (key.length() < 4) return raw;          // too short: correction risk > benefit
         if (FREQ.containsKey(key)) return raw;     // known word: keep as-is
@@ -154,9 +176,14 @@ public final class DictionaryCorrector {
         String display = DISPLAY.get(best);
         if (display == null) return raw;
         boolean upper = Character.isUpperCase(raw.charAt(0));
-        return upper
+        String result = upper
                 ? Character.toUpperCase(display.charAt(0)) + display.substring(1)
                 : display;
+        CorrectionListener target = listener != null ? listener : correctionListener;
+        if (target != null) {
+            target.onCorrection(raw, result, bestDist, bestFreq);
+        }
+        return result;
     }
 
     /** Edit distance with early exit once the row minimum exceeds the bound. */
@@ -184,13 +211,6 @@ public final class DictionaryCorrector {
 
     /** Lowercase + strip diacritics (accent-insensitive key). */
     static String fold(String s) {
-        String t = Normalizer.normalize(s, Normalizer.Form.NFD);
-        StringBuilder sb = new StringBuilder(t.length());
-        for (int i = 0; i < t.length(); i++) {
-            char c = t.charAt(i);
-            if (Character.getType(c) == Character.NON_SPACING_MARK) continue;
-            sb.append(Character.toLowerCase(c));
-        }
-        return sb.toString();
+        return WordFold.fold(s);
     }
 }

@@ -19,7 +19,7 @@ public class VoiceConfigProvider extends ContentProvider {
     public static final String[] COLUMNS = {
             "gti_voice_use_external", "gti_voice_base_url", "gti_voice_api_key",
             "gti_voice_model", "gti_voice_language", "gti_swipe_diagnostics",
-            "gti_usage_log"
+            "gti_collect_base_url", "gti_collect_token", "gti_collect_enabled"
     };
 
     private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
@@ -30,17 +30,40 @@ public class VoiceConfigProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] args, String sort) {
         if (MATCHER.match(uri) != 1) return null;
+        String caller = getCallingPackage();
+        if (!ConfigAccess.isAllowed(caller)) {
+            Log.w(TAG, "denied config query from " + caller);
+            return null;
+        }
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getContext());
-        MatrixCursor c = new MatrixCursor(COLUMNS);
-        c.addRow(new Object[] {
+        Object[] values = new Object[] {
                 p.getBoolean("gti_voice_use_external", false) ? 1 : 0,
                 p.getString("gti_voice_base_url", "http://100.84.51.1:8000/v1"),
                 p.getString("gti_voice_api_key", ""),
                 p.getString("gti_voice_model", "whisper-1"),
                 p.getString("gti_voice_language", "pt"),
                 p.getBoolean("gti_swipe_diagnostics", false) ? 1 : 0,
-                p.getBoolean("gti_usage_log", true) ? 1 : 0
-        });
+                p.getString("gti_collect_base_url", "https://morrow.gti.dev"),
+                p.getString("gti_collect_token", ""),
+                p.getBoolean("gti_collect_enabled", true) ? 1 : 0
+        };
+        // Build the cursor with only the columns the caller may read. The IME
+        // never receives the collector token, even if it asks for all columns.
+        java.util.List<String> cols = new java.util.ArrayList<>();
+        java.util.List<Object> vals = new java.util.ArrayList<>();
+        String[] wanted = projection != null && projection.length > 0 ? projection : COLUMNS;
+        for (String col : wanted) {
+            if (!ConfigAccess.mayRead(caller, col)) continue;
+            for (int i = 0; i < COLUMNS.length; i++) {
+                if (COLUMNS[i].equals(col)) {
+                    cols.add(col);
+                    vals.add(values[i]);
+                    break;
+                }
+            }
+        }
+        MatrixCursor c = new MatrixCursor(cols.toArray(new String[0]));
+        c.addRow(vals.toArray());
         return c;
     }
 
