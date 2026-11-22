@@ -1899,7 +1899,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 // is speaking, "transcribing" = decoding the captured audio.
                 // gti.dev: show the STOP button as soon as the mic is open, not only
                 // after speech is detected, like Gboard's ready-to-listen state.
-                final boolean active = "ready".equals(state) || "listening".equals(state);
+                // gti.dev: keep the mic circle pulsing through transcription so it
+                // shrinks only when the result arrives, not mid-dictation.
+                final boolean active = "ready".equals(state) || "listening".equals(state)
+                        || "transcribing".equals(state);
                 final String status = "ready".equals(state)
                         ? getString(R.string.voice_ready)
                         : "listening".equals(state) ? getString(R.string.voice_listening)

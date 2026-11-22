@@ -85,8 +85,22 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     // gti.dev: mic icon swap for on-device dictation feedback.
     private Drawable mVoiceIcon;
     private Drawable mRecordingIcon;
-    // gti.dev: RMS-driven waveform shown while recording.
-    private VoiceWaveformView mVoiceWaveform;
+    // gti.dev: pulsing mic circle driven by the measured voice RMS.
+    private float mVoiceRms;
+    private final Handler mVoicePulseHandler = new Handler(Looper.getMainLooper());
+    private boolean mVoicePulsing;
+    private final Runnable mVoicePulseRunnable = new Runnable() {
+        @Override public void run() {
+            if (mVoiceKey == null) return;
+            // gti.dev: grow with the voice level, shrink back in silence.
+            final float level = Math.min(1f, mVoiceRms * 8f);
+            final float scale = 1f + level * 0.45f;
+            mVoiceKey.setScaleX(scale);
+            mVoiceKey.setScaleY(scale);
+            mVoiceRms *= 0.8f;
+            if (mVoicePulsing) mVoicePulseHandler.postDelayed(this, 40L);
+        }
+    };
     // gti.dev: trailing ellipsis animation after the mic is released.
     private final Handler mEllipsisHandler = new Handler(Looper.getMainLooper());
     private Runnable mEllipsisRunnable;
@@ -220,7 +234,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         mDockedStripMargin =
                 ((MarginLayoutParams) mSuggestionsStrip.getLayoutParams()).getMarginStart();
         mImportantNoticeStrip = findViewById(R.id.important_notice_strip);
-        mVoiceWaveform = findViewById(R.id.voice_waveform);
         mInlineSuggestionsStrip = findViewById(R.id.inline_suggestions_strip);
         mClipboardSuggestionStrip = findViewById(R.id.clipboard_suggestion_strip);
         mStripVisibilityGroup = new StripVisibilityGroup(this, mToolbar, mSuggestionsStrip,
@@ -303,20 +316,26 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             mVoiceKey.setContentDescription(getContext().getString(active
                     ? com.android.inputmethod.latin.R.string.spoken_description_stop_dictation
                     : com.android.inputmethod.latin.R.string.spoken_description_mic));
+            // gti.dev: pulse the circle with the voice level while recording.
+            mVoicePulsing = active;
+            mVoicePulseHandler.removeCallbacks(mVoicePulseRunnable);
+            if (active) {
+                mVoiceRms = 0f;
+                mVoicePulseRunnable.run();
+            } else {
+                mVoiceKey.setScaleX(1f);
+                mVoiceKey.setScaleY(1f);
+            }
         }
     }
 
-    /** gti.dev: feed the measured microphone level into the waveform. */
+    /** gti.dev: feed the measured microphone level into the pulsing mic circle. */
     public void setVoiceRms(final float rms) {
-        if (mVoiceWaveform != null) mVoiceWaveform.setLevel(rms);
+        mVoiceRms = rms;
     }
 
     /** gti.dev: show Gboard-style centered status ("Fale agora") during dictation. */
     public void setVoiceInputStatus(final String status) {
-        if (mVoiceWaveform != null) {
-            mVoiceWaveform.setVisibility(status == null || status.isEmpty()
-                    ? View.GONE : View.VISIBLE);
-        }
         if (mEllipsisRunnable != null) {
             mEllipsisHandler.removeCallbacks(mEllipsisRunnable);
             mEllipsisRunnable = null;

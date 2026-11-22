@@ -46,19 +46,11 @@
         android:soundEffectsEnabled="false" >
         <TextView
             android:id="@+id/important_notice_title"
-            android:layout_width="0dip"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="6sp"
             android:textSize="16sp"
             style="?attr/suggestionWordStyle" />
-        <!-- gti.dev: RMS-driven waveform shown beside the dictation status. -->
-        <com.android.inputmethod.latin.suggestions.VoiceWaveformView
-            android:id="@+id/voice_waveform"
-            android:layout_width="88dip"
-            android:layout_height="match_parent"
-            android:layout_marginStart="8dip"
-            android:visibility="gone" />
     </LinearLayout>
     <com.android.inputmethod.latin.suggestions.InlineSuggestionsStrip
         android:id="@+id/inline_suggestions_strip"
