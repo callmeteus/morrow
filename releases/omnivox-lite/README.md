@@ -32,7 +32,7 @@ The base weights are the standard `ggml-base` model from [ggerganov/whisper.cpp]
 ## Usage
 
 ```bash
-hf download giofolf/omnivox-lite ggml-base.bin --local-dir .
+hf download gtihq/omnivox-lite ggml-base.bin --local-dir .
 ```
 
 In the keyboard, the model is copied into the app assets and loaded through `VoiceEngine.java`:

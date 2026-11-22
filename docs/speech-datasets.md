@@ -59,6 +59,6 @@ or SA is evaluation only and is refused for training, even when a mirror claims
 a permissive license, because the upstream restriction wins.
 
 CC BY sources require attribution. That attribution must go in the
-`giofolf/omnivox` model card. The SPDX license URL on every manifest line makes
+`gtihq/omnivox-lite` model card. The SPDX license URL on every manifest line makes
 the required credits easy to collect for the card. Other model cards follow the
 same rule for the sources they consume.

@@ -18,7 +18,7 @@ jobs:
       - name: Download Whisper model
         run: |
           pip install -q huggingface_hub
-          hf download giofolf/omnivox ggml-base.bin \
+          hf download gtihq/omnivox-lite ggml-base.bin \
             --local-dir packages/app/src/main/assets/models
           cp packages/app/src/main/assets/models/ggml-base.bin \
             packages/app/aosp-base/java/res/raw/ggml_base.bin

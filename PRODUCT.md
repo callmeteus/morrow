@@ -22,7 +22,7 @@ People who want dictation and swipe typing in Portuguese on an Android device wi
 
 ## Models
 
-Two trained artifacts are published under the `giofolf` account on Hugging Face: OmniVox Lite for speech recognition and Omniglide for swipe decoding. The Forgejo build downloads the Whisper model before building and copies it into `res/raw/`.
+Two trained artifacts are published under the `gtihq` account on Hugging Face: OmniVox Lite for speech recognition and Omniglide for swipe decoding. The Forgejo build downloads the Whisper model before building and copies it into `res/raw/`.
 
 ## Tone of voice
 

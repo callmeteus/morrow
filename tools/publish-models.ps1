@@ -12,8 +12,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $models = @(
-    @{ Dir = 'releases/omnivox-lite';   Repo = 'giofolf/omnivox-lite' },
-    @{ Dir = 'releases/omniglide'; Repo = 'giofolf/omniglide' }
+    @{ Dir = 'releases/omnivox-lite';   Repo = 'gtihq/omnivox-lite' },
+    @{ Dir = 'releases/omniglide'; Repo = 'gtihq/omniglide' }
 )
 
 foreach ($m in $models) {

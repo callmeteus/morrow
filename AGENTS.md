@@ -24,7 +24,7 @@ Builds run on the self-hosted Forgejo instance, not on the local machine.
 - Build image: `mingc/android-build-box:latest` (JDK 17 + Android SDK/NDK/ CMake)
 
 The workflow downloads the Whisper model from
-`https://huggingface.co/giofolf/omnivox` before building, copies it into
+`https://huggingface.co/gtihq/omnivox-lite` before building, copies it into
 `res/raw/`, builds both APKs and uploads them as the `morrow-apks` artifact.
 
 Trigger a build with `workflow_dispatch` in the Forgejo UI, or by pushing to
@@ -60,8 +60,8 @@ duplicate them here.
 - Visibility: upload as private by default. Make a repository public only when the run passed
   its acceptance rule and the user said so. A failed run is still uploaded (private, card says
   FAIL) so the result and the numbers are never lost.
-- Repositories: `giofolf/omnivox-pro` (Parakeet TDT, repo ai-personal-assistant) and
-  `giofolf/omnivox-lite` (Whisper base, repo morrow). Use a new revision or a clearly named
+- Repositories: `gtihq/omnivox-pro` (Parakeet TDT, repo ai-personal-assistant) and
+  `gtihq/omnivox-lite` (Whisper base, repo morrow). Use a new revision or a clearly named
   folder per run; never overwrite a published run.
 - Never put tokens in the repository or in logs. Use the logged-in `hf` CLI or `HF_TOKEN` from
   the environment. Ask the user to run `hf auth login` if it is missing.

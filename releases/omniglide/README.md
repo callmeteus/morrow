@@ -34,7 +34,7 @@ The raw gesture data and training scripts live in `packages/ai-model/gesture-tra
 ## Usage
 
 ```bash
-hf download giofolf/omniglide swipe_model.bin --local-dir .
+hf download gtihq/omniglide swipe_model.bin --local-dir .
 ```
 
 Place `swipe_model.bin` in the keyboard's `res/raw/` directory (the Gradle build copies it from `packages/ai-model/`). The model is loaded by `SwipeDecoder.java` via JNI.
