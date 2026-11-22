@@ -4,17 +4,17 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <color name="keyboard_background_you">@android:color/system_surface_container_dark</color>
-    <!-- Keys -->
-    <color name="keyboard_key_normal_color_you">@android:color/system_surface_container_highest_dark</color>
-    <color name="keyboard_key_pressed_color_you">@android:color/system_surface_container_dark</color>
-    <color name="keyboard_key_text_color_you">@android:color/system_on_surface_dark</color>
-    <!-- gti.dev: Gboard purple for functional/action keys in night mode too. -->
-    <color name="keyboard_key_functional_normal_color_you">#FF9585D6</color>
-    <color name="keyboard_key_functional_pressed_color_you">#FFB0A2E6</color>
+    <color name="keyboard_background_you">#FF201F24</color>
+    <!-- gti.dev: Gboard colors sampled from reference (#38373C keys, white text). -->
+    <color name="keyboard_key_normal_color_you">#FF38373C</color>
+    <color name="keyboard_key_pressed_color_you">#FF4A4950</color>
+    <color name="keyboard_key_text_color_you">#FFFFFFFF</color>
+    <!-- gti.dev: subtle Gboard slate with a hint of purple (#484558 sampled from ref). -->
+    <color name="keyboard_key_functional_normal_color_you">#FF484558</color>
+    <color name="keyboard_key_functional_pressed_color_you">#FF5D5A70</color>
     <color name="keyboard_key_functional_text_color_you">@android:color/system_on_secondary_container_dark</color>
-    <color name="keyboard_key_action_normal_color_you">#FF9585D6</color>
-    <color name="keyboard_key_action_pressed_color_you">#FFB0A2E6</color>
+    <color name="keyboard_key_action_normal_color_you">#FF484558</color>
+    <color name="keyboard_key_action_pressed_color_you">#FF5D5A70</color>
     <color name="shift_normal_color_you">@android:color/system_on_secondary_container_dark</color>
     <color name="shift_locked_color_you">@android:color/system_on_secondary_container_dark</color>
     <color name="icon_color_you">@android:color/system_on_secondary_container_dark</color>
