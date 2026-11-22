@@ -266,10 +266,12 @@ eventos da faixa de sugestões (qual posição foi escolhida, sugestões ignorad
 bursts de backspace etc.). Nada disso é coletado em release, que não tem
 permissão `INTERNET`. Não há botão de consentimento: debug envia sempre.
 
-Os registros são gravados como JSONL em `/data` (com retenção de 30 dias) e
-exportados por `GET /v1/export`. O token é passado no header
-`X-Collector-Token`. Endpoints: `POST /v1/voice` (multipart `meta` + `audio`),
-`POST /v1/swipe`, `POST /v1/correction` e `GET /healthz`.
+Os registros são gravados como JSONL em `/data` (com retenção de 30 dias).
+`GET /v1/export` devolve todo o dataset e exige o header `X-Collector-Token`,
+configurado no servidor por `COLLECTOR_EXPORT_TOKEN`. Sem token configurado,
+o export fica desligado. Os uploads (`POST /v1/voice` com `meta` + `audio`,
+`POST /v1/swipe`, `POST /v1/correction`) e `GET /healthz` continuam abertos
+para o teclado de debug.
 
 ### Execução local
 

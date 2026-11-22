@@ -17,11 +17,16 @@ const token = "test-token"
 
 func newTestHandler(t *testing.T) http.Handler {
 	t.Helper()
+	return newTestHandlerWithToken(t, token)
+}
+
+func newTestHandlerWithToken(t *testing.T, exportToken string) http.Handler {
+	t.Helper()
 	st, err := store.New(t.TempDir(), time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return New(st)
+	return New(st, exportToken)
 }
 
 func do(r http.Handler, method, path, body string, withToken bool) *httptest.ResponseRecorder {
@@ -42,16 +47,32 @@ func TestHealthzIsOpen(t *testing.T) {
 	}
 }
 
-func TestNoTokenRequired(t *testing.T) {
+func TestUploadsDoNotRequireToken(t *testing.T) {
 	h := newTestHandler(t)
 	body := `{"id":"x","sessionId":"s","kind":"asr_word","ts":1}`
-	// The collector is open by design; a debug keyboard with an empty token
-	// must still be able to upload. The header is optional and ignored.
+	// The debug keyboard uploads without a secret. The header is ignored.
 	if w := do(h, http.MethodPost, "/v1/correction", body, false); w.Code != http.StatusCreated {
 		t.Fatalf("expected 201 without token, got %d: %s", w.Code, w.Body.String())
 	}
 	if w := do(h, http.MethodPost, "/v1/correction", body, true); w.Code != http.StatusCreated {
 		t.Fatalf("expected 201 with token (ignored), got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestExportRequiresToken(t *testing.T) {
+	h := newTestHandler(t)
+	if w := do(h, http.MethodGet, "/v1/export", "", false); w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 without token, got %d: %s", w.Code, w.Body.String())
+	}
+	if w := do(h, http.MethodGet, "/v1/export", "", true); w.Code != http.StatusOK {
+		t.Fatalf("expected 200 with token, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestExportFailsClosedWithoutConfiguredToken(t *testing.T) {
+	h := newTestHandlerWithToken(t, "")
+	if w := do(h, http.MethodGet, "/v1/export", "", true); w.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected 503 when no token is configured, got %d: %s", w.Code, w.Body.String())
 	}
 }
 

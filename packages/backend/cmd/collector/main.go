@@ -36,7 +36,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           httpapi.New(st),
+		Handler:           httpapi.New(st, os.Getenv("COLLECTOR_EXPORT_TOKEN")),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("collector listening on %s (data=%s ttl=%s)", addr, dataDir, ttl)

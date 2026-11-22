@@ -1,10 +1,11 @@
-// Package httpapi exposes the collector over HTTP. The endpoints are open by
-// design: this is a debug-only dataset intake service deployed behind Traefik
-// and Cloudflare, and requiring a token on the client blocked the keyboard
-// uploads because the token defaulted to empty.
+// Package httpapi exposes the collector over HTTP. Upload endpoints are open
+// so the debug keyboard can post without shipping a secret. The export
+// endpoint reads the whole dataset and requires a token, which is supplied by
+// the server environment. With no token configured, export fails closed.
 package httpapi
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,9 +23,10 @@ const (
 	maxMetaBytes = 256 << 10 // 256 KB
 )
 
-// New wires the HTTP routes onto the store.
-func New(s *store.Store) http.Handler {
-	h := &handler{store: s}
+// New wires the HTTP routes onto the store. exportToken guards /v1/export;
+// an empty value disables export instead of leaving it public.
+func New(s *store.Store, exportToken string) http.Handler {
+	h := &handler{store: s, exportToken: exportToken}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", h.healthz)
 	mux.HandleFunc("/v1/voice", h.voice)
@@ -35,7 +37,8 @@ func New(s *store.Store) http.Handler {
 }
 
 type handler struct {
-	store *store.Store
+	store       *store.Store
+	exportToken string
 }
 
 func (h *handler) healthz(w http.ResponseWriter, r *http.Request) {
@@ -138,6 +141,15 @@ func (h *handler) jsonRecord(w http.ResponseWriter, r *http.Request, kind string
 func (h *handler) export(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, "use GET")
+		return
+	}
+	if h.exportToken == "" {
+		writeError(w, http.StatusServiceUnavailable, "export is disabled")
+		return
+	}
+	token := r.Header.Get("X-Collector-Token")
+	if subtle.ConstantTimeCompare([]byte(token), []byte(h.exportToken)) != 1 {
+		writeError(w, http.StatusUnauthorized, "invalid token")
 		return
 	}
 	data, err := h.store.Export()
