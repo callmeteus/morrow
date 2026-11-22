@@ -1811,9 +1811,10 @@ public final class InputLogic {
         // first-letter capitalization below.
         final int variation = inputType & android.text.InputType.TYPE_MASK_VARIATION;
         final int inputClass = inputType & android.text.InputType.TYPE_MASK_CLASS;
+        // gti.dev: WebView text fields (chat apps like Paseo) are regular prose,
+        // not URL/email fields - let them use the Gboard auto-cap rules too.
         if (com.android.inputmethod.latin.utils.InputTypeUtils.isEmailVariation(variation)
                 || variation == android.text.InputType.TYPE_TEXT_VARIATION_URI
-                || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
                 || variation == android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
                 || variation == android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD

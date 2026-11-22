@@ -1467,9 +1467,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         if (ei != null) {
             final int inputClass = ei.inputType & android.text.InputType.TYPE_MASK_CLASS;
             final int variation = ei.inputType & android.text.InputType.TYPE_MASK_VARIATION;
+            // gti.dev: WebView chat fields (Paseo) are prose, not URL/email.
             final boolean noAutoCaps = inputClass == android.text.InputType.TYPE_CLASS_TEXT
                     && (variation == android.text.InputType.TYPE_TEXT_VARIATION_URI
-                        || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
                         || com.android.inputmethod.latin.utils.InputTypeUtils.isEmailVariation(
                                 variation));
             if (noAutoCaps) {
