@@ -139,7 +139,9 @@
     <key-style
         latin:styleName="toSymbolKeyStyle"
         latin:keySpec="!text/keylabel_to_symbol|!code/key_switch_alpha_symbol"
-        latin:parentStyle="baseForLayoutSwitchKeyStyle" />
+        latin:keyLabelFlags="preserveCase|followFunctionalTextColor"
+        latin:keyActionFlags="noKeyPreview"
+        latin:backgroundType="action" />
     <key-style
         latin:styleName="toAlphaKeyStyle"
         latin:keySpec="!text/keylabel_to_alpha|!code/key_switch_alpha_symbol"
