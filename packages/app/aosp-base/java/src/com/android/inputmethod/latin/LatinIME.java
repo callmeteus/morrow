@@ -1364,7 +1364,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // Need to set expanded touchable region only if a keyboard view is being shown.
         if (visibleKeyboardView.isShown()) {
             final int touchLeft = 0;
-            final int touchTop = mKeyboardSwitcher.isShowingMoreKeysPanel() ? 0 : visibleTopY;
+            // gti.dev: while searching GIFs the search header sits above the
+            // keyboard, so the whole IME area must be touchable. Otherwise taps
+            // on the keyboard fall through to the app behind the IME.
+            final boolean gifSearch = mKeyboardSwitcher.isGifSearchEditing();
+            final int touchTop = (mKeyboardSwitcher.isShowingMoreKeysPanel() || gifSearch)
+                    ? 0 : visibleTopY;
             final int touchRight = visibleKeyboardView.getWidth();
             final int touchBottom = inputHeight;
             outInsets.touchableInsets = InputMethodService.Insets.TOUCHABLE_INSETS_REGION;

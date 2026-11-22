@@ -46,11 +46,11 @@
                 latin:keyStyle="settingsMoreKeysStyle" />
         </case>
         <default>
-            <!-- gti.dev: tap inserts a comma, long-press opens the emoji
-                 palette via the AOSP CODE_EMOJI key (same idea as Gboard). -->
+            <!-- gti.dev: long-press shows the Gboard punctuation popup
+                 (ref_72): & % + " - : ' @ / ; ( ) # ! ? -->
             <Key
                 latin:keySpec=","
-                latin:moreKeys="😊|!code/key_emoji"
+                latin:moreKeys="&amp;,%,+,&quot;,-,:,',@,;,/,(,),#,!,?"
                 latin:keyLabelFlags="hasPopupHint"
                 latin:keyStyle="settingsMoreKeysStyle" />
         </default>

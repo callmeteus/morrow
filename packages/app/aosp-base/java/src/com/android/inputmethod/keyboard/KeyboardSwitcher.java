@@ -69,6 +69,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private TranslationPaletteView mTranslationPaletteView;
     private ToolsPaletteView mToolsPaletteView;
     private GifPaletteView mGifPaletteView;
+    // gti.dev: true while the alphabet keyboard types into the GIF search field.
+    private boolean mGifSearchEditing;
     private FloatingKeyboardController mFloatingKeyboardController;
     private boolean mIsFloating;
     private int mFloatingKeyboardWidth;
@@ -387,10 +389,16 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         return mGifPaletteView != null && mGifPaletteView.isShown();
     }
 
+    /** gti.dev: true while typing into the GIF search field with the alphabet keyboard. */
+    public boolean isGifSearchEditing() {
+        return mGifSearchEditing;
+    }
+
     /** gti.dev: keep the GIF search panel visible at the top while the normal
      *  alphabet keyboard is shown underneath it (Gboard-style search state). */
     public void showGifSearchKeyboard() {
         if (mKeyboardView == null || mGifPaletteView == null) return;
+        mGifSearchEditing = true;
         // Hide the GIF grid, keep the search header visible.
         mGifPaletteView.setSearchEditing(true);
         // Show the alphabet keyboard frame underneath the panel.
@@ -411,6 +419,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     /** gti.dev: restore the full GIF panel and hide the alphabet keyboard. */
     public void hideGifSearchKeyboard() {
         if (mGifPaletteView == null) return;
+        mGifSearchEditing = false;
         final android.widget.FrameLayout.LayoutParams lp =
                 (android.widget.FrameLayout.LayoutParams) mGifPaletteView.getLayoutParams();
         lp.bottomMargin = 0;
@@ -628,6 +637,11 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     }
 
     public View getVisibleKeyboardView() {
+        // gti.dev: while typing into GIF search, the alphabet keyboard is the
+        // visible/touchable view even though the GIF header panel is also shown.
+        if (mGifSearchEditing && mKeyboardView != null) {
+            return mKeyboardView;
+        }
         if (isShowingEmojiPalettes()) {
             return mEmojiPalettesView;
         }
