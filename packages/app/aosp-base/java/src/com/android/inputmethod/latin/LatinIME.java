@@ -620,6 +620,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public void onCreate() {
         Settings.init(this);
+        CollectorClient.init(getApplicationContext());
+        CollectorHooks.init();
         UsageLog.init(this);
         UserLexicon.init(this);
         DebugFlags.init(PreferenceManager.getDefaultSharedPreferences(this));
@@ -1364,11 +1366,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // Need to set expanded touchable region only if a keyboard view is being shown.
         if (visibleKeyboardView.isShown()) {
             final int touchLeft = 0;
-            // gti.dev: while searching GIFs the search header sits above the
-            // keyboard, so the whole IME area must be touchable. Otherwise taps
-            // on the keyboard fall through to the app behind the IME.
-            final boolean gifSearch = mKeyboardSwitcher.isGifSearchEditing();
-            final int touchTop = (mKeyboardSwitcher.isShowingMoreKeysPanel() || gifSearch)
+            // gti.dev: while typing into GIF search or translation, the header
+            // sits above the keyboard, so the whole IME area must be touchable.
+            // Otherwise taps on the keyboard fall through to the app behind it.
+            final boolean headerEditing = mKeyboardSwitcher.isGifSearchEditing()
+                    || mKeyboardSwitcher.isTranslationEditing();
+            final int touchTop = (mKeyboardSwitcher.isShowingMoreKeysPanel() || headerEditing)
                     ? 0 : visibleTopY;
             final int touchRight = visibleKeyboardView.getWidth();
             final int touchBottom = inputHeight;
@@ -1735,6 +1738,19 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     // gti.dev: true while the normal keyboard types into the GIF search field.
     private boolean mGifSearchActive = false;
+    // gti.dev: true while the normal keyboard types into the translation field.
+    private boolean mTranslationInputActive = false;
+
+    /** gti.dev: keep the translation panel visible and type into its input field. */
+    public void startTranslationInput() {
+        mTranslationInputActive = true;
+        mKeyboardSwitcher.showTranslationKeyboard();
+    }
+
+    private void finishTranslationInput() {
+        mTranslationInputActive = false;
+        mKeyboardSwitcher.hideTranslationKeyboard();
+    }
 
     /** gti.dev: keep the GIF panel visible and type into its search field. */
     public void startGifSearch() {
@@ -1751,6 +1767,39 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public void onCodeInput(final int codePoint, final int x, final int y,
             final boolean isKeyRepeat) {
+        // gti.dev: route typing into the translation input field instead of the editor.
+        if (mTranslationInputActive) {
+            final boolean toolbarCode = codePoint == Constants.CODE_SHORTCUT
+                    || codePoint == Constants.CODE_TOOLS
+                    || codePoint == Constants.CODE_SETTINGS
+                    || codePoint == Constants.CODE_TRANSLATE
+                    || codePoint == Constants.CODE_CLIPBOARD_PASTE
+                    || codePoint == Constants.CODE_GIF
+                    || codePoint == Constants.CODE_ONE_HANDED
+                    || codePoint == Constants.CODE_EMOJI
+                    || codePoint == Constants.CODE_ALPHA_FROM_EMOJI;
+            if (toolbarCode) {
+                finishTranslationInput();
+                // fall through to normal handling
+            } else {
+                final com.android.inputmethod.latin.clipboard.TranslationPaletteView palette =
+                        mKeyboardSwitcher.getTranslationPaletteView();
+                if (palette == null) {
+                    mTranslationInputActive = false;
+                } else if (codePoint == Constants.CODE_DELETE) {
+                    palette.deleteInputText();
+                } else if (codePoint == Constants.CODE_ENTER
+                        || codePoint == Constants.CODE_ACTION_NEXT) {
+                    // Commit the translation field text is handled by the panel button.
+                } else if (codePoint > 0 && Character.isValidCodePoint(codePoint)
+                        && Constants.isLetterCode(codePoint) && codePoint != Constants.CODE_SPACE) {
+                    palette.appendInputText(new String(Character.toChars(codePoint)));
+                } else if (codePoint == Constants.CODE_SPACE) {
+                    palette.appendInputText(" ");
+                }
+                return;
+            }
+        }
         // gti.dev: route typing into the GIF search field instead of the editor.
         if (mGifSearchActive) {
             // Toolbar buttons (mic, grid, settings, translate, clipboard) must
@@ -2106,6 +2155,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         final boolean noSuggestionsFromDictionaries = suggestedWords.isEmpty()
                 || suggestedWords.isPunctuationSuggestions()
                 || isEmptyApplicationSpecifiedCompletions;
+        // gti.dev: report the suggestion strip contents to the dataset collector.
+        if (suggestedWords != null && suggestedWords.size() > 0) {
+            java.util.List<String> shown = new java.util.ArrayList<>();
+            for (int i = 0; i < suggestedWords.size(); i++) {
+                shown.add(suggestedWords.getWord(i));
+            }
+            String typed = suggestedWords.mInputStyle == SuggestedWords.INPUT_STYLE_TYPING
+                    ? (shown.isEmpty() ? "" : shown.get(0)) : "";
+            CollectorHooks.onSuggestionsShown(typed, shown, noSuggestionsFromDictionaries);
+        }
         final boolean isBeginningOfSentencePrediction = (suggestedWords.mInputStyle
                 == SuggestedWords.INPUT_STYLE_BEGINNING_OF_SENTENCE_PREDICTION);
         final boolean noSuggestionsToOverrideImportantNotice = noSuggestionsFromDictionaries
@@ -2164,6 +2223,15 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     // interface
     @Override
     public void pickSuggestionManually(final SuggestedWordInfo suggestionInfo) {
+        if (suggestionInfo != null && mInputLogic != null && mInputLogic.mSuggestedWords != null) {
+            SuggestedWords words = mInputLogic.mSuggestedWords;
+            for (int i = 0; i < words.size(); i++) {
+                if (words.getWord(i).equals(suggestionInfo.mWord)) {
+                    CollectorHooks.onSuggestionSelected(i);
+                    break;
+                }
+            }
+        }
         final InputTransaction completeInputTransaction = mInputLogic.onPickSuggestionManually(
                 mSettings.getCurrent(), suggestionInfo,
                 mKeyboardSwitcher.getKeyboardShiftMode(),

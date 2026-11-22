@@ -10,6 +10,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -30,6 +31,7 @@ public final class TranslationPaletteView extends LinearLayout implements View.O
     private TextView mSourceLang;
     private TextView mTargetLang;
     private boolean mSourceIsDetect = true;
+    private Runnable mTranslationRequestListener = null;
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private final Handler mMain = new Handler(Looper.getMainLooper());
 
@@ -49,10 +51,44 @@ public final class TranslationPaletteView extends LinearLayout implements View.O
         findViewById(R.id.translation_go_key).setOnClickListener(this);
         mSourceLang.setOnClickListener(this);
         mTargetLang.setOnClickListener(this);
+        // gti.dev: an EditText inside an IME cannot raise the keyboard itself.
+        // Ask LatinIME to show the alphabet keyboard and route typed text here.
+        mInput.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == android.view.MotionEvent.ACTION_DOWN
+                    && mTranslationRequestListener != null) {
+                mTranslationRequestListener.run();
+            }
+            return true;
+        });
     }
 
     public void setKeyboardActionListener(final KeyboardActionListener listener) {
         mKeyboardActionListener = listener;
+    }
+
+    /** gti.dev: called when the user taps the input field to start typing. */
+    public void setTranslationRequestListener(final Runnable listener) {
+        mTranslationRequestListener = listener;
+    }
+
+    /** gti.dev: hide the result row while the alphabet keyboard types below. */
+    public void setInputEditing(final boolean editing) {
+        final View resultRow = findViewById(R.id.translation_result_row);
+        if (resultRow != null) resultRow.setVisibility(editing ? View.GONE : View.VISIBLE);
+    }
+
+    /** gti.dev: text typed on the alphabet keyboard goes into our input field. */
+    public void appendInputText(final String text) {
+        mInput.append(text);
+    }
+
+    public void deleteInputText() {
+        final Editable e = mInput.getText();
+        if (e != null && e.length() > 0) e.delete(e.length() - 1, e.length());
+    }
+
+    public String getInputText() {
+        return mInput.getText().toString();
     }
 
     public void show() {

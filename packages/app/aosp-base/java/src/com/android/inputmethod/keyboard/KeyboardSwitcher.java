@@ -71,6 +71,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private GifPaletteView mGifPaletteView;
     // gti.dev: true while the alphabet keyboard types into the GIF search field.
     private boolean mGifSearchEditing;
+    // gti.dev: true while the alphabet keyboard types into the translation field.
+    private boolean mTranslationEditing;
     private FloatingKeyboardController mFloatingKeyboardController;
     private boolean mIsFloating;
     private int mFloatingKeyboardWidth;
@@ -455,6 +457,47 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         return mTranslationPaletteView != null && mTranslationPaletteView.isShown();
     }
 
+    public com.android.inputmethod.latin.clipboard.TranslationPaletteView getTranslationPaletteView() {
+        return mTranslationPaletteView;
+    }
+
+    /** gti.dev: true while typing into the translation input with the alphabet keyboard. */
+    public boolean isTranslationEditing() {
+        return mTranslationEditing;
+    }
+
+    /** gti.dev: keep the translation header visible with the alphabet keyboard below. */
+    public void showTranslationKeyboard() {
+        if (mKeyboardView == null || mTranslationPaletteView == null) return;
+        mTranslationEditing = true;
+        mTranslationPaletteView.setInputEditing(true);
+        mMainKeyboardFrame.setVisibility(View.VISIBLE);
+        mKeyboardView.setVisibility(View.VISIBLE);
+        final View strip = mCurrentInputView.findViewById(R.id.suggestion_strip_view);
+        if (strip != null) strip.setVisibility(View.GONE);
+        mTranslationPaletteView.post(() -> {
+            final android.widget.FrameLayout.LayoutParams lp =
+                    (android.widget.FrameLayout.LayoutParams) mTranslationPaletteView.getLayoutParams();
+            lp.bottomMargin = mKeyboardView.getHeight();
+            mTranslationPaletteView.setLayoutParams(lp);
+        });
+    }
+
+    /** gti.dev: restore the full translation panel and hide the alphabet keyboard. */
+    public void hideTranslationKeyboard() {
+        if (mTranslationPaletteView == null) return;
+        mTranslationEditing = false;
+        final android.widget.FrameLayout.LayoutParams lp =
+                (android.widget.FrameLayout.LayoutParams) mTranslationPaletteView.getLayoutParams();
+        lp.bottomMargin = 0;
+        mTranslationPaletteView.setLayoutParams(lp);
+        mTranslationPaletteView.setInputEditing(false);
+        if (mMainKeyboardFrame != null) mMainKeyboardFrame.setVisibility(View.GONE);
+        if (mKeyboardView != null) mKeyboardView.setVisibility(View.GONE);
+        final View strip = mCurrentInputView.findViewById(R.id.suggestion_strip_view);
+        if (strip != null) strip.setVisibility(View.VISIBLE);
+    }
+
     /** gti.dev: show the Gboard-style clipboard history panel. */
     public void setClipboardKeyboard() {
         if (DEBUG_ACTION) {
@@ -637,9 +680,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     }
 
     public View getVisibleKeyboardView() {
-        // gti.dev: while typing into GIF search, the alphabet keyboard is the
-        // visible/touchable view even though the GIF header panel is also shown.
-        if (mGifSearchEditing && mKeyboardView != null) {
+        // gti.dev: while typing into GIF or translation, the alphabet keyboard
+        // is the visible/touchable view even though the header panel is shown.
+        if ((mGifSearchEditing || mTranslationEditing) && mKeyboardView != null) {
             return mKeyboardView;
         }
         if (isShowingEmojiPalettes()) {
@@ -708,6 +751,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mGifPaletteView.setKeyboardActionListener(mLatinIME);
         mGifPaletteView.setGifCommitListener(mLatinIME::commitGif);
         mGifPaletteView.setSearchRequestListener(mLatinIME::startGifSearch);
+        mTranslationPaletteView.setTranslationRequestListener(mLatinIME::startTranslationInput);
 
         final View dragHandle = mCurrentInputView.findViewById(R.id.floating_drag_handle);
         if (mKeyboardView.getBackground() != null) {
