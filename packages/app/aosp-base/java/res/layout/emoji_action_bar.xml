@@ -26,6 +26,19 @@
     <!-- gti.dev: flexible spacers push ABC/backspace to the edges like Gboard. -->
     <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
+    <ImageButton
+        android:id="@+id/emoji_keyboard_emoji"
+        android:layout_width="44dp"
+        android:layout_height="38dp"
+        android:src="@drawable/ic_emoji_smiley"
+        android:background="@drawable/tools_pill_bg"
+        android:scaleType="centerInside"
+        android:hapticFeedbackEnabled="false"
+        android:soundEffectsEnabled="false"
+        android:contentDescription="@string/tools_item_emoji" />
+
+    <View android:layout_width="10dp" android:layout_height="1dp" />
+
     <TextView
         android:id="@+id/emoji_keyboard_gif"
         android:layout_width="56dp"
@@ -38,6 +51,20 @@
         android:textStyle="bold"
         android:hapticFeedbackEnabled="false"
         android:soundEffectsEnabled="false" />
+
+    <View android:layout_width="10dp" android:layout_height="1dp" />
+
+    <ImageButton
+        android:id="@+id/emoji_keyboard_sticker"
+        android:layout_width="44dp"
+        android:layout_height="38dp"
+        android:src="@drawable/ic_sticker"
+        android:tint="#FFE8EAED"
+        android:background="@drawable/tools_pill_bg"
+        android:scaleType="centerInside"
+        android:hapticFeedbackEnabled="false"
+        android:soundEffectsEnabled="false"
+        android:contentDescription="@string/emoji_sticker_desc" />
 
     <View android:layout_width="10dp" android:layout_height="1dp" />
 

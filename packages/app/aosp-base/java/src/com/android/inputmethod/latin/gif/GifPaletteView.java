@@ -192,6 +192,13 @@ public final class GifPaletteView extends LinearLayout implements View.OnClickLi
                     Constants.CODE_GIF, Constants.NOT_A_COORDINATE,
                     Constants.NOT_A_COORDINATE, false));
         }
+        // gti.dev: the smiley button switches back to the emoji palette.
+        final View emojiButton = bar.findViewById(R.id.emoji_keyboard_emoji);
+        if (emojiButton != null) {
+            emojiButton.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_EMOJI, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
+        }
         final View kaomojiTab = bar.findViewById(R.id.emoji_keyboard_kaomoji);
         if (kaomojiTab != null) {
             kaomojiTab.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(

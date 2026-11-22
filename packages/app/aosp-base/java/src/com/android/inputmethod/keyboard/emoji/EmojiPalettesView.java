@@ -260,6 +260,13 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
                 mEmojiCategory.getShownCategories();
         final View gifTab = findViewById(R.id.emoji_keyboard_gif);
         final View kaomojiTab = findViewById(R.id.emoji_keyboard_kaomoji);
+        // gti.dev: the smiley button returns to the emoji palette.
+        final View emojiButton = findViewById(R.id.emoji_keyboard_emoji);
+        if (emojiButton != null) {
+            emojiButton.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
+                    Constants.CODE_EMOJI, Constants.NOT_A_COORDINATE,
+                    Constants.NOT_A_COORDINATE, false));
+        }
         if (shown.size() > 3) {
             // gti.dev: GIF tab opens the GIF search panel (Gboard-style).
             gifTab.setOnClickListener(v -> mKeyboardActionListener.onCodeInput(
@@ -456,12 +463,13 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
                 emoticons ? R.id.emoji_keyboard_kaomoji : -1);
     }
 
-    /** gti.dev: keep category emoji colored (no tint flattening the artwork). */
+    /** gti.dev: white category drawings, colored emoji in the grid. */
     private void updateTabHighlight(final int activeTabIndex) {
         for (int i = 0; i < mCategoryTabViews.size(); i++) {
             final ImageView tab = mCategoryTabViews.get(i);
             tab.setImageTintList(null);
-            tab.setAlpha(i == activeTabIndex ? 1.0f : 0.6f);
+            tab.setColorFilter(i == activeTabIndex ? 0xFFE8EAED : 0x99E8EAED,
+                    android.graphics.PorterDuff.Mode.SRC_IN);
         }
     }
 

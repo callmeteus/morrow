@@ -26,6 +26,7 @@
     <string name="tools_item_resize">Redimensionar</string>
     <string name="tools_item_floating">Flutuante</string>
     <string name="tools_item_keep">Keep</string>
+    <string name="emoji_sticker_desc">Adesivos</string>
     <string name="translation_error">Não foi possível traduzir. Verifique a ligação.</string>
 
     <!-- GIF picker -->

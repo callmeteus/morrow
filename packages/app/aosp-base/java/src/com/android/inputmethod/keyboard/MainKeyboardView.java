@@ -860,19 +860,16 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     // Layout language name on spacebar.
     private String layoutLanguageOnSpacebar(final Paint paint,
             final RichInputMethodSubtype subtype, final int width) {
-        // Choose appropriate language name to fit into the width.
-        if (mLanguageOnSpacebarFormatType == LanguageOnSpacebarUtils.FORMAT_TYPE_FULL_LOCALE) {
-            final String fullText = subtype.getFullDisplayName();
-            if (fitsTextIntoWidth(width, fullText, paint)) {
-                return fullText;
+        // gti.dev: show the compact locale code (e.g. "PT-BR") like Gboard.
+        final java.util.Locale locale = subtype.getLocale();
+        if (locale != null) {
+            final String language = locale.getLanguage().toUpperCase(java.util.Locale.ROOT);
+            final String country = locale.getCountry().toUpperCase(java.util.Locale.ROOT);
+            final String code = country.isEmpty() ? language : language + "-" + country;
+            if (fitsTextIntoWidth(width, code, paint)) {
+                return code;
             }
         }
-
-        final String middleText = subtype.getMiddleDisplayName();
-        if (fitsTextIntoWidth(width, middleText, paint)) {
-            return middleText;
-        }
-
         return "";
     }
 

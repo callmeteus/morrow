@@ -26,6 +26,7 @@
     <string name="tools_item_resize">Resize</string>
     <string name="tools_item_floating">Floating</string>
     <string name="tools_item_keep">Keep</string>
+    <string name="emoji_sticker_desc">Stickers</string>
     <string name="translation_error">Could not translate. Check your connection.</string>
 
     <!-- GIF picker -->
