@@ -44,8 +44,9 @@
             <Key
                 latin:keyStyle="zwnjKeyStyle" />
         </case>
+        <!-- gti.dev: in a URL field the globe replaces the emoji key, even when
+             the emoji key is enabled, like Gboard in the address bar. -->
         <case
-            latin:emojiKeyEnabled="false"
             latin:languageSwitchKeyEnabled="true"
         >
             <Key
