@@ -37,8 +37,8 @@
     <string name="sticker_tab_label">Adesivos</string>
 
     <!-- Voice dictation status -->
-    <string name="voice_ready">Pronto para ouvir. Toque para parar</string>
-    <string name="voice_listening">Ouvindo...</string>
-    <string name="voice_transcribing">Transcrevendo...</string>
+    <string name="voice_ready">Pronto para ouvir</string>
+    <string name="voice_listening">Ouvindo</string>
+    <string name="voice_transcribing">Transcrevendo</string>
     <string name="voice_mic_error">Falha ao abrir o microfone</string>
 </resources>

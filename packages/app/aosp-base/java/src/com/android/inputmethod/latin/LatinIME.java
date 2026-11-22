@@ -1886,6 +1886,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         LocalVoiceInput.init(this);
         mLocalDictationListener = new LocalVoiceInput.Listener() {
             @Override public void onPartial(String text) { }
+            @Override public void onRms(final float rms) {
+                // gti.dev: RMS arrives on the recorder thread; draw on the UI thread.
+                mHandler.post(() -> {
+                    if (mSuggestionStripView != null) {
+                        mSuggestionStripView.setVoiceRms(rms);
+                    }
+                });
+            }
             @Override public void onState(String state) {
                 // gti.dev: "ready" = mic open waiting for speech, "listening" = user
                 // is speaking, "transcribing" = decoding the captured audio.

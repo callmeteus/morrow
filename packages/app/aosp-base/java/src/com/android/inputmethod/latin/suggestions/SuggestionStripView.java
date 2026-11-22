@@ -23,6 +23,8 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.core.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -83,6 +85,11 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     // gti.dev: mic icon swap for on-device dictation feedback.
     private Drawable mVoiceIcon;
     private Drawable mRecordingIcon;
+    // gti.dev: RMS-driven waveform shown while recording.
+    private VoiceWaveformView mVoiceWaveform;
+    // gti.dev: trailing ellipsis animation after the mic is released.
+    private final Handler mEllipsisHandler = new Handler(Looper.getMainLooper());
+    private Runnable mEllipsisRunnable;
     private static final int TOOL_KEY_ALPHA_OFF = 128;
     private static final String SENSITIVE_CLIPBOARD_LABEL = "\u2022\u2022\u2022\u2022\u2022\u2022";
 
@@ -213,6 +220,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         mDockedStripMargin =
                 ((MarginLayoutParams) mSuggestionsStrip.getLayoutParams()).getMarginStart();
         mImportantNoticeStrip = findViewById(R.id.important_notice_strip);
+        mVoiceWaveform = findViewById(R.id.voice_waveform);
         mInlineSuggestionsStrip = findViewById(R.id.inline_suggestions_strip);
         mClipboardSuggestionStrip = findViewById(R.id.clipboard_suggestion_strip);
         mStripVisibilityGroup = new StripVisibilityGroup(this, mToolbar, mSuggestionsStrip,
@@ -298,8 +306,21 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         }
     }
 
+    /** gti.dev: feed the measured microphone level into the waveform. */
+    public void setVoiceRms(final float rms) {
+        if (mVoiceWaveform != null) mVoiceWaveform.setLevel(rms);
+    }
+
     /** gti.dev: show Gboard-style centered status ("Fale agora") during dictation. */
     public void setVoiceInputStatus(final String status) {
+        if (mVoiceWaveform != null) {
+            mVoiceWaveform.setVisibility(status == null || status.isEmpty()
+                    ? View.GONE : View.VISIBLE);
+        }
+        if (mEllipsisRunnable != null) {
+            mEllipsisHandler.removeCallbacks(mEllipsisRunnable);
+            mEllipsisRunnable = null;
+        }
         if (status == null || status.isEmpty()) {
             // gti.dev: the dictation status lives in the important notice strip.
             // Hide it first, otherwise refreshStripVisibility() sees it as still
@@ -311,6 +332,25 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             mLayoutHelper.layoutImportantNotice(mImportantNoticeStrip, status);
             mStripVisibilityGroup.showImportantNoticeStrip();
             mImportantNoticeStrip.setOnClickListener(this);
+            // gti.dev: cycle the trailing dots while the result is being produced.
+            final TextView title = mImportantNoticeStrip.findViewById(
+                    R.id.important_notice_title);
+            if (title != null) {
+                mEllipsisRunnable = new Runnable() {
+                    int mDots;
+                    @Override public void run() {
+                        mDots = (mDots + 1) % 4;
+                        final StringBuilder text = new StringBuilder(status);
+                        while (text.length() > 0 && text.charAt(text.length() - 1) == '.') {
+                            text.setLength(text.length() - 1);
+                        }
+                        for (int i = 0; i < mDots; i++) text.append('.');
+                        title.setText(text.toString());
+                        mEllipsisHandler.postDelayed(this, 400L);
+                    }
+                };
+                mEllipsisHandler.postDelayed(mEllipsisRunnable, 400L);
+            }
         }
     }
 

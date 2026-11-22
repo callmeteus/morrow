@@ -63,6 +63,8 @@ public final class LocalVoiceInput {
         /** Same callback with the measured inference time, for usage logging. */
         void onFinal(String text, long inferMs);
         void onState(String state); // "listening" / "transcribing"
+        /** gti.dev: measured RMS of the current audio chunk, for the waveform. */
+        void onRms(float rms);
     }
 
     /** Copies the bundled model to internal storage on first run. */
@@ -181,6 +183,8 @@ public final class LocalVoiceInput {
                     sumSq += s * s;
                 }
                 final double rms = Math.sqrt(sumSq / n);
+                // gti.dev: feed the real measured level to the dictation waveform.
+                l.onRms((float) rms);
                 final long now = System.currentTimeMillis();
                 if (rms > peakRms) peakRms = rms;
                 if (calibrating) {

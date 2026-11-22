@@ -50,3 +50,5 @@
   priority: medium · status: done · done: 2026-11-20
 - [x] **R-010** Localize the setup app and IME into English, Portuguese, Brazilian Portuguese and Spanish
   priority: medium · status: done · done: 2026-11-21
+- [x] **R-023** Animate the microphone with an RMS-driven waveform during dictation
+  priority: medium · status: done · added: 2026-11-22 · done: 2026-11-22

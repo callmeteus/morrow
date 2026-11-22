@@ -37,8 +37,8 @@
     <string name="sticker_tab_label">Pegatinas</string>
 
     <!-- Voice dictation status -->
-    <string name="voice_ready">Listo para escuchar. Toca para detener</string>
-    <string name="voice_listening">Escuchando...</string>
-    <string name="voice_transcribing">Transcribiendo...</string>
+    <string name="voice_ready">Listo para escuchar</string>
+    <string name="voice_listening">Escuchando</string>
+    <string name="voice_transcribing">Transcribiendo</string>
     <string name="voice_mic_error">No se pudo abrir el micrófono</string>
 </resources>

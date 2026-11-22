@@ -37,8 +37,8 @@
     <string name="sticker_tab_label">Autocolantes</string>
 
     <!-- Voice dictation status -->
-    <string name="voice_ready">Pronto para ouvir. Toque para parar</string>
-    <string name="voice_listening">A ouvir...</string>
-    <string name="voice_transcribing">A transcrever...</string>
+    <string name="voice_ready">Pronto a ouvir</string>
+    <string name="voice_listening">A ouvir</string>
+    <string name="voice_transcribing">A transcrever</string>
     <string name="voice_mic_error">Falha ao abrir o microfone</string>
 </resources>
