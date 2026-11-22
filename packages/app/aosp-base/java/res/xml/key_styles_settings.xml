@@ -30,12 +30,11 @@
                 latin:styleName="settingsMoreKeysStyle"
                 latin:backgroundType="functional" />
         </case>
-        <!-- clobberSettingsKey="false" -->
+        <!-- gti.dev: only the emoji popup on comma long-press, like Gboard. -->
         <default>
             <key-style
                 latin:styleName="settingsMoreKeysStyle"
                 latin:keyLabelFlags="hasPopupHint"
-                latin:additionalMoreKeys="!text/keyspec_settings,!text/keyspec_clipboard_paste"
                 latin:backgroundType="functional" />
         </default>
     </switch>

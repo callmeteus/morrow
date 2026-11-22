@@ -25,6 +25,7 @@
     <string name="tools_item_share">Compartir Gboard</string>
     <string name="tools_item_resize">Redimensionar</string>
     <string name="tools_item_floating">Flotante</string>
+    <string name="tools_item_keep">Keep</string>
 
     <!-- GIF picker -->
     <string name="gif_tab_label">GIF</string>

@@ -43,8 +43,10 @@ public final class LanguageOnSpacebarUtils {
 
     public static int getLanguageOnSpacebarFormatType(
             @Nonnull final RichInputMethodSubtype subtype) {
-        // gti.dev: Gboard leaves the spacebar blank; no "Português" label.
-        return FORMAT_TYPE_NONE;
+        // gti.dev: show the language on the spacebar. Force LANGUAGE_ONLY so a
+        // short "pt-BR" style label appears instead of the full locale name.
+        if (subtype.isNoLanguage()) return FORMAT_TYPE_NONE;
+        return FORMAT_TYPE_LANGUAGE_ONLY;
     }
 
     private static int getLanguageOnSpacebarFormatTypeOriginal(

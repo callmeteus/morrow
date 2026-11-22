@@ -456,20 +456,12 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
                 emoticons ? R.id.emoji_keyboard_kaomoji : -1);
     }
 
-    /** gti.dev: highlight the active category tab, keep the others visible but muted. */
+    /** gti.dev: keep category emoji colored (no tint flattening the artwork). */
     private void updateTabHighlight(final int activeTabIndex) {
-        final int current = activeTabIndex;
         for (int i = 0; i < mCategoryTabViews.size(); i++) {
             final ImageView tab = mCategoryTabViews.get(i);
-            if (i == current) {
-                tab.setImageTintList(ColorStateList.valueOf(mEmojiTabAccentColor));
-            } else {
-                // The stock "normal" emoji tab icons are transparent in the dark
-                // theme, so tint inactive tabs with a muted accent to keep them visible.
-                tab.setImageTintList(ColorStateList.valueOf(
-                        Color.argb(0xA0, Color.red(mEmojiTabAccentColor),
-                                Color.green(mEmojiTabAccentColor), Color.blue(mEmojiTabAccentColor))));
-            }
+            tab.setImageTintList(null);
+            tab.setAlpha(i == activeTabIndex ? 1.0f : 0.6f);
         }
     }
 

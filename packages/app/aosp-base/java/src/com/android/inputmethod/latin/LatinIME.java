@@ -1890,6 +1890,43 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             toggleFloatingKeyboard();
             return;
         }
+        if (Constants.CODE_RESIZE == event.mKeyCode) {
+            // gti.dev: resize opens the floating keyboard where it can be dragged.
+            if (!mKeyboardSwitcher.isFloatingKeyboard()) toggleFloatingKeyboard();
+            return;
+        }
+        if (Constants.CODE_KEEP == event.mKeyCode) {
+            // gti.dev: open Google Keep notes from the tools menu.
+            android.content.Intent keep = getPackageManager()
+                    .getLaunchIntentForPackage("com.google.android.keep");
+            if (keep == null) {
+                keep = new android.content.Intent("com.google.android.keep.action.CREATE_NOTE");
+            }
+            keep.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(keep);
+            } catch (Exception e) {
+                android.util.Log.w(TAG, "keep failed: " + e.getMessage());
+            }
+            return;
+        }
+        if (Constants.CODE_SHARE == event.mKeyCode) {
+            // gti.dev: share Morrow like Gboard's "Share Gboard" tool.
+            final android.content.Intent share = new android.content.Intent(
+                    android.content.Intent.ACTION_SEND);
+            share.setType("text/plain");
+            share.putExtra(android.content.Intent.EXTRA_TEXT,
+                    "https://github.com/callmeteus/morrow");
+            final android.content.Intent chooser = android.content.Intent.createChooser(
+                    share, getString(R.string.tools_item_share));
+            chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(chooser);
+            } catch (Exception e) {
+                android.util.Log.w(TAG, "share failed: " + e.getMessage());
+            }
+            return;
+        }
         if (Constants.CODE_GIF == event.mKeyCode) {
             // gti.dev: open the GIF search panel.
             if (mKeyboardSwitcher.isShowingGifPalette()) {

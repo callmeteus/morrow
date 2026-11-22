@@ -71,8 +71,5 @@
         android:background="@drawable/translation_input_border"
         android:importantForAutofill="no" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1" />
+    <!-- gti.dev: no weighted spacer - the panel stays keyboard-sized. -->
 </com.android.inputmethod.latin.clipboard.TranslationPaletteView>

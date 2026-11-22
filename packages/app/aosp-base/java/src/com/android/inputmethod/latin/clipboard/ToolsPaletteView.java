@@ -32,18 +32,21 @@ public final class ToolsPaletteView extends LinearLayout implements View.OnClick
     protected void onFinishInflate() {
         super.onFinishInflate();
         final GridLayout grid = findViewById(R.id.tools_grid);
+        // gti.dev: items and order match the Gboard reference (ref_65).
         addTool(grid, R.string.tools_item_emoji, R.drawable.ic_emoji_smiley,
                 Constants.CODE_EMOJI, true);
         addTool(grid, R.string.tools_item_one_handed, R.drawable.ic_floating_switch_ime,
-                Constants.CODE_SETTINGS, false);
-        addTool(grid, R.string.tools_item_translate, R.drawable.ic_translate,
-                Constants.CODE_TRANSLATE, true);
-        addTool(grid, R.string.tools_item_clipboard, R.drawable.ic_clipboard,
-                Constants.CODE_CLIPBOARD_PASTE, false);
-        addTool(grid, R.string.tools_item_settings, R.drawable.ic_settings,
+                Constants.CODE_ONE_HANDED, false);
+        addTool(grid, R.string.tools_item_text_mode, R.drawable.ic_tools_edit,
                 Constants.CODE_SETTINGS, true);
+        addTool(grid, R.string.tools_item_share, R.drawable.ic_share,
+                Constants.CODE_SHARE, false);
+        addTool(grid, R.string.tools_item_resize, R.drawable.ic_floating_resize,
+                Constants.CODE_RESIZE, false);
         addTool(grid, R.string.tools_item_floating, R.drawable.ic_floating_keyboard,
-                Constants.CODE_SETTINGS, false);
+                Constants.CODE_ONE_HANDED, false);
+        addTool(grid, R.string.tools_item_keep, R.drawable.ic_keep,
+                Constants.CODE_KEEP, false);
         findViewById(R.id.tools_back_key).setOnClickListener(this);
         findViewById(R.id.tools_edit_key).setOnClickListener(this);
     }

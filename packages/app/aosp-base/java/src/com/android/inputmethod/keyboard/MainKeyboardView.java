@@ -792,12 +792,12 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         if (subtypeChanged) {
             KeyPreviewView.clearTextCache();
         }
+        // gti.dev: show the language label even when the theme has no fadeout
+        // animator (the You theme has none by default).
         mLanguageOnSpacebarFormatType = languageOnSpacebarFormatType;
         mHasMultipleEnabledIMEsOrSubtypes = hasMultipleEnabledIMEsOrSubtypes;
         final ObjectAnimator animator = mLanguageOnSpacebarFadeoutAnimator;
-        if (animator == null) {
-            mLanguageOnSpacebarFormatType = LanguageOnSpacebarUtils.FORMAT_TYPE_NONE;
-        } else {
+        if (animator != null) {
             if (subtypeChanged
                     && languageOnSpacebarFormatType != LanguageOnSpacebarUtils.FORMAT_TYPE_NONE) {
                 setLanguageOnSpacebarAnimAlpha(Constants.Color.ALPHA_OPAQUE);
