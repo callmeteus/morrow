@@ -19,7 +19,8 @@ public final class FloatingKeyboardUtils {
     public static final float PANEL_MAX_SCREEN_RATIO = 0.95f;
     public static final int KEYBOARD_MIN_HEIGHT_DP = 140;
     public static final float KEYBOARD_MAX_SCREEN_RATIO = 0.6f;
-    public static final float KEYBOARD_HEIGHT_TO_WIDTH_RATIO = 0.6f;
+    // gti.dev: taller floating keyboard so key height matches the Gboard reference.
+    public static final float KEYBOARD_HEIGHT_TO_WIDTH_RATIO = 0.68f;
     public static final int DOCK_THRESHOLD_DP = 48;
     public static final int PANEL_PADDING_DP = 8;
     public static final int PANEL_CORNER_RADIUS_DP = 16;
