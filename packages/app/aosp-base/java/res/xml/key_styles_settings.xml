@@ -30,7 +30,18 @@
                 latin:styleName="settingsMoreKeysStyle"
                 latin:backgroundType="functional" />
         </case>
-        <!-- gti.dev: only the emoji popup on comma long-press, like Gboard. -->
+        <!-- gti.dev: Gboard puts settings and the emoji in the comma popup when
+             the dedicated emoji key is turned off. -->
+        <case
+            latin:emojiKeyEnabled="false"
+        >
+            <key-style
+                latin:styleName="settingsMoreKeysStyle"
+                latin:keyLabelFlags="hasPopupHint"
+                latin:additionalMoreKeys="!text/keyspec_settings,!text/keyspec_emoji_action_key"
+                latin:backgroundType="functional" />
+        </case>
+        <!-- gti.dev: punctuation popup when the emoji key is available. -->
         <default>
             <key-style
                 latin:styleName="settingsMoreKeysStyle"

@@ -2516,19 +2516,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     }
 
     public boolean shouldShowLanguageSwitchKey() {
-        // gti.dev: show the web/language key only for URL inputs, like Gboard.
+        // gti.dev: show the language switch key only in the browser address bar,
+        // not in every web text field (TYPE_TEXT_VARIATION_WEB_EDIT_TEXT).
         final android.view.inputmethod.EditorInfo ei = getCurrentInputEditorInfo();
-        if (ei != null) {
-            final int inputType = ei.inputType & android.text.InputType.TYPE_MASK_CLASS;
-            final int variation = ei.inputType & android.text.InputType.TYPE_MASK_VARIATION;
-            final boolean isUrl =
-                    inputType == android.text.InputType.TYPE_CLASS_TEXT
-                    && (variation == android.text.InputType.TYPE_TEXT_VARIATION_URI
-                        || variation == android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT);
-            if (!isUrl) return false;
-            return true;
-        }
-        return false;
+        if (ei == null) return false;
+        final int inputType = ei.inputType & android.text.InputType.TYPE_MASK_CLASS;
+        final int variation = ei.inputType & android.text.InputType.TYPE_MASK_VARIATION;
+        return inputType == android.text.InputType.TYPE_CLASS_TEXT
+                && variation == android.text.InputType.TYPE_TEXT_VARIATION_URI;
     }
 
     /** @noinspection deprecation*/
