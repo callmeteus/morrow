@@ -26,6 +26,7 @@
     <string name="tools_item_resize">Redimensionar</string>
     <string name="tools_item_floating">Flotante</string>
     <string name="tools_item_keep">Keep</string>
+    <string name="translation_error">No se pudo traducir. Comprueba la conexión.</string>
 
     <!-- GIF picker -->
     <string name="gif_tab_label">GIF</string>
