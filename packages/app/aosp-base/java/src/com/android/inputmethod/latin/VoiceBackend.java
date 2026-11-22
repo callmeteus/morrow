@@ -201,7 +201,7 @@ public final class VoiceBackend {
     }
 
     /** Writes a minimal 16-bit PCM WAV header followed by the samples. */
-    private static void writeWav(File out, short[] pcm, int len) throws Exception {
+    static void writeWav(File out, short[] pcm, int len) throws Exception {
         int dataLen = len * 2;
         FileOutputStream fo = new FileOutputStream(out);
         fo.write("RIFF".getBytes(StandardCharsets.US_ASCII));

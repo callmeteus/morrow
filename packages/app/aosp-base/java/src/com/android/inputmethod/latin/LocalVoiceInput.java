@@ -46,6 +46,8 @@ public final class LocalVoiceInput {
     private static volatile boolean stopRequested = false;
     private static short[] pendingBuffer;
     private static int pendingLen;
+    private static volatile float lastPeakRms;
+    private static volatile long lastDurationMs;
 
     // gti.dev: voice/silence detection (Gboard-like behaviour).
     private static final float VOICE_RMS_THRESHOLD = 0.012f; // above this = speech
@@ -210,6 +212,8 @@ public final class LocalVoiceInput {
                 }
             }
             final long durationMs = System.currentTimeMillis() - startMs;
+            lastDurationMs = durationMs;
+            lastPeakRms = (float) peakRms;
             Log.i(TAG, "record thread exiting, len=" + len[0] + " voice=" + voiceHeard);
             // gti.dev: diagnostics for the "Transcrevendo..." investigations.
             VoiceDiagnostics.record(sContext, noiseCount > 0 ? noiseSum / noiseCount : 0,
@@ -267,6 +271,11 @@ public final class LocalVoiceInput {
             }
             @Override protected void onPostExecute(String s) {
                 VoiceDiagnostics.recordResult(sContext, s, inferMs[0]);
+                String clean = TranscriptCleaner.clean(s);
+                CollectorClient.uploadVoice(
+                        CollectorHooks.sessionId() + "-" + CollectorClient.newId(),
+                        pcm, s, clean, clean, inferMs[0], lastPeakRms, lastDurationMs,
+                        "ggml-tiny-f32-v3", "pt", CollectorHooks.sessionId());
                 l.onFinal(s, inferMs[0]);
             }
         }.execute();

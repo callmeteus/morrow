@@ -64,6 +64,7 @@ public final class SwipeDecoder {
     public static void recordDiagnostics(int[] xs, int[] ys, long[] ts, String[] decoded) {
         if (sContext == null) return;
         SwipeDiagnostics.record(sContext, xs, ys, ts, decoded, sKeyboardWidth, sKeyboardHeight);
+        CollectorHooks.onSwipe(xs, ys, ts, decoded, sKeyboardWidth, sKeyboardHeight);
     }
 
     /** Copies the model from assets and initialises the native engine once. */

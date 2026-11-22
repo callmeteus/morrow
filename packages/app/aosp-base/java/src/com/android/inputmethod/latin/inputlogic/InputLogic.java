@@ -1019,6 +1019,7 @@ public final class InputLogic {
             final int currentKeyboardScriptId) {
         mSpaceState = SpaceState.NONE;
         mDeleteCount++;
+        com.android.inputmethod.latin.CollectorHooks.onBackspace();
         // gti.dev: record what the user removed, paired with the last commit.
         final UsageLog usageLogForDelete = UsageLog.get();
         if (usageLogForDelete != null) {
