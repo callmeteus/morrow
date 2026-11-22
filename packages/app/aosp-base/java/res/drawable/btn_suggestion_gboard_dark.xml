@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style suggestion pressed state for Material Dark. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"
+          android:drawable="@color/suggested_word_background_selected_gboard_dark" />
+</selector>

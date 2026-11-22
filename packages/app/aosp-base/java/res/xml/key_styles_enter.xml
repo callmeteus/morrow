@@ -213,7 +213,8 @@
     </switch>
     <!-- Enter key style -->
     <switch>
-        <case latin:keyboardTheme="ICS|KLP|You|OLED">
+        <!-- gti.dev: LXXDark now uses Gboard-style action keys too. -->
+        <case latin:keyboardTheme="ICS|KLP|You|OLED|LXXDark">
             <key-style
                 latin:styleName="defaultEnterKeyStyle"
                 latin:keySpec="!icon/enter_key|!code/key_enter"

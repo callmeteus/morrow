@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: Gboard-style functional/action key for the Material Dark theme. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_active="true" android:state_pressed="true">
+        <shape>
+            <solid android:color="#FF5D5A70" />
+            <corners android:radius="120dp" />
+        </shape>
+    </item>
+    <item android:state_active="true">
+        <shape>
+            <solid android:color="#FF484558" />
+            <corners android:radius="120dp" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="#FF5D5A70" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="#FF484558" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</selector>

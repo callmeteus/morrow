@@ -55,6 +55,21 @@
     <color name="suggested_word_background_selected_lxx_dark">#33A8E6C5</color>
     <color name="gesture_floating_preview_color_lxx_dark">#E621272B</color>
     <color name="emoji_tab_page_indicator_background_lxx_dark">#21272B</color>
+    <!-- gti.dev: Gboard slate palette for the Material Dark theme. -->
+    <color name="key_text_color_gboard_dark">#FFFFFFFF</color>
+    <color name="key_functional_text_color_gboard_dark">#FFFFFFFF</color>
+    <color name="key_text_inactive_color_gboard_dark">#9E9E9E</color>
+    <color name="key_hint_letter_color_gboard_dark">#9E9E9E</color>
+    <color name="language_on_spacebar_text_color_gboard_dark">#9E9E9E</color>
+    <color name="highlight_color_gboard_dark">#6076AC</color>
+    <color name="auto_correct_color_gboard_dark">#FFFFFF</color>
+    <color name="typed_word_color_gboard_dark">#E2E2E9</color>
+    <color name="suggested_word_color_gboard_dark">#9E9E9E</color>
+    <color name="gesture_trail_color_gboard_dark">#FF484558</color>
+    <color name="sliding_key_input_preview_color_gboard_dark">#99484558</color>
+    <color name="suggested_word_background_selected_gboard_dark">#33484558</color>
+    <color name="gesture_floating_preview_color_gboard_dark">#E6201F24</color>
+    <color name="emoji_tab_page_indicator_background_gboard_dark">#201F24</color>
     <!-- Color resources for setup wizard and tutorial -->
     <color name="setup_background">#FFEBEBEB</color>
     <color name="setup_text_dark">#FF707070</color>
