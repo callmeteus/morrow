@@ -82,21 +82,19 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     static final boolean DBG = DebugFlags.DEBUG_ENABLED;
     private static final float DEBUG_INFO_TEXT_SIZE_IN_DIP = 6.0f;
     private static final int TOOL_KEY_ALPHA_ON = 255;
-    // gti.dev: mic icon swap for on-device dictation feedback.
+    // gti.dev: mic icon stays inside the circle during dictation.
     private Drawable mVoiceIcon;
-    private Drawable mRecordingIcon;
     // gti.dev: pulsing mic circle driven by the measured voice RMS.
     private float mVoiceRms;
+    private PulsingCircleDrawable mVoiceCircle;
     private final Handler mVoicePulseHandler = new Handler(Looper.getMainLooper());
     private boolean mVoicePulsing;
     private final Runnable mVoicePulseRunnable = new Runnable() {
         @Override public void run() {
-            if (mVoiceKey == null) return;
-            // gti.dev: grow with the voice level, shrink back in silence.
+            if (mVoiceCircle == null) return;
+            // gti.dev: only the circle changes size; the mic icon stays fixed.
             final float level = Math.min(1f, mVoiceRms * 8f);
-            final float scale = 1f + level * 0.45f;
-            mVoiceKey.setScaleX(scale);
-            mVoiceKey.setScaleY(scale);
+            mVoiceCircle.setLevel(level);
             mVoiceRms *= 0.8f;
             if (mVoicePulsing) mVoicePulseHandler.postDelayed(this, 40L);
         }
@@ -271,10 +269,10 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                 R.styleable.Keyboard, defStyle, R.style.SuggestionStripView);
         final Drawable iconVoice = keyboardAttr.getDrawable(R.styleable.Keyboard_iconShortcutKey);
         keyboardAttr.recycle();
-        // gti.dev: keep both icons so the mic can switch to a "recording" icon.
         mVoiceIcon = iconVoice;
-        mRecordingIcon = androidx.core.content.ContextCompat.getDrawable(
-                context, R.drawable.sym_keyboard_voice_recording);
+        // gti.dev: the circle pulses while the mic icon stays fixed inside it.
+        mVoiceCircle = new PulsingCircleDrawable();
+        mVoiceKey.setBackground(mVoiceCircle);
         mVoiceKey.setImageDrawable(iconVoice);
         mVoiceKey.setOnClickListener(this);
         // gti.dev: Gboard uses a neutral light color for idle toolbar icons.
@@ -310,8 +308,7 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     /** gti.dev: visual feedback for on-device dictation (active = recording). */
     public void setVoiceInputActive(final boolean active) {
         if (mVoiceKey != null) {
-            // gti.dev: change the mic icon while recording, like Gboard.
-            mVoiceKey.setImageDrawable(active ? mRecordingIcon : mVoiceIcon);
+            // gti.dev: keep the mic icon inside the circle; only the circle pulses.
             mVoiceKey.setActivated(active);
             mVoiceKey.setContentDescription(getContext().getString(active
                     ? com.android.inputmethod.latin.R.string.spoken_description_stop_dictation
@@ -322,9 +319,8 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             if (active) {
                 mVoiceRms = 0f;
                 mVoicePulseRunnable.run();
-            } else {
-                mVoiceKey.setScaleX(1f);
-                mVoiceKey.setScaleY(1f);
+            } else if (mVoiceCircle != null) {
+                mVoiceCircle.setLevel(0f);
             }
         }
     }
