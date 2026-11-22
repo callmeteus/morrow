@@ -107,8 +107,9 @@
         name="MoreKeysKeyboardView.OLED"
         parent="KeyboardView.OLED"
     >
-        <item name="android:background">@drawable/btn_keyboard_key_oled</item>
-        <item name="keyBackground">@drawable/btn_keyboard_key_oled</item>
+        <!-- gti.dev: rounded popup with transparent keys, like Gboard. -->
+        <item name="android:background">@drawable/keyboard_popup_panel_oled</item>
+        <item name="keyBackground">@drawable/btn_keyboard_key_popup_oled</item>
         <item name="divider">@drawable/more_keys_divider</item>
         <item name="keyTypeface">normal</item>
         <item name="verticalCorrection">@dimen/config_more_keys_keyboard_vertical_correction_holo</item>

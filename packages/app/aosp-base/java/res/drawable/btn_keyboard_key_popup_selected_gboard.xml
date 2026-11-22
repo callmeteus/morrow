@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- gti.dev: highlighted key inside the "more keys" popup. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF5D5A70" />
+    <corners android:radius="8dp" />
+</shape>
