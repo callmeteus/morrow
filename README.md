@@ -288,7 +288,7 @@ O serviço roda na **h-server-1** (Tailscale `100.69.33.118`) como Swarm service
 com a imagem construída de `packages/backend/Dockerfile`. O Traefik em `c-oracle-server`
 publica `https://morrow.gti.dev` (porta 443, sem porta customizada) e encaminha
 para a porta publicada no routing mesh. Os manifests Terraform e as regras do
-Grafana ficam no repositório `gti-infra`, não aqui.
+Grafana ficam no repositório `infra`, não aqui.
 
 Configuração que **não** versionamos (executar no `c-oracle-server`):
 
@@ -298,7 +298,7 @@ Configuração que **não** versionamos (executar no `c-oracle-server`):
 2. Cloudflare: CNAME `morrow.gti.dev` -> `server.gti.dev`, **proxied**, zona em
    SSL **Full (strict)**. O Origin Certificate do Traefik precisa cobrir
    `morrow.gti.dev` (use o wildcard `*.gti.dev`).
-3. O token `X-Collector-Token` vem de `secret/gti-infra/morrow-collector` via
+3. O token `X-Collector-Token` vem de `secret/infra/morrow-collector` via
    `scripts/vault-env.sh` e é injetado no serviço pelo Terraform. Nunca entre
    com o token no repositório.
 

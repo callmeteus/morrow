@@ -38,7 +38,7 @@ adb shell ime set com.android.inputmethod.latin/.LatinIME
 ```
 
 Infrastructure conventions for Forgejo (secrets, runners, GitOps webhook) live
-in `Pacotes/gti-infra/AGENTS.md` and `Pacotes/gti-infra/docs/GITOPS.md`. Do not
+in `Pacotes/infra/AGENTS.md` and `Pacotes/infra/docs/GITOPS.md`. Do not
 duplicate them here.
 
 ## Conventions
