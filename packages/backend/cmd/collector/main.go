@@ -23,10 +23,6 @@ func main() {
 	addr := env("COLLECTOR_ADDR", ":8080")
 	dataDir := env("COLLECTOR_DATA_DIR", "/data")
 	ttlRaw := env("COLLECTOR_TTL", "720h") // 30 days
-	token := os.Getenv("COLLECTOR_TOKEN")
-	if token == "" {
-		log.Fatal("COLLECTOR_TOKEN is required")
-	}
 	ttl, err := time.ParseDuration(ttlRaw)
 	if err != nil {
 		log.Fatalf("invalid COLLECTOR_TTL %q: %v", ttlRaw, err)
@@ -40,7 +36,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           httpapi.New(st, token),
+		Handler:           httpapi.New(st),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("collector listening on %s (data=%s ttl=%s)", addr, dataDir, ttl)

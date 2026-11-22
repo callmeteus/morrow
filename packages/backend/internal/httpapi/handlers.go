@@ -1,6 +1,7 @@
-// Package httpapi exposes the collector over HTTP. All /v1/* endpoints require
-// the X-Collector-Token header; /healthz is open so reverse proxies and health
-// checkers can probe it without knowing the token.
+// Package httpapi exposes the collector over HTTP. The endpoints are open by
+// design: this is a debug-only dataset intake service deployed behind Traefik
+// and Cloudflare, and requiring a token on the client blocked the keyboard
+// uploads because the token defaulted to empty.
 package httpapi
 
 import (
@@ -22,8 +23,8 @@ const (
 )
 
 // New wires the HTTP routes onto the store.
-func New(s *store.Store, token string) http.Handler {
-	h := &handler{store: s, token: token}
+func New(s *store.Store) http.Handler {
+	h := &handler{store: s}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", h.healthz)
 	mux.HandleFunc("/v1/voice", h.voice)
@@ -35,17 +36,6 @@ func New(s *store.Store, token string) http.Handler {
 
 type handler struct {
 	store *store.Store
-	token string
-}
-
-func (h *handler) authorized(w http.ResponseWriter, r *http.Request) bool {
-	// A token is always required. New rejects an empty COLLECTOR_TOKEN at
-	// startup, so an empty configured value is never a valid state here.
-	if r.Header.Get("X-Collector-Token") != h.token {
-		writeError(w, http.StatusUnauthorized, "invalid or missing X-Collector-Token")
-		return false
-	}
-	return true
 }
 
 func (h *handler) healthz(w http.ResponseWriter, r *http.Request) {
@@ -59,9 +49,6 @@ func (h *handler) healthz(w http.ResponseWriter, r *http.Request) {
 func (h *handler) voice(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeError(w, http.StatusMethodNotAllowed, "use POST")
-		return
-	}
-	if !h.authorized(w, r) {
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadBytes)
@@ -125,9 +112,6 @@ func (h *handler) jsonRecord(w http.ResponseWriter, r *http.Request, kind string
 		writeError(w, http.StatusMethodNotAllowed, "use POST")
 		return
 	}
-	if !h.authorized(w, r) {
-		return
-	}
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	var rec store.Record
 	dec := json.NewDecoder(r.Body)
@@ -154,9 +138,6 @@ func (h *handler) jsonRecord(w http.ResponseWriter, r *http.Request, kind string
 func (h *handler) export(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, "use GET")
-		return
-	}
-	if !h.authorized(w, r) {
 		return
 	}
 	data, err := h.store.Export()

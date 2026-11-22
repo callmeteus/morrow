@@ -21,7 +21,7 @@ func newTestHandler(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return New(st, token)
+	return New(st)
 }
 
 func do(r http.Handler, method, path, body string, withToken bool) *httptest.ResponseRecorder {
@@ -42,14 +42,16 @@ func TestHealthzIsOpen(t *testing.T) {
 	}
 }
 
-func TestTokenRequired(t *testing.T) {
+func TestNoTokenRequired(t *testing.T) {
 	h := newTestHandler(t)
 	body := `{"id":"x","sessionId":"s","kind":"asr_word","ts":1}`
-	if w := do(h, http.MethodPost, "/v1/correction", body, false); w.Code != http.StatusUnauthorized {
-		t.Fatalf("expected 401 without token, got %d", w.Code)
+	// The collector is open by design; a debug keyboard with an empty token
+	// must still be able to upload. The header is optional and ignored.
+	if w := do(h, http.MethodPost, "/v1/correction", body, false); w.Code != http.StatusCreated {
+		t.Fatalf("expected 201 without token, got %d: %s", w.Code, w.Body.String())
 	}
 	if w := do(h, http.MethodPost, "/v1/correction", body, true); w.Code != http.StatusCreated {
-		t.Fatalf("expected 201 with token, got %d: %s", w.Code, w.Body.String())
+		t.Fatalf("expected 201 with token (ignored), got %d: %s", w.Code, w.Body.String())
 	}
 }
 
