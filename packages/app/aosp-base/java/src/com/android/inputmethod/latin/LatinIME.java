@@ -1588,6 +1588,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public void onRequestPermissionsResult(boolean allGranted) {
+        // gti.dev: resume dictation after the mic permission dialog is answered.
+        if (mPendingDictationPermission) {
+            mPendingDictationPermission = false;
+            if (allGranted) startLocalDictation();
+            return;
+        }
         ImportantNoticeUtils.updateContactsNoticeShown(this /* context */);
         setNeutralSuggestionStrip();
     }
@@ -1856,10 +1862,23 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     // gti.dev: on-device dictation triggered by the voice key.
     private LocalVoiceInput.Listener mLocalDictationListener;
+    // gti.dev: retry dictation after the RECORD_AUDIO permission dialog is answered.
+    private boolean mPendingDictationPermission;
 
     private void startLocalDictation() {
         if (LocalVoiceInput.isRecording()) {
             LocalVoiceInput.stop(mLocalDictationListener);
+            return;
+        }
+        // gti.dev: without RECORD_AUDIO the AudioRecord silently fails and the
+        // mic looks dead. Ask for it the first time, then retry automatically.
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this,
+                permission.RECORD_AUDIO)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            mPendingDictationPermission = true;
+            PermissionsManager.get(this).requestPermissions(
+                    this /* PermissionsResultCallback */,
+                    null /* activity */, permission.RECORD_AUDIO);
             return;
         }
         // gti.dev: play a soft confirmation tone when the mic activates, like Gboard.
