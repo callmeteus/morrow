@@ -1019,7 +1019,26 @@ public final class InputLogic {
             final int currentKeyboardScriptId) {
         mSpaceState = SpaceState.NONE;
         mDeleteCount++;
-        com.android.inputmethod.latin.CollectorHooks.onBackspace();
+        // gti.dev: capture the text actually being removed before any deletion
+        // runs. getTextBeforeCursor sees the pre-backspace editor state, so the
+        // last code point is what this keystroke deletes (or the whole selection).
+        final CharSequence beforeCursor = mConnection.getTextBeforeCursor(80, 0);
+        final String deletedText;
+        if (mConnection.hasSelection()) {
+            final CharSequence selection = mConnection.getSelectedText(0 /* no styles */);
+            deletedText = selection == null ? "" : selection.toString();
+        } else if (beforeCursor != null && beforeCursor.length() > 0) {
+            final int end = beforeCursor.length();
+            int start = end - 1;
+            if (start > 0 && Character.isLowSurrogate(beforeCursor.charAt(end - 1))
+                    && Character.isHighSurrogate(beforeCursor.charAt(start - 1))) {
+                start--;
+            }
+            deletedText = beforeCursor.subSequence(start, end).toString();
+        } else {
+            deletedText = "";
+        }
+        com.android.inputmethod.latin.CollectorHooks.onBackspace(deletedText);
         // gti.dev: record what the user removed, paired with the last commit.
         final UsageLog usageLogForDelete = UsageLog.get();
         if (usageLogForDelete != null) {
@@ -1028,8 +1047,7 @@ public final class InputLogic {
                 deleted = mConnection.getExpectedSelectionEnd()
                         - mConnection.getExpectedSelectionStart();
             }
-            usageLogForDelete.backspace(deleted > 0 ? deleted : 1,
-                    mConnection.getTextBeforeCursor(80, 0));
+            usageLogForDelete.backspace(deleted > 0 ? deleted : 1, beforeCursor);
         }
 
         // In many cases after backspace, we need to update the shift state. Normally we need

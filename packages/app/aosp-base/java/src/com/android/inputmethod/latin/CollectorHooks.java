@@ -19,6 +19,9 @@ public final class CollectorHooks {
     private static final StringBuilder sTypedWord = new StringBuilder();
     private static String sLastSwipeKey;
     private static long sLastSwipeTime;
+    // Set only from LatinIME's batch-input callbacks, which AOSP drives from
+    // BatchInputArbiter.isStartOfAGesture(). Plain key events never set it.
+    private static volatile boolean sGestureActive;
 
     private CollectorHooks() {}
 
@@ -32,9 +35,22 @@ public final class CollectorHooks {
         return sessionId == null ? "" : sessionId;
     }
 
+    /** AOSP detected the start of a real gesture. Only then is a swipe reported. */
+    public static void onGestureStarted() {
+        sGestureActive = true;
+    }
+
+    /** The gesture ended or was canceled; stop accepting swipe reports. */
+    public static void onGestureEnded() {
+        sGestureActive = false;
+    }
+
     /** When a glide is decoded, remember its id and word for failure correlation. */
     public static void onSwipe(int[] xs, int[] ys, long[] ts, String[] decoded,
                                int kbWidth, int kbHeight) {
+        // recordDiagnostics runs for every suggestion pass, including plain
+        // typing. Only traces collected inside a real AOSP gesture are data.
+        if (!sGestureActive) return;
         if (tracker == null || decoded == null || decoded.length == 0) return;
         // The native decoder calls recordDiagnostics several times for one
         // gesture. Drop repeated traces of the same shape within a short window.
@@ -98,9 +114,9 @@ public final class CollectorHooks {
         clearPendingSwipe();
     }
 
-    public static void onBackspace() {
+    public static void onBackspace(String deleted) {
         if (tracker == null) return;
-        CorrectionTracker.Event e = tracker.onBackspace(System.currentTimeMillis());
+        CorrectionTracker.Event e = tracker.onBackspace(deleted, System.currentTimeMillis());
         if (e != null) CollectorClient.postCorrection(e);
     }
 

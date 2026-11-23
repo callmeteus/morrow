@@ -2077,6 +2077,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public void onStartBatchInput() {
+        // AOSP only calls this from BatchInputArbiter when a real gesture starts.
+        // Open the window in which swipe traces may be reported to the collector.
+        CollectorHooks.onGestureStarted();
         mInputLogic.onStartBatchInput(mSettings.getCurrent(), mKeyboardSwitcher, mHandler);
         mGestureConsumer.onGestureStarted(
                 mRichImm.getCurrentSubtypeLocale(),
@@ -2096,6 +2099,9 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public void onCancelBatchInput() {
+        // Canceled gesture: close the report window so no later suggestion pass
+        // can be mistaken for a committed swipe.
+        CollectorHooks.onGestureEnded();
         mInputLogic.onCancelBatchInput(mHandler);
         mGestureConsumer.onGestureCanceled();
     }
@@ -2108,6 +2114,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
      * @param suggestedWords suggested words by the IME for the full gesture.
      */
     public void onTailBatchInputResultShown(final SuggestedWords suggestedWords) {
+        // The tail decode has already run on the non-UI thread by the time this
+        // UI callback fires, so every trace for this gesture has been reported.
+        // Closing here also prevents a stuck window if no further batch event
+        // arrives after the gesture is committed.
+        CollectorHooks.onGestureEnded();
         mGestureConsumer.onImeSuggestionsProcessed(suggestedWords,
                 mInputLogic.getComposingStart(), mInputLogic.getComposingLength(),
                 mDictionaryFacilitator);

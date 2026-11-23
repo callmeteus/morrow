@@ -275,14 +275,40 @@ public final class LocalVoiceInput {
             }
             @Override protected void onPostExecute(String s) {
                 VoiceDiagnostics.recordResult(sContext, s, inferMs[0]);
-                String clean = TranscriptCleaner.clean(s);
+                final String clean = TranscriptCleaner.clean(s);
+                final String voiceId = CollectorHooks.sessionId() + "-" + CollectorClient.newId();
+                // gti.dev: AOSP has no separate ASR correction step, so the
+                // cleaned transcript is the "corrected" stage. Report the
+                // raw -> corrected pair even when the distance is zero, so the
+                // dataset records that no cleanup was needed.
+                CollectorHooks.onAsrWord(s, clean, editDistance(s, clean), -1, voiceId);
                 CollectorClient.uploadVoice(
-                        CollectorHooks.sessionId() + "-" + CollectorClient.newId(),
+                        voiceId,
                         pcm, s, clean, clean, inferMs[0], lastPeakRms, lastDurationMs,
                         "ggml-tiny-f32-v3", "pt", CollectorHooks.sessionId());
                 l.onFinal(s, inferMs[0]);
             }
         }.execute();
+    }
+
+    /** Levenshtein edit distance between the raw and cleaned transcript. */
+    private static int editDistance(final String a, final String b) {
+        final int n = a.length();
+        final int m = b.length();
+        int[] prev = new int[m + 1];
+        int[] cur = new int[m + 1];
+        for (int j = 0; j <= m; j++) prev[j] = j;
+        for (int i = 1; i <= n; i++) {
+            cur[0] = i;
+            for (int j = 1; j <= m; j++) {
+                final int cost = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+                cur[j] = Math.min(Math.min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + cost);
+            }
+            final int[] swap = prev;
+            prev = cur;
+            cur = swap;
+        }
+        return prev[m];
     }
 
     /** Runs transcribe with a hard timeout so a native hang cannot freeze the UI. */

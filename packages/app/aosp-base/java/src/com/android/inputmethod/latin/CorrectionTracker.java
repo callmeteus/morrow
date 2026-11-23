@@ -169,7 +169,7 @@ public final class CorrectionTracker {
     }
 
     /** Records a backspace; emits a burst event when the threshold is crossed. */
-    public Event onBackspace(long nowMs) {
+    public Event onBackspace(String deleted, long nowMs) {
         pruneBackspaces(nowMs);
         backspaces.addLast(nowMs);
         if (backspaces.size() < BACKSPACE_BURST_COUNT) return null;
@@ -178,6 +178,7 @@ public final class CorrectionTracker {
         Event e = next(nowMs, "backspace_burst", "keyboard");
         e.prefix = prefix;
         e.shown = new ArrayList<>(shown);
+        e.input = deleted == null ? "" : deleted;
         return e;
     }
 
