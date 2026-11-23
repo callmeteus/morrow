@@ -17,6 +17,8 @@ public final class CollectorHooks {
     private static String pendingSwipeId;
     private static String pendingSwipeWord;
     private static final StringBuilder sTypedWord = new StringBuilder();
+    private static String sLastSwipeKey;
+    private static long sLastSwipeTime;
 
     private CollectorHooks() {}
 
@@ -34,6 +36,21 @@ public final class CollectorHooks {
     public static void onSwipe(int[] xs, int[] ys, long[] ts, String[] decoded,
                                int kbWidth, int kbHeight) {
         if (tracker == null || decoded == null || decoded.length == 0) return;
+        // The native decoder calls recordDiagnostics several times for one
+        // gesture. Drop repeated traces of the same shape within a short window.
+        int count = Math.min(xs.length, Math.min(ys.length, ts.length));
+        StringBuilder key = new StringBuilder();
+        if (count > 0) {
+            key.append(xs[0]).append(',').append(ys[0]).append(';')
+               .append(xs[count - 1]).append(',').append(ys[count - 1]).append(';')
+               .append(count);
+        }
+        for (String d : decoded) if (d != null) key.append('|').append(d);
+        String fingerprint = key.toString();
+        long now = System.currentTimeMillis();
+        if (fingerprint.equals(sLastSwipeKey) && now - sLastSwipeTime < 1500) return;
+        sLastSwipeKey = fingerprint;
+        sLastSwipeTime = now;
         String trail = "";
         String word = decoded[0] == null ? "" : decoded[0];
         java.util.List<String> candidates = new java.util.ArrayList<>();
