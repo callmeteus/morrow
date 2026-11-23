@@ -46,11 +46,11 @@
                 latin:keyStyle="settingsMoreKeysStyle" />
         </case>
         <default>
-            <!-- gti.dev: long-press shows the Gboard punctuation popup
-                 (ref_72): & % + " - : ' @ / ; ( ) # ! ? -->
+            <!-- gti.dev: long-press shows Gboard punctuation plus the emoji key
+                 to open the emoji palette, like Gboard. -->
             <Key
                 latin:keySpec=","
-                latin:moreKeys="&amp;,%,+,&quot;,-,:,',@,;,/,(,),#,!,?"
+                latin:moreKeys="&amp;,%,+,&quot;,-,:,',@,;,/,(,),#,!,?,!text/keyspec_emoji_action_key"
                 latin:keyLabelFlags="hasPopupHint"
                 latin:keyStyle="settingsMoreKeysStyle" />
         </default>
