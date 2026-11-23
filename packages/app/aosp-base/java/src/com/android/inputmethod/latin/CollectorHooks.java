@@ -35,14 +35,19 @@ public final class CollectorHooks {
         return sessionId == null ? "" : sessionId;
     }
 
-    /** AOSP detected the start of a real gesture. Only then is a swipe reported. */
+    /** AOSP detected the start of a real gesture. Only then is a swipe reported.
+     *  The gesture's trail keys arrive as onCodeInput events; keeping them out
+     *  of the typed-word buffer prevents trail letters from being mistaken for
+     *  a committed word (the source of keysmash in suggestion events). */
     public static void onGestureStarted() {
         sGestureActive = true;
+        sTypedWord.setLength(0);
     }
 
     /** The gesture ended or was canceled; stop accepting swipe reports. */
     public static void onGestureEnded() {
         sGestureActive = false;
+        sTypedWord.setLength(0);
     }
 
     /** When a glide is decoded, remember its id and word for failure correlation. */
@@ -87,6 +92,10 @@ public final class CollectorHooks {
      *  accumulated; a separator flushes the pending word as a commit event. */
     public static void onKey(int codePoint) {
         if (tracker == null) return;
+        // During a glide the finger crosses keys that fire onCodeInput, but
+        // those are trail points, not typed characters. The real committed word
+        // arrives separately; counting trail letters here produced keysmash.
+        if (sGestureActive) return;
         if (codePoint == Constants.CODE_DELETE) {
             if (sTypedWord.length() > 0) sTypedWord.deleteCharAt(sTypedWord.length() - 1);
             return;
