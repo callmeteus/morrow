@@ -30,22 +30,23 @@
                 latin:styleName="settingsMoreKeysStyle"
                 latin:backgroundType="functional" />
         </case>
-        <!-- gti.dev: Gboard adds settings to the comma popup when the dedicated
-             emoji key is off. The emoji is already part of the comma moreKeys. -->
+        <!-- gti.dev: the emoji sits at the bottom of the comma popup, in the
+             place Gboard uses for settings. When the dedicated emoji key is off,
+             settings is added next to it. -->
         <case
             latin:emojiKeyEnabled="false"
         >
             <key-style
                 latin:styleName="settingsMoreKeysStyle"
                 latin:keyLabelFlags="hasPopupHint"
-                latin:additionalMoreKeys="!text/keyspec_settings"
+                latin:additionalMoreKeys="!text/keyspec_emoji_action_key,!text/keyspec_settings"
                 latin:backgroundType="functional" />
         </case>
-        <!-- gti.dev: punctuation popup when the emoji key is available. -->
         <default>
             <key-style
                 latin:styleName="settingsMoreKeysStyle"
                 latin:keyLabelFlags="hasPopupHint"
+                latin:additionalMoreKeys="!text/keyspec_emoji_action_key"
                 latin:backgroundType="functional" />
         </default>
     </switch>

@@ -50,7 +50,7 @@
                  to open the emoji palette, like Gboard. -->
             <Key
                 latin:keySpec=","
-                latin:moreKeys="&amp;,%,+,&quot;,-,:,',@,;,/,(,),#,!,?,!text/keyspec_emoji_action_key"
+                latin:moreKeys="&amp;,%,+,&quot;,-,:,',@,;,/,(,),#,!,?"
                 latin:keyLabelFlags="hasPopupHint"
                 latin:keyStyle="settingsMoreKeysStyle" />
         </default>
