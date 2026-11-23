@@ -13,7 +13,9 @@ import android.graphics.drawable.Drawable;
 
 public final class PulsingCircleDrawable extends Drawable {
     private static final int IDLE_COLOR = 0xFF3C4043;
-    private static final float MAX_GROWTH = 0.45f;
+    // gti.dev: keep the circle inside the key bounds so it never gets clipped.
+    private static final float MAX_RADIUS_RATIO = 0.46f;
+    private static final float IDLE_RADIUS_RATIO = 0.30f;
 
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float mLevel;
@@ -40,9 +42,12 @@ public final class PulsingCircleDrawable extends Drawable {
         final int w = getBounds().width();
         final int h = getBounds().height();
         if (w <= 0 || h <= 0) return;
-        final float base = Math.min(w, h) / 2f;
-        final float radius = base * (1f - MAX_GROWTH * 0.5f)
-                + base * MAX_GROWTH * mLevel;
+        final float min = Math.min(w, h);
+        final float idle = min * IDLE_RADIUS_RATIO;
+        final float max = min * MAX_RADIUS_RATIO;
+        // gti.dev: smoothstep easing so growth/decay eases in and out.
+        final float t = mLevel * mLevel * (3f - 2f * mLevel);
+        final float radius = idle + (max - idle) * t;
         canvas.drawCircle(w / 2f, h / 2f, radius, mPaint);
     }
 

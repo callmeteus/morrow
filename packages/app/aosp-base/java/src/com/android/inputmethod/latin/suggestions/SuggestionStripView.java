@@ -89,14 +89,17 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
     private PulsingCircleDrawable mVoiceCircle;
     private final Handler mVoicePulseHandler = new Handler(Looper.getMainLooper());
     private boolean mVoicePulsing;
+    private float mVoiceSmooth;
     private final Runnable mVoicePulseRunnable = new Runnable() {
         @Override public void run() {
             if (mVoiceCircle == null) return;
-            // gti.dev: only the circle changes size; the mic icon stays fixed.
-            final float level = Math.min(1f, mVoiceRms * 8f);
-            mVoiceCircle.setLevel(level);
-            mVoiceRms *= 0.8f;
-            if (mVoicePulsing) mVoicePulseHandler.postDelayed(this, 40L);
+            // gti.dev: ease toward the target level instead of jumping to the raw
+            // RMS. The circle grows and shrinks smoothly and never clips.
+            final float target = Math.min(1f, mVoiceRms * 8f);
+            mVoiceSmooth += (target - mVoiceSmooth) * 0.18f;
+            mVoiceCircle.setLevel(mVoiceSmooth);
+            mVoiceRms *= 0.85f;
+            if (mVoicePulsing) mVoicePulseHandler.postDelayed(this, 32L);
         }
     };
     // gti.dev: trailing ellipsis animation after the mic is released.
@@ -318,9 +321,11 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             mVoicePulseHandler.removeCallbacks(mVoicePulseRunnable);
             if (active) {
                 mVoiceRms = 0f;
+                mVoiceSmooth = 0f;
                 mVoicePulseRunnable.run();
-            } else if (mVoiceCircle != null) {
-                mVoiceCircle.setLevel(0f);
+            } else {
+                mVoiceSmooth = 0f;
+                if (mVoiceCircle != null) mVoiceCircle.setLevel(0f);
             }
         }
     }
