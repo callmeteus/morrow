@@ -273,6 +273,23 @@ o export fica desligado. Os uploads (`POST /v1/voice` com `meta` + `audio`,
 `POST /v1/swipe`, `POST /v1/correction`) e `GET /healthz` continuam abertos
 para o teclado de debug.
 
+### Sistema de coordenadas dos swipes
+
+Cada registro em `POST /v1/swipe` contém:
+
+- `points`: `[x, y, t_ms]` por amostra, com `x` e `y` em **0..1 da área das
+  letras** (a caixa que envolve os centros das teclas a-z e seus meios-tamanhos)
+  e `t_ms` relativo ao início do gesto.
+- `area`: `[minx, miny, maxx, maxy]`, a caixa das letras em 0..1 da caixa do
+  teclado.
+- `keys`: `[code, cx, cy, half_w, half_h]` por tecla, também em 0..1 da caixa do
+  teclado, onde `code` é o código da letra.
+
+O app normaliza os pontos antes de enviar, usando a geometria real capturada em
+`SwipeDecoder.setLayoutFromKeyboard`. Assim o consumidor não precisa adivinhar
+a caixa de conversão. O campo `kb` mantém as dimensões do teclado em pixels
+(`largura x altura`) apenas como referência.
+
 ### Execução local
 
 ```powershell

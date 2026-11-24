@@ -65,7 +65,8 @@ public final class SwipeDecoder {
     public static void recordDiagnostics(int[] xs, int[] ys, long[] ts, String[] decoded) {
         if (sContext == null) return;
         SwipeDiagnostics.record(sContext, xs, ys, ts, decoded, sKeyboardWidth, sKeyboardHeight);
-        CollectorHooks.onSwipe(xs, ys, ts, decoded, sKeyboardWidth, sKeyboardHeight);
+        CollectorHooks.onSwipe(xs, ys, ts, decoded, sKeyboardWidth, sKeyboardHeight,
+                getCollectorGeometry(), getCollectorArea());
     }
 
     /** Copies the model from assets and initialises the native engine once. */
@@ -109,6 +110,15 @@ public final class SwipeDecoder {
     // gti.dev: the keyboard geometry rarely changes. Rebuilding and logging it
     // on every suggestion request adds latency to the typing path.
     private static com.android.inputmethod.keyboard.Keyboard sLastLayoutKeyboard;
+    // gti.dev: real key geometry, normalized to the keyboard box. Passed to the
+    // collector so a gesture can be stored in the letter-area coordinate frame
+    // expected by the gesture trainer.
+    private static float[] sCollectorGeometry;
+    private static float[] sCollectorArea;
+
+    public static float[] getCollectorGeometry() { return sCollectorGeometry; }
+    public static float[] getCollectorArea() { return sCollectorArea; }
+
     public static void setLayoutFromKeyboard(com.android.inputmethod.keyboard.Keyboard keyboard) {
         if (!sInitAttempted || keyboard == null) return;
         if (keyboard == sLastLayoutKeyboard) return;
@@ -118,6 +128,7 @@ public final class SwipeDecoder {
         if (w <= 0 || h <= 0) return;
         java.util.ArrayList<Integer> labels = new java.util.ArrayList<>();
         java.util.ArrayList<Float> geom = new java.util.ArrayList<>();
+        float minx = 1f, maxx = 0f, miny = 1f, maxy = 0f;
         for (com.android.inputmethod.keyboard.Key key : keyboard.getSortedKeys()) {
             final int code = key.getCode();
             if (code < 'a' || code > 'z') continue;
@@ -127,8 +138,13 @@ public final class SwipeDecoder {
             final float hh = (key.getHeight() / 2f) / h;
             labels.add(code);
             geom.add(cx); geom.add(cy); geom.add(hw); geom.add(hh);
+            minx = Math.min(minx, cx - hw); maxx = Math.max(maxx, cx + hw);
+            miny = Math.min(miny, cy - hh); maxy = Math.max(maxy, cy + hh);
         }
         if (labels.isEmpty()) return;
+        sCollectorGeometry = new float[geom.size()];
+        for (int i = 0; i < sCollectorGeometry.length; i++) sCollectorGeometry[i] = geom.get(i);
+        sCollectorArea = new float[] { minx, miny, maxx, maxy };
         int[] l = new int[labels.size()];
         for (int i = 0; i < l.length; i++) l[i] = labels.get(i);
         float[] g = new float[geom.size()];

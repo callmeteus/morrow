@@ -52,7 +52,7 @@ public final class CollectorHooks {
 
     /** When a glide is decoded, remember its id and word for failure correlation. */
     public static void onSwipe(int[] xs, int[] ys, long[] ts, String[] decoded,
-                               int kbWidth, int kbHeight) {
+                               int kbWidth, int kbHeight, float[] keys, float[] area) {
         // recordDiagnostics runs for every suggestion pass, including plain
         // typing. Only traces collected inside a real AOSP gesture are data.
         if (!sGestureActive) return;
@@ -79,12 +79,25 @@ public final class CollectorHooks {
         java.util.List<float[]> points = new java.util.ArrayList<>();
         int n = Math.min(xs.length, Math.min(ys.length, ts.length));
         if (kbWidth > 0 && kbHeight > 0) {
+            // The trainer expects x,y in 0..1 of the LETTER AREA, not of the
+            // whole keyboard. Convert with the real key geometry captured by
+            // SwipeDecoder.setLayoutFromKeyboard. Fall back to the full keyboard
+            // box when the geometry is unavailable.
+            float minx = 0f, miny = 0f, maxx = 1f, maxy = 1f;
+            if (area != null && area.length >= 4) {
+                minx = area[0]; miny = area[1]; maxx = area[2]; maxy = area[3];
+            }
+            final float spanx = Math.max(1e-6f, maxx - minx);
+            final float spany = Math.max(1e-6f, maxy - miny);
             for (int i = 0; i < n; i++) {
-                points.add(new float[] { xs[i] / (float) kbWidth, ys[i] / (float) kbHeight, (float) ts[i] });
+                float nx = (xs[i] / (float) kbWidth - minx) / spanx;
+                float ny = (ys[i] / (float) kbHeight - miny) / spany;
+                points.add(new float[] { nx, ny, (float) ts[i] });
             }
         }
         String kb = kbWidth + "x" + kbHeight;
-        pendingSwipeId = CollectorClient.postSwipe(sessionId, trail, word, candidates, kb, points);
+        pendingSwipeId = CollectorClient.postSwipe(sessionId, trail, word, candidates, kb,
+                points, keys, area);
         pendingSwipeWord = word;
     }
 

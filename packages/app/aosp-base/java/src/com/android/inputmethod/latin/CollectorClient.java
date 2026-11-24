@@ -129,7 +129,8 @@ public final class CollectorClient {
      *  the IME can correlate a later rewrite of the word. */
     public static String postSwipe(final String sessionId, final String trail,
                                    final String decoded, final java.util.List<String> candidates,
-                                   final String kb, final java.util.List<float[]> points) {
+                                   final String kb, final java.util.List<float[]> points,
+                                   final float[] keys, final float[] area) {
         final Config cfg = enabledConfig();
         if (cfg == null) return null;
         final String id = newId();
@@ -152,6 +153,18 @@ public final class CollectorClient {
                     }
                 }
                 payload.put("points", pts);
+                // Real key geometry so the trainer can reproduce the coordinate
+                // frame. keys = [code,cx,cy,hw,hh] per letter, area = [minx,miny,maxx,maxy].
+                if (keys != null && keys.length > 0) {
+                    org.json.JSONArray ka = new org.json.JSONArray();
+                    for (float v : keys) ka.put(v);
+                    payload.put("keys", ka);
+                }
+                if (area != null && area.length >= 4) {
+                    org.json.JSONArray aa = new org.json.JSONArray();
+                    for (float v : area) aa.put(v);
+                    payload.put("area", aa);
+                }
                 postJsonBlocking(cfg, "/v1/swipe", payload);
             } catch (Exception e) {
                 Log.w(TAG, "swipe upload failed: " + e.getMessage());
