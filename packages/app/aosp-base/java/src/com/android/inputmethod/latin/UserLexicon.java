@@ -62,14 +62,29 @@ public final class UserLexicon {
         mPrefs.edit().putString(KEY_CORRECTIONS, serialiseCorrections()).apply();
     }
 
+    /** Minimum repetitions before a word joins the personal dictionary. */
+    public static final int FREQUENT_THRESHOLD = 2;
+
+    private static Runnable sOnWordBecameFrequent;
+
+    public static void setOnWordBecameFrequent(final Runnable r) {
+        sOnWordBecameFrequent = r;
+    }
+
     /** Remember a committed word so frequent words gain weight over time. */
     public void noteWord(String word) {
         if (word == null) return;
         final String w = fold(word);
         if (w.isEmpty() || w.length() < 2) return;
-        final int count = (mCounts.containsKey(w) ? mCounts.get(w) : 0) + 1;
+        final int old = mCounts.containsKey(w) ? mCounts.get(w) : 0;
+        final int count = old + 1;
         mCounts.put(w, count);
         mPrefs.edit().putString(KEY_COUNTS, serialiseCounts()).apply();
+        // gti.dev: reload the swipe lexicon when a word first becomes frequent.
+        if (old < FREQUENT_THRESHOLD && count >= FREQUENT_THRESHOLD
+                && sOnWordBecameFrequent != null) {
+            sOnWordBecameFrequent.run();
+        }
     }
 
     /** True when the user previously rejected this word. */
@@ -80,6 +95,15 @@ public final class UserLexicon {
     /** The word the user prefers instead, or null. */
     public String replacementFor(String word) {
         return word == null ? null : mCorrections.get(fold(word));
+    }
+
+    /** gti.dev: words the user repeated often enough to join the personal dictionary. */
+    public Map<String, Integer> frequentWords(final int minCount) {
+        final Map<String, Integer> out = new HashMap<>();
+        for (final Map.Entry<String, Integer> e : mCounts.entrySet()) {
+            if (e.getValue() != null && e.getValue() >= minCount) out.put(e.getKey(), e.getValue());
+        }
+        return out;
     }
 
     /** Extra ranking weight for frequently written words (0..MAX_BOOST). */

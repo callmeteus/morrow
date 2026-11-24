@@ -624,6 +624,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         CollectorHooks.init();
         UsageLog.init(this);
         UserLexicon.init(this);
+        // gti.dev: when a typed word becomes frequent, refresh the swipe lexicon
+        // off the UI thread so committing a word never stalls typing.
+        UserLexicon.setOnWordBecameFrequent(() ->
+                new Thread(() -> SwipeDecoder.reloadUserWords(this),
+                        "reload-user-words").start());
         DebugFlags.init(PreferenceManager.getDefaultSharedPreferences(this));
         RichInputMethodManager.init(this);
         mRichImm = RichInputMethodManager.getInstance();

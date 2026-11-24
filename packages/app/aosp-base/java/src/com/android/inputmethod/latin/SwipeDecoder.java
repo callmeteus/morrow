@@ -11,6 +11,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 /** Decodes a swipe trace into ranked words using the local neural model. */
 public final class SwipeDecoder {
@@ -95,11 +96,6 @@ public final class SwipeDecoder {
         }
     }
 
-    private static int idx(int label, int[] labels) {
-        for (int i = 0; i < labels.length; i++) if (labels[i] == label) return i;
-        return 0;
-    }
-
     private static int sKeyboardWidth = 1, sKeyboardHeight = 1;
 
     public static void setKeyboardSize(int width, int height) {
@@ -110,8 +106,13 @@ public final class SwipeDecoder {
      * Feeds the REAL key geometry from the AOSP keyboard into the engine, so
      * swipe points and key centres share the same coordinate frame.
      */
+    // gti.dev: the keyboard geometry rarely changes. Rebuilding and logging it
+    // on every suggestion request adds latency to the typing path.
+    private static com.android.inputmethod.keyboard.Keyboard sLastLayoutKeyboard;
     public static void setLayoutFromKeyboard(com.android.inputmethod.keyboard.Keyboard keyboard) {
         if (!sInitAttempted || keyboard == null) return;
+        if (keyboard == sLastLayoutKeyboard) return;
+        sLastLayoutKeyboard = keyboard;
         final float w = keyboard.mId.mWidth;
         final float h = keyboard.mId.mHeight;
         if (w <= 0 || h <= 0) return;
@@ -132,9 +133,6 @@ public final class SwipeDecoder {
         for (int i = 0; i < l.length; i++) l[i] = labels.get(i);
         float[] g = new float[geom.size()];
         for (int i = 0; i < g.length; i++) g[i] = geom.get(i);
-        android.util.Log.i(TAG, String.format("setLayout real: t=(%.2f,%.2f) e=(%.2f,%.2f) p=(%.2f,%.2f) a=(%.2f,%.2f)",
-                g[4*idx('t',l)], g[4*idx('t',l)+1], g[4*idx('e',l)], g[4*idx('e',l)+1],
-                g[4*idx('p',l)], g[4*idx('p',l)+1], g[4*idx('a',l)], g[4*idx('a',l)+1]));
         nativeSetLayout(l, g);
     }
 
@@ -177,6 +175,18 @@ public final class SwipeDecoder {
                 catch (Exception e) { freqs.add(128); }
             }
             r.close();
+            // gti.dev: add the words the user typed repeatedly so the swipe
+            // decoder recognises them as first-class entries, not just a score
+            // boost on whatever the main dictionary returned.
+            final UserLexicon lexicon = UserLexicon.get();
+            if (lexicon != null) {
+                for (final Map.Entry<String, Integer> e : lexicon.frequentWords(2).entrySet()) {
+                    final String w = e.getKey();
+                    if (words.contains(w)) continue;
+                    words.add(w);
+                    freqs.add(Math.min(255, 128 + e.getValue() * 8));
+                }
+            }
             int[] f = new int[freqs.size()];
             for (int i = 0; i < f.length; i++) f[i] = freqs.get(i);
             int n = setWords(words.toArray(new String[0]), f);
@@ -191,6 +201,11 @@ public final class SwipeDecoder {
     /** Supplies the dictionary word list (word + 0..255 frequency). */
     public static int setWords(String[] words, int[] freqs) {
         return nativeSetWords(words, freqs);
+    }
+
+    /** gti.dev: reload the bundled words plus the freshly learned user words. */
+    public static void reloadUserWords(final Context c) {
+        if (isReady()) initWords(c);
     }
 
     /** Decodes a swipe. Coordinates are 0..1 of the keyboard, times in ms. */

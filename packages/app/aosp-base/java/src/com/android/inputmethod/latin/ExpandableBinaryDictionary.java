@@ -65,7 +65,9 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
     /** Whether to print debug output to log */
     private static final boolean DBG_STRESS_TEST = false;
 
-    private static final int TIMEOUT_FOR_READ_OPS_IN_MILLISECONDS = 100;
+    // gti.dev: shorter wait keeps suggestions responsive; a busy dictionary is
+    // skipped rather than blocking the whole suggestion pipeline.
+    private static final int TIMEOUT_FOR_READ_OPS_IN_MILLISECONDS = 15;
 
     /**
      * The maximum length of a word in this dictionary.

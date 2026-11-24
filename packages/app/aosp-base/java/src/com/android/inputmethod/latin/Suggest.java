@@ -34,6 +34,7 @@ import com.android.inputmethod.latin.utils.SuggestionResults;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -255,7 +256,7 @@ public final class Suggest {
                 SuggestedWordInfo.NOT_AN_INDEX /* indexOfTouchPointOfSecondWord */,
                 SuggestedWordInfo.NOT_A_CONFIDENCE /* autoCommitFirstWordConfidence */);
         // gti.dev: drop words the user corrected before and boost words they write often.
-        applyUserLexicon(suggestionsContainer);
+        applyUserLexicon(suggestionsContainer, consideredWord);
         if (!TextUtils.isEmpty(typedWordString)) {
             suggestionsContainer.add(0, typedWordInfo);
         }
@@ -336,7 +337,7 @@ public final class Suggest {
         // Note that because this method is never used to get predictions, there is no need to
         // modify inputType such in getSuggestedWordsForNonBatchInput.
         // gti.dev: apply the user lexicon before choosing the gesture result.
-        applyUserLexicon(suggestionsContainer);
+        applyUserLexicon(suggestionsContainer, "");
         final SuggestedWordInfo pseudoTypedWordInfo = suggestionsContainer.isEmpty() ? null
                 : suggestionsContainer.get(0);
 
@@ -355,9 +356,10 @@ public final class Suggest {
      * a ranking boost. The typed word is added by the caller afterwards, so it
      * always stays in the first slot.
      */
-    private static void applyUserLexicon(final ArrayList<SuggestedWordInfo> suggestions) {
+    private static void applyUserLexicon(final ArrayList<SuggestedWordInfo> suggestions,
+            final String prefix) {
         final UserLexicon lex = UserLexicon.get();
-        if (lex == null || suggestions.isEmpty()) return;
+        if (lex == null) return;
         for (int i = suggestions.size() - 1; i >= 0; --i) {
             final SuggestedWordInfo info = suggestions.get(i);
             if (lex.isSuppressed(info.mWord)) {
@@ -369,6 +371,27 @@ public final class Suggest {
                 suggestions.set(i, new SuggestedWordInfo(info.mWord, info.mPrevWordsContext,
                         info.mScore + boost, info.mKindAndFlags, info.mSourceDict,
                         info.mIndexOfTouchPointOfSecondWord, info.mAutoCommitFirstWordConfidence));
+            }
+        }
+        // gti.dev: a repeated word must become a real suggestion even when the
+        // native dictionary did not return it. This is the personal dictionary
+        // feeding the recommendation path (and the gesture path via the batch call).
+        final String p = (prefix == null) ? "" : prefix.toLowerCase(java.util.Locale.ROOT);
+        if (!p.isEmpty()) {
+            for (final Map.Entry<String, Integer> e
+                    : lex.frequentWords(UserLexicon.FREQUENT_THRESHOLD).entrySet()) {
+                final String w = e.getKey();
+                if (!w.startsWith(p) || w.equals(p)) continue;
+                boolean present = false;
+                for (final SuggestedWordInfo info : suggestions) {
+                    if (w.equals(info.mWord)) { present = true; break; }
+                }
+                if (present) continue;
+                suggestions.add(new SuggestedWordInfo(w, "" /* prevWordsContext */,
+                        SuggestedWordInfo.MAX_SCORE - 1 - e.getValue(),
+                        SuggestedWordInfo.KIND_CORRECTION, Dictionary.DICTIONARY_USER_TYPED,
+                        SuggestedWordInfo.NOT_AN_INDEX,
+                        SuggestedWordInfo.NOT_A_CONFIDENCE));
             }
         }
         java.util.Collections.sort(suggestions, new java.util.Comparator<SuggestedWordInfo>() {
