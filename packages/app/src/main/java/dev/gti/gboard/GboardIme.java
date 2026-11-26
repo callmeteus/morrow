@@ -48,6 +48,18 @@ public class GboardIme extends InputMethodService {
     /** Fixed key row height in dp. Gboard keys measure ~50dp after padding. */
     private static final int KEY_ROW_H = 57;
 
+    /**
+     * gti.dev: commit text through a path that ends any active composing region first.
+     * Browsers (WebView/Chrome) keep composing alive and do not dispatch input/change events
+     * until the IME ends it explicitly. Native TextView ends composing inside commitText, but
+     * browsers do not, so this makes committed text reach the editor in both cases.
+     */
+    private void commitToEditor(final InputConnection ic, final CharSequence text) {
+        if (ic == null) return;
+        ic.finishComposingText();
+        ic.commitText(text, 1);
+    }
+
     private enum KeyType { CHAR, SPACE, BACK, ENTER, SHIFT, SYMBOLS, SYMBOLS2, MIC, COMMA, PERIOD }
 
     // Theme palette (from REA_GBOARD_UI.md section 4.2)
@@ -698,7 +710,7 @@ public class GboardIme extends InputMethodService {
                         showEmojiPicker(v); // long press -> emoji page
                     } else {
                         InputConnection ic = getCurrentInputConnection();
-                        if (ic != null) ic.commitText(",", 1); // tap -> comma
+                        commitToEditor(ic, ","); // tap -> comma
                     }
                     return true;
                 default:
@@ -919,7 +931,7 @@ public class GboardIme extends InputMethodService {
                         InputConnection ic = getCurrentInputConnection();
                         if (ic != null) {
                             confirmWord(currentWordPrefix());
-                            ic.commitText(" ", 1);
+                            commitToEditor(ic, " ");
                         }
                         updateSuggestions();
                     }
@@ -998,7 +1010,7 @@ public class GboardIme extends InputMethodService {
 
         // Gboard commits the decoded word plus a trailing space so the next
         // word starts cleanly.
-        ic.commitText(word + " ", 1);
+        commitToEditor(ic, word + " ");
         updateSuggestions();
     }
 
@@ -1016,7 +1028,7 @@ public class GboardIme extends InputMethodService {
             t.setPadding(dp(12), dp(8), dp(12), dp(8));
             t.setOnClickListener(v -> {
                 InputConnection ic = getCurrentInputConnection();
-                if (ic != null) ic.commitText(a, 1);
+                commitToEditor(ic, a);
                 popup.dismiss();
                 updateSuggestions();
             });
@@ -1058,12 +1070,12 @@ public class GboardIme extends InputMethodService {
             case CHAR:
                 String c = label;
                 if (shift || capsLock) c = c.toUpperCase();
-                ic.commitText(c, 1);
+                commitToEditor(ic, c);
                 if (shift && !capsLock) { shift = false; refreshShiftVisual(); }
                 updateSuggestions();
                 break;
-            case COMMA: ic.commitText(",", 1); updateSuggestions(); break;
-            case PERIOD: ic.commitText(".", 1); updateSuggestions(); break;
+            case COMMA: commitToEditor(ic, ","); updateSuggestions(); break;
+            case PERIOD: commitToEditor(ic, "."); updateSuggestions(); break;
             case BACK:
                 deleteOne(); // already refreshes suggestions
                 break;
@@ -1171,7 +1183,7 @@ public class GboardIme extends InputMethodService {
             cell.setPadding(dp(2), dp(4), dp(2), dp(4));
             cell.setOnClickListener(v -> {
                 InputConnection ic = getCurrentInputConnection();
-                if (ic != null) ic.commitText(e, 1);
+                commitToEditor(ic, e);
             });
             grid.addView(cell);
         }
@@ -1256,7 +1268,7 @@ public class GboardIme extends InputMethodService {
         if (!prefix.isEmpty()) {
             ic.deleteSurroundingText(prefix.length(), 0);
         }
-        ic.commitText(w + " ", 1);
+        commitToEditor(ic, w + " ");
         CorrectionTracker tr = tracker;
         if (tr != null) {
             CollectorClient.postCorrection(tr.onSuggestionSelected(idx, System.currentTimeMillis()));
@@ -1356,7 +1368,7 @@ public class GboardIme extends InputMethodService {
             } else {
                 transcript.setText(text);
                 InputConnection ic = getCurrentInputConnection();
-                if (ic != null) ic.commitText(text + " ", 1);
+                commitToEditor(ic, text + " ");
             }
             main.postDelayed(() -> {
                 if (!dictation.isListening()) {

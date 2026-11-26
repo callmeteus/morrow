@@ -1549,6 +1549,20 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     }
 
     /**
+     * gti.dev: commit text straight into the focused editor through a safe path.
+     * Browsers (WebView/Chrome) keep the composing region alive and do not dispatch
+     * input/change events until the IME ends it explicitly. Native TextView finishes
+     * composing implicitly inside commitText, but browsers do not, so finish composing
+     * first to make the committed text reach the editor.
+     */
+    private static void commitTextToEditor(final android.view.inputmethod.InputConnection ic,
+            final CharSequence text) {
+        if (ic == null) return;
+        ic.finishComposingText();
+        ic.commitText(text, 1);
+    }
+
+    /**
      * gti.dev: commit a selected GIF as rich content into the focused editor.
      * Falls back to inserting the link as text when the editor does not accept images.
      */
@@ -1558,7 +1572,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         com.android.inputmethod.latin.gif.GifInserter.insert(this, ic, getCurrentInputEditorInfo(),
                 url, inserted -> {
             if (!inserted) {
-                ic.commitText(url + " ", 1);
+                commitTextToEditor(ic, url + " ");
             }
         });
     }
@@ -1696,7 +1710,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         final int start = mInputLogic.mConnection.getExpectedSelectionStart();
         final int end = mInputLogic.mConnection.getExpectedSelectionEnd();
         if (start != end) {
-            getCurrentInputConnection().commitText("", 1);
+            commitTextToEditor(getCurrentInputConnection(), "");
         }
     }
 
@@ -1939,7 +1953,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                         log.commit(out + " ", "voice");
                     }
                     android.view.inputmethod.InputConnection ic = getCurrentInputConnection();
-                    if (ic != null && !out.isEmpty()) ic.commitText(out + " ", 1);
+                    if (!out.isEmpty()) commitTextToEditor(ic, out + " ");
                 });
             }
         };
