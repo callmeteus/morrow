@@ -32,6 +32,7 @@
     <string name="gif_no_results">No GIFs found</string>
     <string name="sticker_tab_label">Stickers</string>
 
+    <string name="voice_loading">Preparing voice input</string>
     <string name="voice_ready">Ready to listen</string>
     <string name="voice_listening">Listening</string>
     <string name="voice_transcribing">Transcribing</string>

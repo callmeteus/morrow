@@ -37,6 +37,7 @@
     <string name="sticker_tab_label">Adesivos</string>
 
     <!-- Voice dictation status -->
+    <string name="voice_loading">Preparando a entrada de voz</string>
     <string name="voice_ready">Pronto para ouvir</string>
     <string name="voice_listening">Ouvindo</string>
     <string name="voice_transcribing">Transcrevendo</string>

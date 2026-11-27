@@ -107,7 +107,27 @@ public final class LocalVoiceInput {
             }
         }
         sContext = c.getApplicationContext();
-        init(c);
+        if (ctx != 0) {
+            startAfterInit(c, l);
+            return;
+        }
+        // gti.dev: the first tap loads the Whisper model, which can take a few
+        // seconds. Tell the user immediately and load it off the UI thread, then
+        // start recording when it is ready.
+        l.onState("loading");
+        new Thread(() -> {
+            init(c);
+            if (ctx == 0) {
+                Log.e(TAG, "ctx==0, abort");
+                l.onState("error");
+                l.onFinal("");
+                return;
+            }
+            startAfterInit(c, l);
+        }, "whisper-init").start();
+    }
+
+    private static void startAfterInit(final Context c, final Listener l) {
         if (ctx == 0) {
             Log.e(TAG, "ctx==0, abort");
             l.onState("error");
