@@ -376,7 +376,12 @@ public final class InputLogic {
      */
     public boolean onUpdateSelection(final int oldSelStart, final int oldSelEnd,
             final int newSelStart, final int newSelEnd, final SettingsValues settingsValues) {
-        if (mConnection.isBelatedExpectedUpdate(oldSelStart, newSelStart, oldSelEnd, newSelEnd)) {
+        // gti.dev: WebView/Chrome deliver selection callbacks asynchronously, so a legitimate
+        // update often looks "belated" against our pre-updated expected cursor. When a word is
+        // composing, do not discard it: resetEntireInputState below finishes composing and
+        // resyncs the cache, which is what makes the browser emit input/change events.
+        if (mConnection.isBelatedExpectedUpdate(oldSelStart, newSelStart, oldSelEnd, newSelEnd)
+                && !mWordComposer.isComposingWord()) {
             return false;
         }
         // TODO: the following is probably better done in resetEntireInputState().
@@ -2097,12 +2102,11 @@ public final class InputLogic {
      */
     // TODO: replace these two parameters with an InputTransaction
     private void sendKeyCodePoint(final SettingsValues settingsValues, final int codePoint) {
+        // gti.dev: send digits through commitText like every other code point. The old
+        // KEYCODE_0..9 key events travel on the async binder and ignore batch edits, which
+        // desyncs WebView/Chrome from the composing/commit state.
         // TODO: Remove this special handling of digit letters.
         // For backward compatibility. See {@link InputMethodService#sendKeyChar(char)}.
-        if (codePoint >= '0' && codePoint <= '9') {
-            sendDownUpKeyEvent(codePoint - '0' + KeyEvent.KEYCODE_0);
-            return;
-        }
 
         // TODO: we should do this also when the editor has TYPE_NULL
         if (Constants.CODE_ENTER == codePoint && settingsValues.isBeforeJellyBean()) {

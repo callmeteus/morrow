@@ -120,6 +120,14 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     private final StringBuilder mComposingText = new StringBuilder();
 
     /**
+     * gti.dev: tracks whether the editor currently has an active composing region.
+     * WebView/Chrome only dispatch input/change events once composing ends, so commitText
+     * must finish it in one coordinated place. TextView tolerates an implicit finish,
+     * browsers do not.
+     */
+    private boolean mComposingActive;
+
+    /**
      * This variable is a temporary object used in {@link #commitText(CharSequence,int)}
      * to avoid object creation.
      */
@@ -288,6 +296,7 @@ public final class RichInputConnection implements PrivateCommandPerformer {
         // it works, but it's wrong and should be fixed.
         mCommittedTextBeforeComposingText.append(mComposingText);
         mComposingText.setLength(0);
+        mComposingActive = false;
         if (isConnected()) {
             mIC.finishComposingText();
         }
@@ -306,10 +315,19 @@ public final class RichInputConnection implements PrivateCommandPerformer {
         // TODO: the following is exceedingly error-prone. Right now when the cursor is in the
         // middle of the composing word mComposingText only holds the part of the composing text
         // that is before the cursor, so this actually works, but it's terribly confusing. Fix this.
+        // gti.dev: capture whether the editor has an active composing region before the
+        // cache is cleared. WebView/Chrome keep composing alive and do not dispatch
+        // input/change events until it ends, so finish it once here, before the commit.
+        // The text passed to commitText is already the full word, so this cannot duplicate.
+        final boolean hadComposing = mComposingActive;
         mExpectedSelStart += text.length() - mComposingText.length();
         mExpectedSelEnd = mExpectedSelStart;
         mComposingText.setLength(0);
+        mComposingActive = false;
         if (isConnected()) {
+            if (hadComposing) {
+                mIC.finishComposingText();
+            }
             mTempObjectForCommitText.clear();
             mTempObjectForCommitText.append(text);
             final CharacterStyle[] spans = mTempObjectForCommitText.getSpans(
@@ -613,6 +631,7 @@ public final class RichInputConnection implements PrivateCommandPerformer {
         mExpectedSelEnd = mExpectedSelStart;
         mComposingText.setLength(0);
         mComposingText.append(text);
+        mComposingActive = true;
         // TODO: support values of newCursorPosition != 1. At this time, this is never called with
         // newCursorPosition != 1.
         if (isConnected()) {
@@ -730,13 +749,10 @@ public final class RichInputConnection implements PrivateCommandPerformer {
             return null;
         }
 
-        // Restart batch edit to force state update for broken web apps (for e.g. ProtonMail)
-        // as batch edit mode avoids sending state updates until batch edit end.
-        // See beginBatchEdit mode documentation for further information.
-        if (mNestLevel > 0) {
-            endBatchEdit();
-            beginBatchEdit();
-        }
+        // gti.dev: the old batch edit restart (endBatchEdit/beginBatchEdit here) broke
+        // balance when called from inside an already-open onCodeInput batch, leaving an
+        // extra endBatchEdit that WebView/Chrome treat as the end of all state grouping.
+        // Keep the current batch intact so composing/commit updates are delivered once.
 
         final CharSequence before = getTextBeforeCursorAndDetectLaggyConnection(
                 OPERATION_GET_WORD_RANGE_AT_CURSOR,
