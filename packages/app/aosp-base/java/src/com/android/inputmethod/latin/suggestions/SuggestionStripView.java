@@ -281,9 +281,9 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
         // gti.dev: Gboard uses a neutral light color for idle toolbar icons.
         final ColorStateList toolbarTint = ColorStateList.valueOf(0xFFE8EAED);
         for (final ImageButton key : new ImageButton[] {
-                mMoreKey, mSettingsKey, mTranslateKey, mClipboardKey }) {
+                mVoiceKey, mMoreKey, mSettingsKey, mTranslateKey, mClipboardKey }) {
             key.setImageTintList(toolbarTint);
-            key.setOnClickListener(this);
+            if (key != mVoiceKey) key.setOnClickListener(this);
         }
     }
 
@@ -316,6 +316,12 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
             mVoiceKey.setContentDescription(getContext().getString(active
                     ? com.android.inputmethod.latin.R.string.spoken_description_stop_dictation
                     : com.android.inputmethod.latin.R.string.spoken_description_mic));
+            // gti.dev: like Gboard, the mic has no circle at rest. The circle is
+            // shown only while dictation is active.
+            if (mVoiceCircle != null) {
+                mVoiceCircle.setActive(active);
+                mVoiceCircle.setLevel(0f);
+            }
             // gti.dev: pulse the circle with the voice level while recording.
             mVoicePulsing = active;
             mVoicePulseHandler.removeCallbacks(mVoicePulseRunnable);
@@ -325,7 +331,6 @@ public final class SuggestionStripView extends RelativeLayout implements OnClick
                 mVoicePulseRunnable.run();
             } else {
                 mVoiceSmooth = 0f;
-                if (mVoiceCircle != null) mVoiceCircle.setLevel(0f);
             }
         }
     }
