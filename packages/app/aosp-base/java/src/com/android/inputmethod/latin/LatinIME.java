@@ -1902,7 +1902,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         }
         // gti.dev: play a soft confirmation tone when the mic activates, like Gboard.
         AudioAndHapticFeedbackManager.getInstance().playDictationStartSound();
-        LocalVoiceInput.init(this);
+        // gti.dev: LocalVoiceInput.start() loads the Whisper model off the UI thread
+        // and emits a "loading" state, so do not init() here synchronously.
         mLocalDictationListener = new LocalVoiceInput.Listener() {
             @Override public void onPartial(String text) { }
             @Override public void onRms(final float rms) {

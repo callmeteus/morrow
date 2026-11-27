@@ -34,10 +34,6 @@ public final class LocalVoiceInput {
     private static final String MODEL_FILE = "ggml-tiny-f32-v3.bin";
     private static final int SAMPLE_RATE = 16000;
 
-    static {
-        System.loadLibrary("whisper");
-    }
-
     private static long ctx = 0;
     private static Context sContext;
     private static AudioRecord recorder;
@@ -83,6 +79,10 @@ public final class LocalVoiceInput {
     public static synchronized void init(Context c) {
         if (ctx != 0) return;
         try {
+            // gti.dev: load the native library on the caller thread (background on
+            // the first mic tap) so the IME UI is never blocked by dlopen of the
+            // large whisper.cpp/ggml .so.
+            System.loadLibrary("whisper");
             int threads = Math.max(2, Runtime.getRuntime().availableProcessors());
             ctx = nativeInit(ensureModel(c), threads);
             Log.i(TAG, "whisper ready ctx=" + ctx);
