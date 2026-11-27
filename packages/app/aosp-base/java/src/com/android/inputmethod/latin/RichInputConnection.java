@@ -306,18 +306,10 @@ public final class RichInputConnection implements PrivateCommandPerformer {
         // TODO: the following is exceedingly error-prone. Right now when the cursor is in the
         // middle of the composing word mComposingText only holds the part of the composing text
         // that is before the cursor, so this actually works, but it's terribly confusing. Fix this.
-        // gti.dev: WebView/Chrome editors keep the composing region active and do not
-        // dispatch input/change events until the IME ends it explicitly. Native TextView
-        // finishes composing implicitly inside commitText, but browsers do not, so capture
-        // whether composing is active before the cache is cleared and finish it first.
-        final boolean hadComposingText = mComposingText.length() > 0;
         mExpectedSelStart += text.length() - mComposingText.length();
         mExpectedSelEnd = mExpectedSelStart;
         mComposingText.setLength(0);
         if (isConnected()) {
-            if (hadComposingText) {
-                mIC.finishComposingText();
-            }
             mTempObjectForCommitText.clear();
             mTempObjectForCommitText.append(text);
             final CharacterStyle[] spans = mTempObjectForCommitText.getSpans(
@@ -339,7 +331,13 @@ public final class RichInputConnection implements PrivateCommandPerformer {
                     }
                 }
             }
-            mIC.commitText(mTempObjectForCommitText, newCursorPosition);
+            // gti.dev: WebView/Chrome editors do not dispatch input/change events reliably
+            // when commitText receives a Spanned with no real spans. Send a plain String
+            // in that case; TextView accepts both forms and browsers handle plain text.
+            final CharSequence toCommit = mTempObjectForCommitText.getSpans(
+                    0, mTempObjectForCommitText.length(), CharacterStyle.class).length == 0
+                    ? mTempObjectForCommitText.toString() : mTempObjectForCommitText;
+            mIC.commitText(toCommit, newCursorPosition);
         }
     }
 
